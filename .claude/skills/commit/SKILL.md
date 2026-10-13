@@ -1,9 +1,9 @@
 ---
 name: commit
-description: Commit changes to the Angular client in client/. Auto-formats with Prettier, then checks lint, build and tests, and commits only if everything passes; otherwise stops and reports a checklist table. Use whenever the user asks to commit and the changes are under client/. Never pushes.
+description: Commit changes to the Angular client in client/. Auto-formats with Prettier, then checks lint and build, and commits only if everything passes; otherwise stops and reports a checklist table. Pushes to origin only when the user explicitly says "push". Use whenever the user asks to commit and the changes are under client/.
 ---
 
-Run git commands from the repo root and npm commands from `client/`. Run every step in order. Never skip a check, never use `--no-verify`, and never push.
+Run git commands from the repo root and npm commands from `client/`. Run every step in order. Never skip a check and never use `--no-verify`. Push only when the user's request explicitly says to push (e.g. "commit and push"); otherwise never push.
 
 ## 1. Inspect the changes
 
@@ -29,9 +29,7 @@ Run every check, even if an earlier one fails, so the report is complete. This s
 | 1   | Format (Prettier)                                            | `npm run format:check` |
 | 2   | Lint (ESLint, zero warnings, layer import rules)             | `npm run lint`         |
 | 3   | Build (strict TypeScript, `strictTemplates`, bundle budgets) | `npm run build`        |
-| 4   | Unit tests (Vitest)                                          | `npm test`             |
 
-- **Tests:** if `client/src` has no `*.spec.ts` files, mark the check ⏭️ "no test files" instead of running it, because the runner errors when there is nothing to run.
 - **No comments:** scan the diff of hand-written `.ts`, `.html` and `.scss` files for `//`, `/*` or `<!--`. Any hit fails this check (the rule is in CLAUDE.md, and lint can't enforce it).
 - Collect each error as file, line, rule/code and message, with repo-relative paths and duplicates removed.
 
@@ -49,19 +47,26 @@ Leave the working tree as it is, including the formatting changes. Reply with th
 3. Check the subject length with `printf '%s' "<subject>" | wc -m`, and shorten it if it is over 100.
 4. Commit using a heredoc, then run `git log -1 --stat` to confirm.
 
+## 6. Push (only if the user explicitly asked to push)
+
+Skip this step unless the request contains an explicit push instruction such as "commit and push". A plain "commit" never pushes.
+
+1. Run `git push origin <current-branch>` (add `-u` if the branch has no upstream yet). Remote `origin` is `git@github.com:vagnerdmitry37-sudo/up-admin.git`.
+2. Never force-push. If the push is rejected, stop and report the error; do not pull, rebase or retry with `--force`.
+
 ## Report
 
 **Checklist**
 
-| Check                  | Status       | Details                                   |
-| ---------------------- | ------------ | ----------------------------------------- |
-| Auto-format (Prettier) | 🔧 / ✅      | "N files reformatted" or "no changes"     |
-| Format                 | ✅ / ❌      | N files                                   |
-| Lint                   | ✅ / ❌      | N errors                                  |
-| Build                  | ✅ / ❌      | N errors                                  |
-| Tests                  | ✅ / ❌ / ⏭️ | "N passed", "N failed" or "no test files" |
-| No comments            | ✅ / ❌      | N found                                   |
-| Commit                 | ✅ / ❌      | short hash, or "Not created"              |
+| Check                  | Status       | Details                                      |
+| ---------------------- | ------------ | -------------------------------------------- |
+| Auto-format (Prettier) | 🔧 / ✅      | "N files reformatted" or "no changes"        |
+| Format                 | ✅ / ❌      | N files                                      |
+| Lint                   | ✅ / ❌      | N errors                                     |
+| Build                  | ✅ / ❌      | N errors                                     |
+| No comments            | ✅ / ❌      | N found                                      |
+| Commit                 | ✅ / ❌      | short hash, or "Not created"                 |
+| Push                   | ✅ / ❌ / ⏭️ | "origin/<branch>", error, or "not requested" |
 
 If anything failed, add an **Errors** table:
 
