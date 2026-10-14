@@ -1,0 +1,14 @@
+<button
+  type="button"
+  pButton
+  class="trigger"
+  aria-label="Menu"
+  aria-haspopup="menu"
+  [rounded]="true"
+  [attr.aria-expanded]="open()"
+  (click)="menu.toggle($event)"
+>
+  <i class="pi pi-bars" pButtonIcon></i>
+</button>
+
+<p-menu #menu [model]="items" [popup]="true" (onShow)="open.set(true)" (onHide)="open.set(false)" />
