@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const usage = `Usage: node ui-check.mjs --url <url> [--sizes 375x667,1280x800] [--click <selector>]...
-  [--measure "<sel1>,<sel2>"] [--out <file.png>] [--logged-out] [--ready <selector>]`;
+  [--measure "<sel1>,<sel2>"] [--trace <selector>] [--out <file.png>] [--logged-out] [--ready <selector>]`;
 
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
@@ -23,6 +23,7 @@ const sizes = option('sizes', option('size', '375x667'))
   .map((size) => size.trim().split('x').map(Number));
 const clickSelectors = args.flatMap((arg, index) => (arg === '--click' ? [args[index + 1]] : []));
 const measureSelectors = option('measure', '');
+const traceSelector = option('trace');
 const out = option('out');
 const readySelector = option('ready', 'app-root > :not(router-outlet)');
 const loggedOut = flag('logged-out');
@@ -169,15 +170,45 @@ for (const [width, height] of sizes) {
   };
   result.clicks = [];
   for (const clickSelector of clickSelectors) {
+    if (traceSelector) {
+      await evaluate(`(() => {
+        window.__uiTrace = [];
+        const start = performance.now();
+        const frame = () => {
+          const el = document.querySelector(${JSON.stringify(traceSelector)});
+          const t = Math.round(performance.now() - start);
+          if (el) {
+            const box = el.getBoundingClientRect();
+            const style = getComputedStyle(el);
+            window.__uiTrace.push({ t, top: +box.top.toFixed(2), left: +box.left.toFixed(2),
+              height: +box.height.toFixed(2), opacity: +(+style.opacity).toFixed(2),
+              transform: style.transform, transformOrigin: style.transformOrigin });
+          } else {
+            window.__uiTrace.push({ t, missing: true });
+          }
+          if (t < 600) requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      })()`);
+    }
     const clicked = await evaluate(
       `(() => { const el = document.querySelector(${JSON.stringify(clickSelector)}); if (!el) return false; el.click(); return true; })()`,
     );
-    await sleep(400);
-    result.clicks.push({
+    await sleep(traceSelector ? 700 : 400);
+    const step = {
       selector: clickSelector,
       ...(clicked ? {} : { error: `No element matches ${clickSelector}` }),
       state: JSON.parse(await evaluate(pageState)),
-    });
+    };
+    if (traceSelector) {
+      const frames = await evaluate('window.__uiTrace');
+      step.trace = frames.filter(
+        (frame, index) =>
+          index === 0 ||
+          JSON.stringify({ ...frame, t: 0 }) !== JSON.stringify({ ...frames[index - 1], t: 0 }),
+      );
+    }
+    result.clicks.push(step);
   }
   result.after = result.clicks.at(-1)?.state;
   result.consoleErrors = consoleErrors;

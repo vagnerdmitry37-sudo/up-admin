@@ -56,6 +56,20 @@ export const NoirPreset = definePreset(Aura, {
       item: {
         padding: '0.875rem 1rem',
       },
+      css: `
+        .p-menu-overlay.p-anchored-overlay-enter-active {
+          animation-name: p-menu-overlay-fade-in;
+        }
+        .p-menu-overlay.p-anchored-overlay-leave-active {
+          animation-name: p-menu-overlay-fade-out;
+        }
+        @keyframes p-menu-overlay-fade-in {
+          from { opacity: 0; }
+        }
+        @keyframes p-menu-overlay-fade-out {
+          to { opacity: 0; }
+        }
+      `,
     },
   },
 });

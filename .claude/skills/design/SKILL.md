@@ -31,6 +31,7 @@ Icons come from **`@openng/icons`** (loaded once in `src/styles.scss`). They use
 - **Icon-only buttons.** `pButton` becomes a round icon-only button only when the `pButtonIcon` element is a **direct child in the same template**: `<button pButton [rounded]="true"><i class="pi pi-bars" pButtonIcon></i></button>`. If the icon comes from an `ng-template` or `ngTemplateOutlet`, the library does not see it and the button turns into an oval.
 - **Button size.** Size an icon-only button with its token, `--p-button-icon-only-width: 2.75rem;`, not with `width`/`height`. The library sets both from the token and stays a circle.
 - **Popup overlays** (popup menus, overlay panels, selects and similar) render inside their component by default. Near the bottom of the screen they then open below the trigger, make the page taller and scroll it. Always set `appendTo="body"` so the library keeps them inside the viewport. Component styles do not reach an overlay attached to `<body>`, so style it through the preset.
+- **Overlay animation.** The library opens overlays by scaling from 93% while fading in, so they visibly grow and their edges shift. The popup menu only fades: see the `css` override for `menu` in `noir-preset.ts`. Do the same for other overlays that look jumpy.
 
 ## Rule 2: Responsive design
 

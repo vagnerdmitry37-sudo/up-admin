@@ -67,6 +67,8 @@ Do not pipe `ng lint` into `tail -1`, because its last line is blank. The build 
 
   It fakes a logged-in session (`--logged-out` for the opposite), waits until the app has rendered, and prints JSON per size: scroll, horizontal overflow, element boxes and console errors. Judge from the numbers first, then `Read` **one** screenshot (the narrowest) to confirm the look. Read more only if the numbers show a problem.
 
+- `--click` can repeat (for example open, then close). For animation glitches such as blinking or shifting, add `--trace <selector>`: it records the element's box, opacity and transform on every frame after each click, so you can see exactly what moves.
+
 **Target flow for an S task, about five tool calls:** (1) read the target file and any library `.d.ts` in parallel, and start the 4300 server if it is not up; (2) edit; (3) one Bash call with the code checks plus `ui-check`; (4) `Read` one screenshot if the change is visual; (5) report.
 
 If a check cannot run, say which and why. Never report something as working without evidence.
