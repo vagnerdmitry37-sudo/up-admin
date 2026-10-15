@@ -5,3 +5,28 @@
 .trigger {
   --p-button-icon-only-width: 2.8rem;
 }
+
+.icon {
+  transition:
+    opacity 200ms ease,
+    rotate 200ms ease;
+}
+
+.close {
+  position: absolute;
+}
+
+.hidden {
+  opacity: 0;
+  rotate: 90deg;
+}
+
+.close.hidden {
+  rotate: -90deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    transition: none;
+  }
+}

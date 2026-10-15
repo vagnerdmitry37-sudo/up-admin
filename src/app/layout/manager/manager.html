@@ -6,9 +6,17 @@
   aria-haspopup="menu"
   [rounded]="true"
   [attr.aria-expanded]="open()"
-  (click)="menu.toggle($event)"
+  (click)="toggle(menu, $event)"
 >
-  <i class="pi pi-bars" pButtonIcon></i>
+  <i class="pi pi-bars icon" aria-hidden="true" pButtonIcon [class.hidden]="open()"></i>
+  <i class="pi pi-times icon close" aria-hidden="true" pButtonIcon [class.hidden]="!open()"></i>
 </button>
 
-<p-menu #menu [model]="items" [popup]="true" (onShow)="open.set(true)" (onHide)="open.set(false)" />
+<p-menu
+  #menu
+  appendTo="body"
+  [model]="items"
+  [popup]="true"
+  (onShow)="open.set(true)"
+  (onHide)="open.set(false)"
+/>

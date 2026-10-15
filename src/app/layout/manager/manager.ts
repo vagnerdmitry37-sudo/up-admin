@@ -16,4 +16,9 @@ export class Manager {
     { label: 'Orders', icon: OpenngIcons.RECEIPT, routerLink: '/orders' },
     { label: 'Settings', icon: OpenngIcons.COG, routerLink: '/settings' },
   ];
+
+  protected toggle(menu: Menu, event: MouseEvent): void {
+    this.open.update((open) => !open);
+    menu.toggle(event);
+  }
 }
