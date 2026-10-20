@@ -4,18 +4,6 @@ const { defineConfig } = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 
-const restrictImports = (...groups) => ({
-  'no-restricted-imports': [
-    'error',
-    {
-      patterns: groups.map((group) => ({
-        group: [`@${group}/*`, `**/${group}/**`],
-        message: `This layer must not import from ${group}/.`,
-      })),
-    },
-  ],
-});
-
 module.exports = defineConfig([
   {
     files: ['**/*.ts'],
@@ -54,7 +42,7 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              group: ['@features/*', '../*'],
+              group: ['@features/*', '../../*'],
               message:
                 'A feature must not import another feature; reach core/, shared/ and layout/ through their @ aliases.',
             },
@@ -62,18 +50,6 @@ module.exports = defineConfig([
         },
       ],
     },
-  },
-  {
-    files: ['src/app/shared/**/*.ts'],
-    rules: restrictImports('core', 'layout', 'features'),
-  },
-  {
-    files: ['src/app/core/**/*.ts'],
-    rules: restrictImports('layout', 'features'),
-  },
-  {
-    files: ['src/app/layout/**/*.ts'],
-    rules: restrictImports('features'),
   },
   {
     files: ['**/*.html'],

@@ -14,7 +14,7 @@ export class Manager {
   protected readonly open = signal(false);
   protected readonly items: MenuItem[] = [
     { label: 'Orders', icon: OpenngIcons.RECEIPT, routerLink: '/orders' },
-    { label: 'Settings', icon: OpenngIcons.COG, routerLink: '/settings' },
+    { label: 'Profile', icon: OpenngIcons.USER, routerLink: '/profile' },
   ].map((item) => ({ ...item, command: () => this.open.set(false) }));
 
   protected toggle(menu: Menu, event: MouseEvent): void {

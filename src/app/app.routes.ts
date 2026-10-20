@@ -26,9 +26,10 @@ export const routes: Routes = [
         loadComponent: () => import('@features/orders/orders-page').then((m) => m.OrdersPage),
       },
       {
-        path: 'settings',
-        title: 'Settings · UP',
-        loadComponent: () => import('@features/settings/settings-page').then((m) => m.SettingsPage),
+        path: 'profile',
+        title: 'Profile · UP',
+        loadComponent: () =>
+          import('@features/profile/profile-page/profile-page').then((m) => m.ProfilePage),
       },
       {
         path: '**',

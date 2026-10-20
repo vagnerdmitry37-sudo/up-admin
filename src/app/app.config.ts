@@ -6,6 +6,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { authInterceptor } from '@core/auth.interceptor';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
 import { provideOptimus } from '@openng/optimus-ui/config';
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([])),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideOptimus({ theme: { preset: NoirPreset } }),
     provideAppInitializer(() => inject(SessionService).restore()),
   ],
