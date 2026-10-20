@@ -8,13 +8,12 @@ interface AccessTokenResponse {
   expiresAt: string;
 }
 
-const rejectedCredentialStatuses = [400, 401];
-
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   private readonly http = inject(HttpClient);
   private readonly authUrl = `${inject(API_BASE_URL)}/auth`;
   private readonly token = signal<string | null>(null);
+  private refreshing: Promise<string | null> | null = null;
 
   readonly accessToken = this.token.asReadonly();
   readonly isAuthenticated = computed(() => this.token() !== null);
@@ -24,19 +23,20 @@ export class SessionService {
       await this.requestToken('login', { email, password });
       return true;
     } catch (error) {
-      if (error instanceof HttpErrorResponse && rejectedCredentialStatuses.includes(error.status)) {
+      if (this.isRejectedCredential(error)) {
         return false;
       }
       throw error;
     }
   }
 
-  async restore(): Promise<void> {
-    try {
-      await this.requestToken('refresh', {});
-    } catch {
-      this.token.set(null);
-    }
+  restore = () => this.refresh().catch(() => null);
+
+  refresh(): Promise<string | null> {
+    this.refreshing ??= this.requestRefresh().finally(() => {
+      this.refreshing = null;
+    });
+    return this.refreshing;
   }
 
   async logout(): Promise<void> {
@@ -47,10 +47,28 @@ export class SessionService {
     }
   }
 
-  private async requestToken(endpoint: 'login' | 'refresh', body: object): Promise<void> {
-    const response = await firstValueFrom(
+  private async requestRefresh(): Promise<string | null> {
+    try {
+      return await this.requestToken('refresh', {});
+    } catch (error) {
+      if (!this.isRejectedCredential(error)) {
+        throw error;
+      }
+      this.token.set(null);
+      return null;
+    }
+  }
+
+  private async requestToken(endpoint: 'login' | 'refresh', body: object): Promise<string> {
+    const { accessToken } = await firstValueFrom(
       this.http.post<AccessTokenResponse>(`${this.authUrl}/${endpoint}`, body),
     );
-    this.token.set(response.accessToken);
+    this.token.set(accessToken);
+    return accessToken;
+  }
+
+  private isRejectedCredential(error: unknown) {
+    const rejectedCredentialStatuses = [400, 401];
+    return error instanceof HttpErrorResponse && rejectedCredentialStatuses.includes(error.status);
   }
 }
