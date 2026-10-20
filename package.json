@@ -10,7 +10,8 @@
     "test:watch": "ng test",
     "lint": "ng lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "generate:api": "openapi-typescript ../UP/src/UP.Api/openapi/UP.Api.json -o src/app/core/api/schema.ts && prettier --write src/app/core/api/schema.ts"
   },
   "private": true,
   "engines": {
@@ -39,9 +40,15 @@
     "angular-eslint": "22.5.0",
     "eslint": "^10.9.1",
     "jsdom": "^30.0.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "8.69.0",
     "vitest": "^5.0.0"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
-import { UserProfile } from '../user-profile';
+import { UserProfile } from '@core/api/models';
 
 @Component({
   selector: 'app-profile-page',

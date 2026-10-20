@@ -2,11 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
 import { firstValueFrom } from 'rxjs';
-
-interface AccessTokenResponse {
-  accessToken: string;
-  expiresAt: string;
-}
+import { AccessToken } from './api/models';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
@@ -61,7 +57,7 @@ export class SessionService {
 
   private async requestToken(endpoint: 'login' | 'refresh', body: object): Promise<string> {
     const { accessToken } = await firstValueFrom(
-      this.http.post<AccessTokenResponse>(`${this.authUrl}/${endpoint}`, body),
+      this.http.post<AccessToken>(`${this.authUrl}/${endpoint}`, body),
     );
     this.token.set(accessToken);
     return accessToken;

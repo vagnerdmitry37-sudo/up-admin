@@ -1,7 +1,5 @@
 <h1>Profile</h1>
 @if (profile.hasValue()) {
-  <p>{{ profile.value().name }}</p>
-  <p>{{ profile.value().email }}</p>
 } @else if (profile.error()) {
   <p>Could not load the profile.</p>
 } @else {
