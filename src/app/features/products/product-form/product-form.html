@@ -1,0 +1,36 @@
+<app-form-shell
+  [heading]="heading()"
+  [form]="form"
+  submitLabel="Create product"
+  [submitting]="submitting()"
+  [cancelLink]="cancelable() ? '/products' : undefined"
+  (submitted)="submit()"
+>
+  <div class="row">
+    <app-select-field
+      label="Type"
+      [control]="form.controls.type"
+      [options]="typeOptions"
+      [messages]="{ required: 'Select a type.' }"
+    />
+    <app-number-field
+      label="Price"
+      [control]="form.controls.price"
+      [min]="0"
+      [fractionDigits]="2"
+      [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
+    />
+  </div>
+
+  <app-text-field
+    label="Name"
+    [control]="form.controls.name"
+    [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
+  />
+
+  <app-textarea-field
+    label="Description"
+    [control]="form.controls.description"
+    [messages]="{ required: 'Enter a description.', maxlength: 'Use 5000 characters or fewer.' }"
+  />
+</app-form-shell>

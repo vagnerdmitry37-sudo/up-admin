@@ -40,6 +40,14 @@ which injects the same directive and renders the in-field label and a reserved o
 text, so errors never shift the layout. Keep messages short enough for one line at 320px. A new kind
 of field follows the same three steps.
 
+Wrap every form in `<app-form-shell>` from `@shared/form-shell/form-shell` (`FormShell`). It renders
+the `h1` heading, the `<form>`, and the actions row (optional Cancel link and the submit
+`app-button`). Inputs: `heading`, `[form]` (the `FormGroup`), `submitLabel`, `submitIcon` (default
+`pi pi-check`), `submitting`, `cancelLink` (Cancel shows only when set). It disables submit while the
+form is invalid, marks all fields touched on an invalid submit, and emits `(submitted)` only for a
+valid form. Project the fields as its content; layout inside the fields area (such as two-column
+rows) stays in the feature form.
+
 ### Icons
 
 Icons come from **`@openng/icons`** (loaded once in `src/styles.scss`). They use the `pi pi-{name}` classes; the full list is at https://optimus.openng.org/icons.
@@ -66,6 +74,7 @@ Every component must look good and be fully usable on all three device classes:
 | Desktop | 1024px and up   | `@media (min-width: 1024px)` |
 
 - **Mobile first.** Write the base styles for the smallest screen, then add `min-width` queries for larger ones. Do not use `max-width` queries unless there is no other way.
+- **Pages fill the viewport.** The app is designed mobile first, so page content and forms use the full width of the shell's content area. The shell (`.content` in `src/app/layout/shell.scss`) owns the only padding around a page; pages and their components add no outer padding of their own. Do not wrap a page or form in a card, border or shadow, and do not center it in a narrow `max-width` box.
 - **Use only these breakpoints.** Do not invent new ones per component.
 - **Support 320px.** Nothing may scroll horizontally at 320px width. Wide content (tables, code, long text) scrolls inside its own container (`overflow-x: auto`), never the page.
 - **Fluid layout.** Use flexbox and grid with `gap`, `%`, `fr`, `minmax()`, `auto-fit`/`auto-fill`. Avoid fixed `width`/`height` in px for layout boxes; use `max-width` with `width: 100%` instead.

@@ -1,0 +1,18 @@
+<h1 class="title">{{ heading() }}</h1>
+
+<form class="form" [formGroup]="form()" (ngSubmit)="submit()" novalidate>
+  <ng-content />
+
+  <div class="actions">
+    @if (cancelLink(); as link) {
+      <p-button label="Cancel" severity="secondary" variant="text" [routerLink]="link" />
+    }
+    <app-button
+      type="submit"
+      [label]="submitLabel()"
+      [icon]="submitIcon()"
+      [disabled]="invalid()"
+      [loading]="submitting()"
+    />
+  </div>
+</form>

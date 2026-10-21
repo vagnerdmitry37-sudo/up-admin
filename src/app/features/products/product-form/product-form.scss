@@ -1,0 +1,14 @@
+.row {
+  display: grid;
+  gap: 0.25rem 0.75rem;
+}
+
+.row > * {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
