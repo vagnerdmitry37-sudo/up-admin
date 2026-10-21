@@ -21,8 +21,9 @@ const ACTIONS: Action[] = [
   { action: 'edit', label: 'Edit', icon: OpenngIcons.PENCIL },
   { action: 'save', label: 'Save', icon: OpenngIcons.SAVE },
   { action: 'delete', label: 'Delete', icon: OpenngIcons.TRASH },
-  { action: 'cancel', label: 'Cancel', icon: OpenngIcons.TIMES_CIRCLE },
 ];
+
+const CANCEL = { label: 'Cancel', icon: OpenngIcons.TIMES_CIRCLE };
 
 @Component({
   selector: 'app-edit-menu',
@@ -38,9 +39,9 @@ export class EditMenu {
   protected readonly open = signal(false);
   protected readonly items = computed<MenuItem[]>(() => {
     const handlers = this.editActions.handlers();
+    const cancelling = this.editActions.cancelling();
     return ACTIONS.map(({ action, label, icon }) => ({
-      label,
-      icon,
+      ...(action === cancelling ? CANCEL : { label, icon }),
       visible: Boolean(handlers[action]),
       command: () => handlers[action]?.(),
     }));

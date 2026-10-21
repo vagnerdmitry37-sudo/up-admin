@@ -49,7 +49,9 @@ export class ProductForm {
   protected readonly submitting = signal(false);
 
   constructor() {
-    inject(EditActionsService).register(() => ({ save: () => this.shell().submit() }));
+    inject(EditActionsService).register({
+      save: () => this.shell().submit(),
+    });
   }
 
   protected async submit(): Promise<void> {

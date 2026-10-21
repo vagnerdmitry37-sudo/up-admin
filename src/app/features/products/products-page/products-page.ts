@@ -21,8 +21,8 @@ export class ProductsPage {
   protected readonly products = httpResource<Product[]>(() => this.url);
 
   constructor() {
-    inject(EditActionsService).register(() => ({
+    inject(EditActionsService).register({
       create: () => this.router.navigate(['/products/new']),
-    }));
+    });
   }
 }

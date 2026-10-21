@@ -46,15 +46,15 @@ fields as its content; layout inside the fields area (such as two-column rows) s
 feature form.
 
 **Content actions live only in the edit menu.** Never put Create, Edit, Save, Delete or Cancel
-buttons in a page or form; the footer's edit menu is the only place for them. Cancel that leaves the screen comes
-from the route: add `data: { cancel: '/target' }` to the route in `app.routes.ts` and the menu shows
-Cancel there. A component registers `cancel` itself only when it means more than leaving (such as
-discarding an edit mode); a registered handler wins over the route. A form registers Save in its
-constructor and calls the shell's public
+buttons in a page or form; the footer's edit menu is the only place for them. Cancel is not a
+separate action: the action that started the operation turns into Cancel in its own slot. Declare it
+on the route in `app.routes.ts`, for example
+`data: { cancel: { action: 'create', url: '/products' } satisfies RouteCancel }`; on that route the
+Create slot shows Cancel and navigates to the URL. A form registers Save in its constructor and calls
+the shell's public
 `submit()`, which marks all fields touched on an invalid form and emits `(submitted)` only for a
-valid one: `inject(EditActionsService).register(() => ({ save: () => this.shell().submit() }))`
-with `shell = viewChild.required(FormShell)`. `register` takes only a function; it is read after
-inputs are set and re-read whenever the signals it uses change.
+valid one: `inject(EditActionsService).register({ save: () => this.shell().submit() })` with
+`shell = viewChild.required(FormShell)`.
 
 ### Icons
 
