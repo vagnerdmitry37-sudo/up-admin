@@ -18,6 +18,28 @@ The app's UI library is **Optimus UI** (`@openng/optimus-ui`, docs: https://opti
 - **Imports.** Import each component from its own entry point, for example `Button` from `@openng/optimus-ui/button` and `Menu` from `@openng/optimus-ui/menu`. Put it in the component's `imports` array.
 - **Theme.** Colors and component look come from the `NoirPreset` in `src/app/core/noir-preset.ts` (based on Aura). Change a library component's look for the whole app through the preset's `components` section, not with global CSS overrides. For one component, override its `--p-*` CSS variable in the component's `.scss`.
 
+### Buttons
+
+Every action button is `<app-button>` from `@shared/button/button` (`AppButton`), never a direct
+`p-button`. It is the standard black Optimus button. Inputs: `label` (required), `icon` (optional,
+always shown before the label, e.g. `icon="pi pi-check"`), `type` (`button` default or `submit`),
+`disabled`, `loading`, `fluid`. Navigate with `routerLink` on the element and react with `(click)`.
+Give every button a fitting icon. Exceptions that stay Optimus: quiet text buttons such as Cancel
+or Log out (`p-button` with `variant="text"`) and icon-only buttons (`pButton` + `pButtonIcon`).
+
+### Form fields
+
+Build form fields from `@shared/form-fields/`, never with raw Optimus inputs: `app-text-field`,
+`app-textarea-field` (`rows`), `app-number-field` (`min`, `fractionDigits`) and `app-select-field`
+(`options: SelectOption<T>[]`). Each takes `label`, `[control]="form.controls.x"` and
+`[messages]="{ required: '…', maxlength: '…' }"` (keys are the validator error names). Shared logic
+is composed, not inherited: each field lists `hostDirectives: [formFieldHost]`, which attaches the
+`FormField` directive (those three inputs, touched/error state as signals, ids, which message to
+show), and reads it with `inject(FormField)`. Its template wraps the control in `<app-field-frame>`,
+which injects the same directive and renders the in-field label and a reserved one-line red error
+text, so errors never shift the layout. Keep messages short enough for one line at 320px. A new kind
+of field follows the same three steps.
+
 ### Icons
 
 Icons come from **`@openng/icons`** (loaded once in `src/styles.scss`). They use the `pi pi-{name}` classes; the full list is at https://optimus.openng.org/icons.

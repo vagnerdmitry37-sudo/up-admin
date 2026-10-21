@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.error {
+  min-height: 1lh;
+  color: var(--p-form-field-invalid-border-color);
+}

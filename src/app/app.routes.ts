@@ -32,6 +32,14 @@ export const routes: Routes = [
           import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
       },
       {
+        path: 'products/new',
+        title: 'New product · UP',
+        loadComponent: () =>
+          import('@features/products/new-product-page/new-product-page').then(
+            (m) => m.NewProductPage,
+          ),
+      },
+      {
         path: 'profile',
         title: 'Profile · UP',
         loadComponent: () =>

@@ -1,0 +1,13 @@
+<app-field-frame>
+  <p-inputnumber
+    [inputId]="field.inputId"
+    [formControl]="field.control()"
+    mode="decimal"
+    [minFractionDigits]="fractionDigits()"
+    [maxFractionDigits]="fractionDigits()"
+    [min]="min()"
+    fluid
+    [invalid]="field.invalid()"
+    [ariaDescribedBy]="field.errorId"
+  />
+</app-field-frame>

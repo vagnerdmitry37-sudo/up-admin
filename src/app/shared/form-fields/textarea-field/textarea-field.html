@@ -1,0 +1,12 @@
+<app-field-frame>
+  <textarea
+    pTextarea
+    [id]="field.inputId"
+    [formControl]="field.control()"
+    [rows]="rows()"
+    autoResize
+    fluid
+    [invalid]="field.invalid()"
+    [attr.aria-describedby]="field.errorId"
+  ></textarea>
+</app-field-frame>

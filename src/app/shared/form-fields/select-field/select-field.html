@@ -1,0 +1,12 @@
+<app-field-frame>
+  <p-select
+    [inputId]="field.inputId"
+    [formControl]="field.control()"
+    [options]="options()"
+    optionLabel="label"
+    optionValue="value"
+    appendTo="body"
+    fluid
+    [invalid]="field.invalid()"
+  />
+</app-field-frame>

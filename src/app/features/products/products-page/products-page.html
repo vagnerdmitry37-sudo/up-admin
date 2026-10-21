@@ -1,14 +1,23 @@
-<h1>Products</h1>
-@if (products.hasValue()) {
-  <ul>
-    @for (product of products.value(); track product.id) {
-      <li>{{ product.name }} · {{ product.type }} · {{ product.price | number: '1.2-2' }}</li>
-    } @empty {
-      <li>No products yet.</li>
-    }
-  </ul>
-} @else if (products.error()) {
-  <p>Could not load products.</p>
+@if (products.hasValue() && products.value().length === 0) {
+  <app-product-form
+    heading="Add your first product"
+    [cancelable]="false"
+    (created)="products.reload()"
+  />
 } @else {
-  <p>Loading…</p>
+  <header class="header">
+    <h1 class="title">Products</h1>
+    <app-button label="New product" icon="pi pi-plus" routerLink="/products/new" />
+  </header>
+  @if (products.hasValue()) {
+    <ul>
+      @for (product of products.value(); track product.id) {
+        <li>{{ product.name }} · {{ product.type }} · {{ product.price | number: '1.2-2' }}</li>
+      }
+    </ul>
+  } @else if (products.error()) {
+    <p>Could not load products.</p>
+  } @else {
+    <p>Loading…</p>
+  }
 }

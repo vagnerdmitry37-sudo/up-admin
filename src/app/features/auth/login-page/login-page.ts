@@ -2,15 +2,15 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SessionService } from '@core/session.service';
-import { Button } from '@openng/optimus-ui/button';
 import { Card } from '@openng/optimus-ui/card';
 import { InputText } from '@openng/optimus-ui/inputtext';
 import { Message } from '@openng/optimus-ui/message';
 import { Password } from '@openng/optimus-ui/password';
+import { AppButton } from '@shared/button/button';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, Button, Card, InputText, Message, Password],
+  imports: [ReactiveFormsModule, AppButton, Card, InputText, Message, Password],
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,10 @@
+<app-field-frame>
+  <input
+    pInputText
+    [id]="field.inputId"
+    [formControl]="field.control()"
+    fluid
+    [invalid]="field.invalid()"
+    [attr.aria-describedby]="field.errorId"
+  />
+</app-field-frame>

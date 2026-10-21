@@ -39,7 +39,9 @@ Before building something new, look for an existing piece to copy: an existing p
 
 ## 4. Implement
 
-- Make the smallest complete change: wire it in (route, import, menu entry), handle the error and empty states, and nothing beyond the request.
+- **Do only what was asked, one step at a time.** No extra features, refactors, spacing tweaks or "while I'm here" changes. If you see something worth doing, mention it as a follow-up in your reply and leave it.
+- **Shared concerns are app-wide, never per component.** Error handling, notifications and similar behavior get one global implementation in `core/` or `shared/`. Do not write component-specific error handling (no local `catch` with custom messages); let errors reach the global handling.
+- Make the smallest complete change: wire it in (route, import, menu entry), handle the empty state, and nothing beyond the request.
 - Reuse existing services, components and tokens. Add a dependency only when the platform and Optimus have nothing for it, and say so in your reply.
 - Write whole files with `Write` when most of a file changes; use `Edit` for targeted changes. Batch independent edits in one turn.
 - If a file changed on disk since you read it, re-read it before overwriting. The user often edits in parallel, so keep their changes.

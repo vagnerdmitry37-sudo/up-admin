@@ -71,5 +71,12 @@ export const NoirPreset = definePreset(Aura, {
         }
       `,
     },
+    select: {
+      css: `
+        .p-select-label {
+          line-height: normal;
+        }
+      `,
+    },
   },
 });
