@@ -2,10 +2,4 @@
 
 <form class="form" [formGroup]="form()" (ngSubmit)="submit()" novalidate>
   <ng-content />
-
-  @if (cancelLink(); as link) {
-    <div class="actions">
-      <p-button label="Cancel" severity="secondary" variant="text" [routerLink]="link" />
-    </div>
-  }
 </form>

@@ -1,10 +1,6 @@
 @if (products.hasValue()) {
   @if (products.value().length === 0) {
-    <app-product-form
-      heading="Create your first product"
-      [cancelable]="false"
-      (created)="products.reload()"
-    />
+    <app-product-form heading="Create your first product" (created)="products.reload()" />
   } @else {
     <header class="header">
       <h1 class="title">Products</h1>

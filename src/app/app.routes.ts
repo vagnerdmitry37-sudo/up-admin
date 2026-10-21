@@ -34,6 +34,7 @@ export const routes: Routes = [
       {
         path: 'products/new',
         title: 'New product · UP',
+        data: { cancel: '/products' },
         loadComponent: () =>
           import('@features/products/new-product-page/new-product-page').then(
             (m) => m.NewProductPage,

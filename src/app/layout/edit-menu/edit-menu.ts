@@ -10,11 +10,18 @@ import { EditAction, EditActionsService } from '@core/edit-actions.service';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
 
-const ACTIONS: { action: EditAction; label: string; icon: string }[] = [
+interface Action {
+  action: EditAction;
+  label: string;
+  icon: string;
+}
+
+const ACTIONS: Action[] = [
   { action: 'create', label: 'Create', icon: OpenngIcons.PLUS },
   { action: 'edit', label: 'Edit', icon: OpenngIcons.PENCIL },
   { action: 'save', label: 'Save', icon: OpenngIcons.SAVE },
   { action: 'delete', label: 'Delete', icon: OpenngIcons.TRASH },
+  { action: 'cancel', label: 'Cancel', icon: OpenngIcons.TIMES_CIRCLE },
 ];
 
 @Component({
@@ -34,7 +41,7 @@ export class EditMenu {
     return ACTIONS.map(({ action, label, icon }) => ({
       label,
       icon,
-      disabled: !handlers[action],
+      visible: Boolean(handlers[action]),
       command: () => handlers[action]?.(),
     }));
   });

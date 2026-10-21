@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { Button } from '@openng/optimus-ui/button';
 
 @Component({
   selector: 'app-form-shell',
-  imports: [ReactiveFormsModule, RouterLink, Button],
+  imports: [ReactiveFormsModule],
   templateUrl: './form-shell.html',
   styleUrl: './form-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,7 +11,6 @@ import { Button } from '@openng/optimus-ui/button';
 export class FormShell {
   readonly heading = input.required<string>();
   readonly form = input.required<FormGroup>();
-  readonly cancelLink = input<string>();
   readonly submitted = output();
 
   submit(): void {

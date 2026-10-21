@@ -41,16 +41,20 @@ text, so errors never shift the layout. Keep messages short enough for one line 
 of field follows the same three steps.
 
 Wrap every form in `<app-form-shell>` from `@shared/form-shell/form-shell` (`FormShell`). It renders
-the `h1` heading, the `<form>` and an optional Cancel link. Inputs: `heading`, `[form]` (the
-`FormGroup`), `cancelLink` (Cancel shows only when set). Project the fields as its content; layout
-inside the fields area (such as two-column rows) stays in the feature form.
+the `h1` heading and the `<form>`. Inputs: `heading` and `[form]` (the `FormGroup`). Project the
+fields as its content; layout inside the fields area (such as two-column rows) stays in the
+feature form.
 
-**Content actions live only in the edit menu.** Never put Create, Edit, Save or Delete buttons in a
-page or form; the footer's edit menu is the only place for them. A form registers Save in its
-constructor and calls the shell's public `submit()`, which marks all fields touched on an invalid
-form and emits `(submitted)` only for a valid one:
-`inject(EditActionsService).register({ save: () => this.shell().submit() })` with
-`shell = viewChild.required(FormShell)`.
+**Content actions live only in the edit menu.** Never put Create, Edit, Save, Delete or Cancel
+buttons in a page or form; the footer's edit menu is the only place for them. Cancel that leaves the screen comes
+from the route: add `data: { cancel: '/target' }` to the route in `app.routes.ts` and the menu shows
+Cancel there. A component registers `cancel` itself only when it means more than leaving (such as
+discarding an edit mode); a registered handler wins over the route. A form registers Save in its
+constructor and calls the shell's public
+`submit()`, which marks all fields touched on an invalid form and emits `(submitted)` only for a
+valid one: `inject(EditActionsService).register(() => ({ save: () => this.shell().submit() }))`
+with `shell = viewChild.required(FormShell)`. `register` takes only a function; it is read after
+inputs are set and re-read whenever the signals it uses change.
 
 ### Icons
 

@@ -71,6 +71,16 @@ export const NoirPreset = definePreset(Aura, {
         }
       `,
     },
+    speeddial: {
+      css: `
+        .p-speeddial-item.p-hidden {
+          visibility: hidden;
+        }
+        .p-speeddial-action .pi-reply {
+          transform: scaleX(-1);
+        }
+      `,
+    },
     select: {
       css: `
         .p-select-label {

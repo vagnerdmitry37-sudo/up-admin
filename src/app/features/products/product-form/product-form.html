@@ -1,9 +1,4 @@
-<app-form-shell
-  [heading]="heading()"
-  [form]="form"
-  [cancelLink]="cancelable() ? '/products' : undefined"
-  (submitted)="submit()"
->
+<app-form-shell [heading]="heading()" [form]="form" (submitted)="submit()">
   <div class="row">
     <app-select-field
       label="Type"
