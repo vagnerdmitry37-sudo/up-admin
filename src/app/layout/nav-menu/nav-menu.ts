@@ -4,13 +4,13 @@ import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Menu } from '@openng/optimus-ui/menu';
 
 @Component({
-  selector: 'app-manager',
+  selector: 'app-nav-menu',
   imports: [ButtonDirective, ButtonIcon, Menu],
-  templateUrl: './manager.html',
-  styleUrl: './manager.scss',
+  templateUrl: './nav-menu.html',
+  styleUrl: './nav-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Manager {
+export class NavMenu {
   protected readonly open = signal(false);
   protected readonly items: MenuItem[] = [
     { label: 'Orders', icon: OpenngIcons.RECEIPT, routerLink: '/orders' },

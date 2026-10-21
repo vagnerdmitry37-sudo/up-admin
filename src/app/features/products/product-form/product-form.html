@@ -1,8 +1,6 @@
 <app-form-shell
   [heading]="heading()"
   [form]="form"
-  submitLabel="Create product"
-  [submitting]="submitting()"
   [cancelLink]="cancelable() ? '/products' : undefined"
   (submitted)="submit()"
 >

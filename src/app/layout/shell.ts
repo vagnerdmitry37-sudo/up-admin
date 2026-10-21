@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { SessionService } from '@core/session.service';
 import { Toolbar } from '@openng/optimus-ui/toolbar';
-import { Button } from '@openng/optimus-ui/button';
-import { Manager } from './manager/manager';
+import { EditMenu } from './edit-menu/edit-menu';
+import { NavMenu } from './nav-menu/nav-menu';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterOutlet, Toolbar, Manager, Button],
+  imports: [RouterOutlet, Toolbar, NavMenu, EditMenu],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

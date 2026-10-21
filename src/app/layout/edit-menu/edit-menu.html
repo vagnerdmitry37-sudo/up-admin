@@ -1,0 +1,12 @@
+<p-speeddial
+  [model]="items()"
+  type="quarter-circle"
+  direction="up-left"
+  [radius]="120"
+  [style]="{ position: 'absolute', right: 0, bottom: 0 }"
+  [visible]="open()"
+  [hideOnClickOutside]="false"
+  ariaLabel="Edit actions"
+  (onClick)="toggle()"
+  (onHide)="keepOpen()"
+/>

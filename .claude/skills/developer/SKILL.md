@@ -25,9 +25,10 @@ Decide the size before doing anything else, and scale every later step to it.
 - **Conventions:** file `x-page.ts`, `.html`, `.scss` side by side; class `XPage` without the `Component` suffix; selector `app-x-page`; `inject()` instead of constructor injection; `protected readonly` for template members; `private` for the rest. Single-line methods use arrow functions: `getProfile = () => this.http.get(...)`.
 - **No comments** in `.ts`, `.html` or `.scss`. Names carry the meaning.
 - **Routing:** the public `login` route uses `guestGuard`. Every other page is a child of the `''` route, which uses `authGuard` and renders `Shell`. Add new pages there.
+- **Edit menu:** the footer's right corner holds `EditMenu` (an Optimus speed dial with Create, Edit, Save, Delete). A page enables actions by calling `inject(EditActionsService).register({ save: () => ..., delete: () => ... })` in its constructor; they are cleared when the page is destroyed, and unregistered actions show disabled. Registrations form a stack: only the most recent one is active, so a form inside a page replaces the page's actions while it exists and the page's actions return when it is destroyed.
 - **Session:** `SessionService` keeps the access token in a signal. `restore()` calls `POST /api/auth/refresh` at startup. The API is proxied to `https://localhost:7215` and is usually not running locally.
 
-Before building something new, look for an existing piece to copy: an existing page for a new page, `Shell` or `Manager` for layout parts, `SessionService` for a service.
+Before building something new, look for an existing piece to copy: an existing page for a new page, `Shell` or `NavMenu` for layout parts, `SessionService` for a service.
 
 ## 3. Investigate efficiently
 

@@ -41,12 +41,16 @@ text, so errors never shift the layout. Keep messages short enough for one line 
 of field follows the same three steps.
 
 Wrap every form in `<app-form-shell>` from `@shared/form-shell/form-shell` (`FormShell`). It renders
-the `h1` heading, the `<form>`, and the actions row (optional Cancel link and the submit
-`app-button`). Inputs: `heading`, `[form]` (the `FormGroup`), `submitLabel`, `submitIcon` (default
-`pi pi-check`), `submitting`, `cancelLink` (Cancel shows only when set). It disables submit while the
-form is invalid, marks all fields touched on an invalid submit, and emits `(submitted)` only for a
-valid form. Project the fields as its content; layout inside the fields area (such as two-column
-rows) stays in the feature form.
+the `h1` heading, the `<form>` and an optional Cancel link. Inputs: `heading`, `[form]` (the
+`FormGroup`), `cancelLink` (Cancel shows only when set). Project the fields as its content; layout
+inside the fields area (such as two-column rows) stays in the feature form.
+
+**Content actions live only in the edit menu.** Never put Create, Edit, Save or Delete buttons in a
+page or form; the footer's edit menu is the only place for them. A form registers Save in its
+constructor and calls the shell's public `submit()`, which marks all fields touched on an invalid
+form and emits `(submitted)` only for a valid one:
+`inject(EditActionsService).register({ save: () => this.shell().submit() })` with
+`shell = viewChild.required(FormShell)`.
 
 ### Icons
 

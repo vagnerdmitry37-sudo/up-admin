@@ -5,15 +5,11 @@
 <footer>
   <p-toolbar class="footer">
     <ng-template #start>
-      <a class="brand" routerLink="/">UP</a>
-    </ng-template>
-
-    <ng-template #center>
-      <p-button label="Log out" severity="secondary" text (onClick)="logout()" />
+      <app-nav-menu />
     </ng-template>
 
     <ng-template #end>
-      <app-manager />
+      <app-edit-menu />
     </ng-template>
   </p-toolbar>
 </footer>
