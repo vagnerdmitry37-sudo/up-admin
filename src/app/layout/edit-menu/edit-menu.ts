@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -36,11 +37,14 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 })
 export class EditMenu {
   private readonly editActions = inject(EditActionsService);
-  private readonly dial = viewChild.required(SpeedDial);
+  private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
 
   protected readonly open = signal(false);
   protected readonly suggested = this.editActions.suggested;
+  protected readonly hasActions = computed(
+    () => Object.keys(this.editActions.handlers()).length > 0,
+  );
   protected readonly items = computed<MenuItem[]>(() => {
     const handlers = this.editActions.handlers();
     const cancelling = this.editActions.cancelling();
@@ -55,6 +59,14 @@ export class EditMenu {
       );
     });
   });
+
+  constructor() {
+    effect(() => {
+      if (!this.hasActions()) {
+        this.open.set(false);
+      }
+    });
+  }
 
   protected toggle = () => this.open.update((open) => !open);
 
@@ -71,7 +83,7 @@ export class EditMenu {
   protected keepOpen(): void {
     queueMicrotask(() => {
       if (this.open()) {
-        this.dial().show();
+        this.dial()?.show();
       }
     });
   }
