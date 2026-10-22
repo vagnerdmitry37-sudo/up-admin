@@ -1,1 +1,5 @@
-<app-product-form (submitted)="create($event)" />
+@if (!from()) {
+  <app-product-form (submitted)="create($event)" />
+} @else if (copies(); as copies) {
+  <app-product-tabs heading="Duplicate product" [products]="copies" />
+}

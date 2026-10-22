@@ -1,31 +1,73 @@
-import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { CreateProductRequest } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
+import { ProductTabs } from '../product-tabs/product-tabs';
 import { ProductsService } from '../products.service';
 
 @Component({
   selector: 'app-new-product-page',
-  imports: [ProductForm],
+  imports: [ProductForm, ProductTabs],
   templateUrl: './new-product-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewProductPage {
+  readonly from = input<string>();
+
   private readonly router = inject(Router);
   private readonly products = inject(ProductsService);
-  private readonly form = viewChild.required(ProductForm);
+  private readonly form = viewChild(ProductForm);
+  private readonly tabs = viewChild(ProductTabs);
   private readonly saving = signal(false);
 
+  protected readonly sources = rxResource({
+    params: () => this.from()?.split(','),
+    stream: ({ params }) => this.products.get(params),
+  });
+  protected readonly copies = computed(() =>
+    this.sources.hasValue()
+      ? this.sources.value().map((source) => ({ ...source, name: `${source.name} (copy)` }))
+      : undefined,
+  );
+
   constructor() {
-    inject(EditActionsService).register(() => ({ save: () => this.form().save() }));
+    inject(EditActionsService).register(() => ({
+      save: () => (this.from() ? this.createCopies() : this.form()?.save()),
+    }));
   }
 
-  protected async create(value: ProductFormValue): Promise<void> {
+  protected create(value: ProductFormValue): Promise<void> {
+    return this.save([{ ...value, attributes: {} }]);
+  }
+
+  private createCopies(): Promise<void> | undefined {
+    const values = this.tabs()?.values();
+    return (
+      values &&
+      this.save(values.map(({ product, value }) => ({ ...value, attributes: product.attributes })))
+    );
+  }
+
+  private async save(requests: CreateProductRequest[]): Promise<void> {
     if (this.saving()) {
       return;
     }
     this.saving.set(true);
-    await this.products.create([{ ...value, attributes: {} }]);
-    await this.router.navigateByUrl('/products');
+    try {
+      await this.products.create(requests);
+      await this.router.navigateByUrl('/products');
+    } finally {
+      this.saving.set(false);
+    }
   }
 }

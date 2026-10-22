@@ -44,7 +44,11 @@ export class ProductsPage {
       () => {
         const ids = this.selected().map((product) => product.id);
         return {
-          create: () => this.router.navigate(['/products/new']),
+          create: () =>
+            this.router.navigate(
+              ['/products/new'],
+              ids.length > 0 ? { queryParams: { from: ids.join(',') } } : {},
+            ),
           ...(ids.length > 0 && {
             edit: () => this.router.navigate(['/products', ids.join(','), 'edit']),
           }),
