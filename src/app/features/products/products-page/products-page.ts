@@ -28,7 +28,7 @@ export class ProductsPage {
 
   protected readonly products = httpResource<Product[]>(() => this.url);
   protected readonly rows = computed(() => (this.products.hasValue() ? this.products.value() : []));
-  protected readonly selected = signal<Product | undefined>(undefined);
+  protected readonly selected = signal<Product[]>([]);
   protected readonly columns: TableColumn<Product>[] = [
     { header: 'Name', value: (product) => product.name },
     { header: 'Type', value: (product) => product.type },
@@ -42,7 +42,8 @@ export class ProductsPage {
   constructor() {
     inject(EditActionsService).register(
       () => {
-        const product = this.selected();
+        const selected = this.selected();
+        const product = selected.length === 1 ? selected[0] : undefined;
         return {
           create: () => this.router.navigate(['/products/new']),
           ...(product && { edit: () => this.router.navigate(['/products', product.id, 'edit']) }),

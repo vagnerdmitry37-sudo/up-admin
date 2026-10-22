@@ -1,7 +1,7 @@
 <p-table
   [value]="loading() ? placeholderRows : rows()"
   [dataKey]="dataKey()"
-  selectionMode="single"
+  selectionMode="multiple"
   [selection]="selection()"
   (selectionChange)="selection.set($event)"
 >

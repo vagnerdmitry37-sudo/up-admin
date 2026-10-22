@@ -65,10 +65,10 @@ selected).
 ### Tables
 
 Every list of records is `<app-data-table>` from `@shared/data-table/data-table` (`DataTable`), never
-a raw `p-table`. It renders the Optimus table with single-row selection (no checkboxes). Inputs:
+a raw `p-table`. It renders the Optimus table with multiple selection (tapping a row toggles it; no checkboxes, no Ctrl key). Inputs:
 `[rows]`, `[columns]` (`TableColumn<T>[]`: `header`, `value: (row) => string | number`, optional
 `align: 'end'` for numbers and money), `dataKey` (default `id`) and `loading`; two-way
-`[(selection)]`. While data loads, render the table with `[loading]="resource.isLoading()"`: it shows
+`[(selection)]` (an array of rows; actions that work on one row check `length === 1`). While data loads, render the table with `[loading]="resource.isLoading()"`: it shows
 five rows of Optimus `p-skeleton` placeholders that can't be selected, never a blank page; decide between the table and the empty state
 only after loading. The page
 owns everything specific: its column list, value formatting (for example `formatNumber` with

@@ -22,7 +22,7 @@ export class DataTable<T extends object> {
   readonly columns = input.required<TableColumn<T>[]>();
   readonly dataKey = input('id');
   readonly loading = input(false);
-  readonly selection = model<T>();
+  readonly selection = model<T[]>([]);
 
   protected readonly placeholderRows = Array.from({ length: PLACEHOLDER_ROW_COUNT }, () => ({}));
 }
