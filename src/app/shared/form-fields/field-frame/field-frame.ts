@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { IftaLabel } from '@openng/optimus-ui/iftalabel';
 import { FormField } from '../form-field';
 
@@ -10,5 +10,7 @@ import { FormField } from '../form-field';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FieldFrame {
+  readonly labelFor = input(true);
+
   protected readonly field = inject(FormField);
 }

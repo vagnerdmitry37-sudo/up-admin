@@ -1,5 +1,7 @@
 <p-iftalabel>
   <ng-content />
-  <label [for]="field.inputId">{{ field.label() }}</label>
+  <label [id]="field.labelId" [attr.for]="labelFor() ? field.inputId : null">{{
+    field.label()
+  }}</label>
 </p-iftalabel>
 <small class="error" [id]="field.errorId" aria-live="polite">{{ field.message() }}</small>

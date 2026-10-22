@@ -38,7 +38,11 @@ is composed, not inherited: each field lists `hostDirectives: [formFieldHost]`, 
 show), and reads it with `inject(FormField)`. Its template wraps the control in `<app-field-frame>`,
 which injects the same directive and renders the in-field label and a reserved one-line red error
 text, so errors never shift the layout. Keep messages short enough for one line at 320px. A new kind
-of field follows the same three steps.
+of field follows the same three steps. The frame's label uses `for` to point at a native control
+(`input`, `textarea`). If the control is a custom widget whose id lands on a non-form element (for
+example `p-select`, whose `inputId` goes on a `span role="combobox"`), use
+`<app-field-frame [labelFor]="false">` and give the control `[ariaLabelledBy]="field.labelId"`;
+a `for` pointing at a non-control is an accessibility error.
 
 Wrap every form in `<app-form-shell>` from `@shared/form-shell/form-shell` (`FormShell`). It renders
 the `h1` heading and the `<form>`. Inputs: `heading` and `[form]` (the `FormGroup`). Project the

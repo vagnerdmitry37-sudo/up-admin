@@ -1,6 +1,7 @@
-<app-field-frame>
+<app-field-frame [labelFor]="false">
   <p-select
     [inputId]="field.inputId"
+    [ariaLabelledBy]="field.labelId"
     [formControl]="field.control()"
     [options]="options()"
     optionLabel="label"

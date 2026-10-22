@@ -18,6 +18,7 @@ export class FormField {
 
   readonly inputId = `field-${nextId++}`;
   readonly errorId = `${this.inputId}-error`;
+  readonly labelId = `${this.inputId}-label`;
 
   private readonly state = toSignal(
     toObservable(this.control).pipe(
