@@ -1,9 +1,12 @@
+<h1 class="title">Products</h1>
+
 @if (products.hasValue()) {
   @if (products.value().length === 0) {
-    <app-product-form heading="Create your first product" (submitted)="create($event)" />
+    <section class="empty">
+      <p class="empty-title">No products yet</p>
+      <p>Tap + to add your first product.</p>
+    </section>
   } @else {
-    <h1 class="title">Products</h1>
-
     <p-table
       [value]="products.value()"
       dataKey="id"

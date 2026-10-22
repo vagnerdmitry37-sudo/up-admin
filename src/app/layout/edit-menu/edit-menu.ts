@@ -24,10 +24,12 @@ const ACTIONS: Action[] = [
 ];
 
 const CANCEL = { label: 'Cancel', icon: OpenngIcons.TIMES_CIRCLE };
+const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
   selector: 'app-edit-menu',
   imports: [SpeedDial],
+  host: { '[class.suggesting]': 'suggested() && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,14 +39,20 @@ export class EditMenu {
   private readonly dial = viewChild.required(SpeedDial);
 
   protected readonly open = signal(false);
+  protected readonly suggested = this.editActions.suggested;
   protected readonly items = computed<MenuItem[]>(() => {
     const handlers = this.editActions.handlers();
     const cancelling = this.editActions.cancelling();
-    return ACTIONS.map(({ action, label, icon }) => ({
-      ...(action === cancelling ? CANCEL : { label, icon }),
-      visible: Boolean(handlers[action]),
-      command: () => handlers[action]?.(),
-    }));
+    const suggested = this.suggested();
+    return ACTIONS.map(({ action, label, icon }) => {
+      const look = action === cancelling ? CANCEL : { label, icon };
+      return {
+        label: look.label,
+        icon: action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
+        visible: Boolean(handlers[action]),
+        command: () => handlers[action]?.(),
+      };
+    });
   });
 
   protected toggle = () => this.open.update((open) => !open);

@@ -14,7 +14,9 @@ export interface RouteCancel {
 @Injectable({ providedIn: 'root' })
 export class EditActionsService {
   private readonly router = inject(Router);
-  private readonly stack = signal<{ handlers: () => EditHandlers }[]>([]);
+  private readonly stack = signal<
+    { handlers: () => EditHandlers; suggested?: () => EditAction | undefined }[]
+  >([]);
   private readonly routeCancel = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
@@ -25,6 +27,7 @@ export class EditActionsService {
   );
 
   readonly cancelling = computed(() => this.routeCancel()?.action);
+  readonly suggested = computed(() => this.stack().at(-1)?.suggested?.());
   readonly handlers = computed<EditHandlers>(() => {
     const cancel = this.routeCancel();
     const handlers = this.stack().at(-1)?.handlers() ?? {};
@@ -34,8 +37,8 @@ export class EditActionsService {
     return { ...handlers, [cancel.action]: () => this.router.navigateByUrl(cancel.url) };
   });
 
-  register(handlers: () => EditHandlers): void {
-    const entry = { handlers };
+  register(handlers: () => EditHandlers, suggested?: () => EditAction | undefined): void {
+    const entry = { handlers, suggested };
     this.stack.update((stack) => [...stack, entry]);
     inject(DestroyRef).onDestroy(() =>
       this.stack.update((stack) => stack.filter((item) => item !== entry)),

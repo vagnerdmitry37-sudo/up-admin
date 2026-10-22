@@ -3,6 +3,23 @@
   font-size: 1.5rem;
 }
 
+.empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--p-text-muted-color);
+
+  p {
+    margin: 0;
+  }
+}
+
+.empty-title {
+  margin-bottom: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
 .price {
   text-align: end;
   white-space: nowrap;
