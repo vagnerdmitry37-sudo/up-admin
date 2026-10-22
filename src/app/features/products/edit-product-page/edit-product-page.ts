@@ -1,36 +1,68 @@
-import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+  viewChildren,
+} from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { API_BASE_URL } from '@core/api-base-url';
-import { Product } from '@core/api/models';
-import { ProductForm, ProductFormValue } from '../product-form/product-form';
+import { UpdateProductRequest } from '@core/api/models';
+import { EditActionsService } from '@core/edit-actions.service';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
+import { ProductForm } from '../product-form/product-form';
 import { ProductsService } from '../products.service';
 
 @Component({
   selector: 'app-edit-product-page',
-  imports: [ProductForm],
+  imports: [ProductForm, Tabs, TabList, Tab, TabPanels, TabPanel],
   templateUrl: './edit-product-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditProductPage {
-  readonly id = input.required<string>();
+  readonly ids = input.required<string>();
 
   private readonly router = inject(Router);
-  private readonly products = inject(ProductsService);
-  private readonly url = `${inject(API_BASE_URL)}/products`;
+  private readonly productsService = inject(ProductsService);
+  private readonly forms = viewChildren(ProductForm);
   private readonly saving = signal(false);
 
-  protected readonly product = httpResource<Product>(() => `${this.url}/${this.id()}`);
+  protected readonly products = rxResource({
+    params: () => this.ids().split(','),
+    stream: ({ params }) => this.productsService.get(params),
+  });
+  protected readonly inTabs = computed(() => this.ids().split(',').length > 1);
+  protected readonly active = linkedSignal(() =>
+    this.products.hasValue() ? this.products.value()[0]?.id : undefined,
+  );
 
-  protected async update(value: ProductFormValue): Promise<void> {
-    if (this.saving()) {
+  constructor() {
+    inject(EditActionsService).register(() => ({ save: () => this.saveAll() }));
+  }
+
+  private async saveAll(): Promise<void> {
+    if (this.saving() || !this.products.hasValue()) {
       return;
     }
+    const requests: UpdateProductRequest[] = [];
+    for (const product of this.products.value()) {
+      const form = this.forms().find((candidate) => candidate.product()?.id === product.id);
+      const value = form ? form.validValue() : product;
+      if (!value) {
+        this.active.set(product.id);
+        return;
+      }
+      requests.push({ ...value, id: product.id, attributes: {} });
+    }
     this.saving.set(true);
-    await this.products.update(this.id(), {
-      ...value,
-      attributes: {},
-    });
-    await this.router.navigateByUrl('/products');
+    try {
+      await this.productsService.update(requests);
+      await this.router.navigateByUrl('/products');
+    } finally {
+      this.saving.set(false);
+    }
   }
 }

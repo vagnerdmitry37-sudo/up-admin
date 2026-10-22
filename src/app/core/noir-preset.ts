@@ -52,6 +52,11 @@ export const NoirPreset = definePreset(Aura, {
     },
   },
   components: {
+    tabs: {
+      tabpanel: {
+        padding: '1.5rem 0 0',
+      },
+    },
     menu: {
       item: {
         padding: '0.875rem 1rem',

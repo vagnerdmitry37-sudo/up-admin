@@ -99,7 +99,9 @@ export interface paths {
     };
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          ids?: string[];
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -117,81 +119,15 @@ export interface paths {
             'text/json': components['schemas']['ProductResponse'][];
           };
         };
-      };
-    };
-    put?: never;
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody: {
-        content: {
-          'application/json': components['schemas']['CreateProductRequest'];
-          'text/json': components['schemas']['CreateProductRequest'];
-          'application/*+json': components['schemas']['CreateProductRequest'];
-        };
-      };
-      responses: {
-        /** @description Created */
-        201: {
+        /** @description Bad Request */
+        400: {
           headers: {
             [name: string]: unknown;
           };
           content: {
-            'text/plain': components['schemas']['ProductResponse'];
-            'application/json': components['schemas']['ProductResponse'];
-            'text/json': components['schemas']['ProductResponse'];
-          };
-        };
-        /** @description Unauthorized */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['ProblemDetails'];
-            'application/json': components['schemas']['ProblemDetails'];
-            'text/json': components['schemas']['ProblemDetails'];
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/products/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['ProductResponse'];
-            'application/json': components['schemas']['ProductResponse'];
-            'text/json': components['schemas']['ProductResponse'];
+            'text/plain': components['schemas']['ValidationProblemDetails'];
+            'application/json': components['schemas']['ValidationProblemDetails'];
+            'text/json': components['schemas']['ValidationProblemDetails'];
           };
         };
         /** @description Not Found */
@@ -211,16 +147,14 @@ export interface paths {
       parameters: {
         query?: never;
         header?: never;
-        path: {
-          id: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody: {
         content: {
-          'application/json': components['schemas']['UpdateProductRequest'];
-          'text/json': components['schemas']['UpdateProductRequest'];
-          'application/*+json': components['schemas']['UpdateProductRequest'];
+          'application/json': components['schemas']['UpdateProductRequest'][];
+          'text/json': components['schemas']['UpdateProductRequest'][];
+          'application/*+json': components['schemas']['UpdateProductRequest'][];
         };
       };
       responses: {
@@ -230,9 +164,20 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            'text/plain': components['schemas']['ProductResponse'];
-            'application/json': components['schemas']['ProductResponse'];
-            'text/json': components['schemas']['ProductResponse'];
+            'text/plain': components['schemas']['ProductResponse'][];
+            'application/json': components['schemas']['ProductResponse'][];
+            'text/json': components['schemas']['ProductResponse'][];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails'];
+            'application/json': components['schemas']['ValidationProblemDetails'];
+            'text/json': components['schemas']['ValidationProblemDetails'];
           };
         };
         /** @description Unauthorized */
@@ -259,7 +204,56 @@ export interface paths {
         };
       };
     };
-    post?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateProductRequest'][];
+          'text/json': components['schemas']['CreateProductRequest'][];
+          'application/*+json': components['schemas']['CreateProductRequest'][];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProductResponse'][];
+            'application/json': components['schemas']['ProductResponse'][];
+            'text/json': components['schemas']['ProductResponse'][];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails'];
+            'application/json': components['schemas']['ValidationProblemDetails'];
+            'text/json': components['schemas']['ValidationProblemDetails'];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -606,6 +600,8 @@ export interface components {
       password: string;
     };
     UpdateProductRequest: {
+      /** Format: uuid */
+      id: string;
       type: components['schemas']['ProductType'];
       name: string;
       description: string;

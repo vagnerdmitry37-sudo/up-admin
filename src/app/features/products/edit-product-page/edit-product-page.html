@@ -1,7 +1,24 @@
-@if (product.hasValue()) {
-  <app-product-form
-    heading="Edit product"
-    [product]="product.value()"
-    (submitted)="update($event)"
-  />
+@if (products.hasValue()) {
+  @if (inTabs()) {
+    <p-tabs [(value)]="active" scrollable lazy>
+      <p-tablist>
+        @for (product of products.value(); track product.id) {
+          <p-tab [value]="product.id">{{ product.name }}</p-tab>
+        }
+      </p-tablist>
+      <p-tabpanels>
+        @for (product of products.value(); track product.id) {
+          <p-tabpanel [value]="product.id">
+            <ng-template #content>
+              <app-product-form heading="Edit product" [product]="product" />
+            </ng-template>
+          </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
+  } @else {
+    @for (product of products.value(); track product.id) {
+      <app-product-form heading="Edit product" [product]="product" />
+    }
+  }
 }

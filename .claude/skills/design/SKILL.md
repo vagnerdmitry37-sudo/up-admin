@@ -54,11 +54,14 @@ buttons in a page or form; the footer's edit menu is the only place for them. Ca
 separate action: the action that started the operation turns into Cancel in its own slot. Declare it
 on the route in `app.routes.ts`, for example
 `data: { cancel: { action: 'create', url: '/products' } satisfies RouteCancel }`; on that route the
-Create slot shows Cancel and navigates to the URL. A form registers Save in its constructor and calls
-the shell's public
+Create slot shows Cancel and navigates to the URL. A form never registers Save itself (a page may
+show several forms, for example one per tab); it exposes a public `save()` that calls the shell's
 `submit()`, which marks all fields touched on an invalid form and emits `(submitted)` only for a
-valid one: `inject(EditActionsService).register(() => ({ save: () => this.shell().submit() }))`
-with `shell = viewChild.required(FormShell)`. `register` takes a function that is re-read whenever
+valid one. The page registers Save and calls the right form:
+`inject(EditActionsService).register(() => ({ save: () => this.form().save() }))` with
+`form = viewChild.required(ProductForm)`. A page that saves several forms in one request calls each
+form's `validValue()` (returns the value, or marks errors and returns `undefined`) and sends one
+bulk request; the products API takes arrays and saves all or nothing. `register` takes a function that is re-read whenever
 the signals it uses change, so actions can depend on state (for example Edit only while a row is
 selected).
 

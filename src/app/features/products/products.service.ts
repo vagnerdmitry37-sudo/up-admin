@@ -9,9 +9,11 @@ export class ProductsService {
   private readonly http = inject(HttpClient);
   private readonly url = `${inject(API_BASE_URL)}/products`;
 
-  create = (request: CreateProductRequest) =>
-    firstValueFrom(this.http.post<Product>(this.url, request));
+  get = (ids: string[]) => this.http.get<Product[]>(this.url, { params: { ids } });
 
-  update = (id: string, request: UpdateProductRequest) =>
-    firstValueFrom(this.http.put<Product>(`${this.url}/${id}`, request));
+  create = (requests: CreateProductRequest[]) =>
+    firstValueFrom(this.http.post<Product[]>(this.url, requests));
+
+  update = (requests: UpdateProductRequest[]) =>
+    firstValueFrom(this.http.put<Product[]>(this.url, requests));
 }

@@ -42,11 +42,12 @@ export class ProductsPage {
   constructor() {
     inject(EditActionsService).register(
       () => {
-        const selected = this.selected();
-        const product = selected.length === 1 ? selected[0] : undefined;
+        const ids = this.selected().map((product) => product.id);
         return {
           create: () => this.router.navigate(['/products/new']),
-          ...(product && { edit: () => this.router.navigate(['/products', product.id, 'edit']) }),
+          ...(ids.length > 0 && {
+            edit: () => this.router.navigate(['/products', ids.join(','), 'edit']),
+          }),
         };
       },
       () => (this.products.hasValue() && this.products.value().length === 0 ? 'create' : undefined),

@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { CreateProductRequest, Product, ProductType } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
 import { FormShell } from '@shared/form-shell/form-shell';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
@@ -46,16 +45,22 @@ export class ProductForm {
   });
 
   constructor() {
-    inject(EditActionsService).register(() => ({
-      save: () => this.shell().submit(),
-    }));
-
     effect(() => {
       const product = this.product();
       if (product) {
         this.form.reset(product);
       }
     });
+  }
+
+  save = () => this.shell().submit();
+
+  validValue(): ProductFormValue | undefined {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return undefined;
+    }
+    return this.form.getRawValue();
   }
 
   protected submit(): void {
