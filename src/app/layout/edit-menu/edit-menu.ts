@@ -37,6 +37,7 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 export class EditMenu {
   private readonly editActions = inject(EditActionsService);
   private readonly dial = viewChild.required(SpeedDial);
+  private readonly itemCache = new Map<string, MenuItem>();
 
   protected readonly open = signal(false);
   protected readonly suggested = this.editActions.suggested;
@@ -46,16 +47,26 @@ export class EditMenu {
     const suggested = this.suggested();
     return ACTIONS.map(({ action, label, icon }) => {
       const look = action === cancelling ? CANCEL : { label, icon };
-      return {
-        label: look.label,
-        icon: action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
-        visible: Boolean(handlers[action]),
-        command: () => handlers[action]?.(),
-      };
+      return this.item(
+        action,
+        look.label,
+        action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
+        Boolean(handlers[action]),
+      );
     });
   });
 
   protected toggle = () => this.open.update((open) => !open);
+
+  private item(action: EditAction, label: string, icon: string, visible: boolean): MenuItem {
+    const key = `${action}|${label}|${icon}|${visible}`;
+    let item = this.itemCache.get(key);
+    if (!item) {
+      item = { label, icon, visible, command: () => this.editActions.handlers()[action]?.() };
+      this.itemCache.set(key, item);
+    }
+    return item;
+  }
 
   protected keepOpen(): void {
     queueMicrotask(() => {
