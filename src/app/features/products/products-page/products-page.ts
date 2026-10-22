@@ -1,6 +1,13 @@
 import { formatNumber } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, LOCALE_ID, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  LOCALE_ID,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Product } from '@core/api/models';
@@ -20,6 +27,7 @@ export class ProductsPage {
   private readonly locale = inject(LOCALE_ID);
 
   protected readonly products = httpResource<Product[]>(() => this.url);
+  protected readonly rows = computed(() => (this.products.hasValue() ? this.products.value() : []));
   protected readonly selected = signal<Product | undefined>(undefined);
   protected readonly columns: TableColumn<Product>[] = [
     { header: 'Name', value: (product) => product.name },

@@ -1,12 +1,15 @@
 <h1 class="title">Products</h1>
 
-@if (products.hasValue()) {
-  @if (products.value().length === 0) {
-    <section class="empty">
-      <p class="empty-title">No products yet</p>
-      <p>Tap + to add your first product.</p>
-    </section>
-  } @else {
-    <app-data-table [rows]="products.value()" [columns]="columns" [(selection)]="selected" />
-  }
+@if (products.isLoading() || rows().length > 0) {
+  <app-data-table
+    [rows]="rows()"
+    [columns]="columns"
+    [loading]="products.isLoading()"
+    [(selection)]="selected"
+  />
+} @else if (products.hasValue()) {
+  <section class="empty">
+    <p class="empty-title">No products yet</p>
+    <p>Tap + to add your first product.</p>
+  </section>
 }
