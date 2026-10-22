@@ -58,6 +58,15 @@ with `shell = viewChild.required(FormShell)`. `register` takes a function that i
 the signals it uses change, so actions can depend on state (for example Edit only while a row is
 selected).
 
+### Tables
+
+Every list of records is `<app-data-table>` from `@shared/data-table/data-table` (`DataTable`), never
+a raw `p-table`. It renders the Optimus table with single-row selection (no checkboxes). Inputs:
+`[rows]`, `[columns]` (`TableColumn<T>[]`: `header`, `value: (row) => string | number`, optional
+`align: 'end'` for numbers and money) and `dataKey` (default `id`); two-way `[(selection)]`. The page
+owns everything specific: its column list, value formatting (for example `formatNumber` with
+`LOCALE_ID`), the empty state and what a selected row enables in the edit menu.
+
 ### Icons
 
 Icons come from **`@openng/icons`** (loaded once in `src/styles.scss`). They use the `pi pi-{name}` classes; the full list is at https://optimus.openng.org/icons.

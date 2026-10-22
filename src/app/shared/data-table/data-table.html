@@ -1,0 +1,22 @@
+<p-table
+  [value]="rows()"
+  [dataKey]="dataKey()"
+  selectionMode="single"
+  [selection]="selection()"
+  (selectionChange)="selection.set($event)"
+>
+  <ng-template #header>
+    <tr>
+      @for (column of columns(); track column.header) {
+        <th [class.end]="column.align === 'end'">{{ column.header }}</th>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #body let-row>
+    <tr [pSelectableRow]="row">
+      @for (column of columns(); track column.header) {
+        <td [class.end]="column.align === 'end'">{{ column.value(row) }}</td>
+      }
+    </tr>
+  </ng-template>
+</p-table>
