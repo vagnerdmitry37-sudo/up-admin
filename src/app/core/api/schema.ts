@@ -165,6 +165,107 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/products/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProductResponse'];
+            'application/json': components['schemas']['ProductResponse'];
+            'text/json': components['schemas']['ProductResponse'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+      };
+    };
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['UpdateProductRequest'];
+          'text/json': components['schemas']['UpdateProductRequest'];
+          'application/*+json': components['schemas']['UpdateProductRequest'];
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProductResponse'];
+            'application/json': components['schemas']['ProductResponse'];
+            'text/json': components['schemas']['ProductResponse'];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/auth/register': {
     parameters: {
       query?: never;
@@ -467,7 +568,7 @@ export interface components {
       name: string;
       description: string;
       /** Format: double */
-      price: number | string;
+      price: number;
       attributes: components['schemas']['JsonElement'];
     };
     JsonElement: unknown;
@@ -484,7 +585,7 @@ export interface components {
       type?: null | string;
       title?: null | string;
       /** Format: int32 */
-      status?: null | number | string;
+      status?: null | number;
       detail?: null | string;
       instance?: null | string;
     };
@@ -495,7 +596,7 @@ export interface components {
       name: string;
       description: string;
       /** Format: double */
-      price: number | string;
+      price: number;
       attributes: components['schemas']['JsonElement'];
     };
     /** @enum {unknown} */
@@ -503,6 +604,14 @@ export interface components {
     RegisterRequest: {
       email: string;
       password: string;
+    };
+    UpdateProductRequest: {
+      type: components['schemas']['ProductType'];
+      name: string;
+      description: string;
+      /** Format: double */
+      price: number;
+      attributes: components['schemas']['JsonElement'];
     };
     UpdateUserProfileRequest: {
       currency: string;
@@ -514,7 +623,7 @@ export interface components {
       type?: null | string;
       title?: null | string;
       /** Format: int32 */
-      status?: null | number | string;
+      status?: null | number;
       detail?: null | string;
       instance?: null | string;
       errors?: {

@@ -53,8 +53,10 @@ on the route in `app.routes.ts`, for example
 Create slot shows Cancel and navigates to the URL. A form registers Save in its constructor and calls
 the shell's public
 `submit()`, which marks all fields touched on an invalid form and emits `(submitted)` only for a
-valid one: `inject(EditActionsService).register({ save: () => this.shell().submit() })` with
-`shell = viewChild.required(FormShell)`.
+valid one: `inject(EditActionsService).register(() => ({ save: () => this.shell().submit() }))`
+with `shell = viewChild.required(FormShell)`. `register` takes a function that is re-read whenever
+the signals it uses change, so actions can depend on state (for example Edit only while a row is
+selected).
 
 ### Icons
 

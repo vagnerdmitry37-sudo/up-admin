@@ -1,0 +1,7 @@
+@if (product.hasValue()) {
+  <app-product-form
+    heading="Edit product"
+    [product]="product.value()"
+    (submitted)="update($event)"
+  />
+}

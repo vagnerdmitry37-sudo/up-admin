@@ -5,5 +5,6 @@ type Schema<Name extends keyof components['schemas']> = components['schemas'][Na
 export type Product = Schema<'ProductResponse'>;
 export type ProductType = Schema<'ProductType'>;
 export type CreateProductRequest = Schema<'CreateProductRequest'>;
+export type UpdateProductRequest = Schema<'UpdateProductRequest'>;
 export type AccessToken = Schema<'AccessTokenResponse'>;
 export type UserProfile = Schema<'UserProfileResponse'>;

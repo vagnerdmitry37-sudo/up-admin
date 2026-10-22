@@ -1,17 +1,29 @@
 @if (products.hasValue()) {
   @if (products.value().length === 0) {
-    <app-product-form heading="Create your first product" (created)="products.reload()" />
+    <app-product-form heading="Create your first product" (submitted)="create($event)" />
   } @else {
-    <header class="header">
-      <h1 class="title">Products</h1>
-    </header>
+    <h1 class="title">Products</h1>
 
-    @if (products.hasValue()) {
-      <ul>
-        @for (product of products.value(); track product.id) {
-          <li>{{ product.name }} · {{ product.type }} · {{ product.price | number: '1.2-2' }}</li>
-        }
-      </ul>
-    }
+    <p-table
+      [value]="products.value()"
+      dataKey="id"
+      selectionMode="single"
+      [(selection)]="selected"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th class="price">Price</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-product>
+        <tr [pSelectableRow]="product">
+          <td>{{ product.name }}</td>
+          <td>{{ product.type }}</td>
+          <td class="price">{{ product.price | number: '1.2-2' }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
   }
 }

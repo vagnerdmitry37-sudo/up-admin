@@ -42,6 +42,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'products/:id/edit',
+        title: 'Edit product · UP',
+        data: { cancel: { action: 'edit', url: '/products' } satisfies RouteCancel },
+        loadComponent: () =>
+          import('@features/products/edit-product-page/edit-product-page').then(
+            (m) => m.EditProductPage,
+          ),
+      },
+      {
         path: 'profile',
         title: 'Profile · UP',
         loadComponent: () =>
