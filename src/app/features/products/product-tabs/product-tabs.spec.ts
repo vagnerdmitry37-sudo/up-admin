@@ -50,6 +50,28 @@ describe('ProductTabs', () => {
     expect(element.querySelectorAll('app-product-form')).toHaveLength(1);
   });
 
+  it('closes the active tab, keeping the edits of the others', async () => {
+    const { fixture, tabs, element, openTab, typeName } = await render([walk, transfer]);
+    await openTab(1);
+    typeName('Night transfer');
+    await openTab(0);
+
+    const stillOpen = tabs.closeActive();
+    await fixture.whenStable();
+
+    expect(stillOpen).toBe(1);
+    expect(element.querySelectorAll('p-tab')).toHaveLength(1);
+    expect(tabs.values()?.map(({ product, value }) => [product.id, value.name])).toEqual([
+      ['p2', 'Night transfer'],
+    ]);
+  });
+
+  it('reports when the last product is closed', async () => {
+    const { tabs } = await render([walk]);
+
+    expect(tabs.closeActive()).toBe(0);
+  });
+
   it('shows one tab per product, named after it', async () => {
     const { element } = await render([walk, transfer]);
 

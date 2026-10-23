@@ -34,11 +34,24 @@ export class EditProductPage {
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
-        edit: { press: () => this.router.navigateByUrl('/products'), cancel: true },
+        edit: {
+          press: () => this.cancelActive(),
+          longPress: () => this.cancelAll(),
+          cancel: true,
+        },
         save: { press: () => this.save() },
       }),
     });
   }
+
+  private cancelActive(): void {
+    const stillOpen = this.tabs()?.closeActive() ?? 0;
+    if (stillOpen === 0) {
+      this.cancelAll();
+    }
+  }
+
+  private cancelAll = () => this.router.navigateByUrl('/products');
 
   private async save(): Promise<void> {
     const values = this.tabs()?.values();

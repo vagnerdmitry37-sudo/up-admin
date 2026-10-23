@@ -121,6 +121,59 @@ describe('NewProductPage', () => {
     ]);
   });
 
+  describe('cancel', () => {
+    const tabNames = (element: HTMLElement) =>
+      [...element.querySelectorAll('p-tab')].map((tab) => tab.textContent?.trim());
+
+    const renderCopies = async (from: string, products: Product[]) => {
+      const rendered = await render(from);
+      http.expectOne((req) => req.url === '/api/products').flush(products);
+      await rendered.fixture.whenStable();
+      return rendered;
+    };
+
+    it('drops only the copy in the active tab on press, staying on the page', async () => {
+      const { fixture, element } = await renderCopies('p1,p2', sources);
+
+      TestBed.inject(EditActionsService).run('create');
+      await fixture.whenStable();
+
+      expect(tabNames(element)).toEqual(['Airport to hotel (copy)']);
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    });
+
+    it('goes back to the products list when the last copy is cancelled', async () => {
+      const { fixture } = await renderCopies('p1,p2', sources);
+      const actions = TestBed.inject(EditActionsService);
+
+      actions.run('create');
+      await fixture.whenStable();
+      actions.run('create');
+
+      expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    });
+
+    it('cancels every copy on long press', async () => {
+      await renderCopies('p1,p2', sources);
+
+      TestBed.inject(EditActionsService).run('create', 'longPress');
+
+      expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    });
+
+    it('treats press and long press the same for a single copy', async () => {
+      await renderCopies('p1', [sources[0]]);
+      const actions = TestBed.inject(EditActionsService);
+
+      actions.run('create');
+      actions.run('create', 'longPress');
+
+      expect(navigateByUrl).toHaveBeenNthCalledWith(1, '/products');
+      expect(navigateByUrl).toHaveBeenNthCalledWith(2, '/products');
+      http.expectNone((req) => req.method === 'POST');
+    });
+  });
+
   it('saves the copies as new products without ids, keeping their attributes', async () => {
     const { fixture } = await render('p1,p2');
     http.expectOne((req) => req.url === '/api/products').flush(sources);

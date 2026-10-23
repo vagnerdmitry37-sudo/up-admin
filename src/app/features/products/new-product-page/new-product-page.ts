@@ -43,7 +43,11 @@ export class NewProductPage {
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
-        create: { press: () => this.router.navigateByUrl('/products'), cancel: true },
+        create: {
+          press: () => this.cancelActive(),
+          longPress: () => this.cancelAll(),
+          cancel: true,
+        },
         save: { press: () => (this.from() ? this.createCopies() : this.form()?.save()) },
       }),
     });
@@ -52,6 +56,15 @@ export class NewProductPage {
   protected create(value: ProductFormValue): Promise<void> {
     return this.save([{ ...value, attributes: {} }]);
   }
+
+  private cancelActive(): void {
+    const stillOpen = this.tabs()?.closeActive() ?? 0;
+    if (stillOpen === 0) {
+      this.cancelAll();
+    }
+  }
+
+  private cancelAll = () => this.router.navigateByUrl('/products');
 
   private createCopies(): Promise<void> | undefined {
     const values = this.tabs()?.values();
