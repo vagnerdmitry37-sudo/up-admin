@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { RouteCancel } from '@core/edit-actions.service';
 import { authGuard } from '@features/auth/auth.guard';
 import { guestGuard } from '@features/auth/guest.guard';
 
@@ -35,7 +34,6 @@ export const routes: Routes = [
       {
         path: 'products/new',
         title: 'New product · UP',
-        data: { cancel: { action: 'create', url: '/products' } satisfies RouteCancel },
         loadComponent: () =>
           import('@features/products/new-product-page/new-product-page').then(
             (m) => m.NewProductPage,
@@ -44,7 +42,6 @@ export const routes: Routes = [
       {
         path: 'products/:ids/edit',
         title: 'Edit products · UP',
-        data: { cancel: { action: 'edit', url: '/products' } satisfies RouteCancel },
         loadComponent: () =>
           import('@features/products/edit-product-page/edit-product-page').then(
             (m) => m.EditProductPage,

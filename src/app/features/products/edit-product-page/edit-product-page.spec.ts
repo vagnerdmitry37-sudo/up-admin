@@ -110,6 +110,15 @@ describe('EditProductPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
 
+  it('cancels back to the products list without saving', async () => {
+    await render('p1', [products[0]]);
+
+    TestBed.inject(EditActionsService).run('edit');
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    http.expectNone((req) => req.method === 'PUT');
+  });
+
   it('sends nothing while a product is invalid', async () => {
     const { element } = await render('p1', [products[0]]);
     const name = element.querySelector('app-text-field input') as HTMLInputElement;

@@ -88,6 +88,15 @@ describe('NewProductPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
 
+  it('cancels back to the products list', async () => {
+    await render();
+
+    TestBed.inject(EditActionsService).run('create');
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    http.expectNone('/api/products');
+  });
+
   it('sends nothing while the form is invalid', async () => {
     await render();
 

@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { EditActionsService, EditActions, RouteCancel } from './edit-actions.service';
+import { EditActionsService, EditActions } from './edit-actions.service';
 
 const actions = signal<EditActions>({});
 
@@ -19,26 +18,11 @@ class FormHost {
   }
 }
 
-@Component({ template: '' })
-class Empty {}
-
 describe('EditActionsService', () => {
   let service: EditActionsService;
 
   beforeEach(() => {
     actions.set({});
-    TestBed.configureTestingModule({
-      providers: [
-        provideRouter([
-          { path: 'list', component: Empty },
-          {
-            path: 'new',
-            component: Empty,
-            data: { cancel: { action: 'create', url: '/list' } satisfies RouteCancel },
-          },
-        ]),
-      ],
-    });
     service = TestBed.inject(EditActionsService);
   });
 
@@ -133,21 +117,5 @@ describe('EditActionsService', () => {
     });
 
     expect(service.suggested()).toEqual(['create', 'save']);
-  });
-
-  it('turns the action named by the route into Cancel that navigates back', async () => {
-    const router = TestBed.inject(Router);
-    await router.navigateByUrl('/new');
-    TestBed.createComponent(FormHost);
-
-    expect(service.cancelling()).toBe('create');
-    expect(Object.keys(service.actions()).sort()).toEqual(['create', 'save']);
-
-    service.run('create');
-    await TestBed.inject(Router).navigated;
-    await new Promise((resolve) => setTimeout(resolve));
-
-    expect(router.url).toBe('/list');
-    expect(service.cancelling()).toBeUndefined();
   });
 });

@@ -33,7 +33,10 @@ export class EditProductPage {
 
   constructor() {
     inject(EditActionsService).register({
-      actions: () => ({ save: { press: () => this.save() } }),
+      actions: () => ({
+        edit: { press: () => this.router.navigateByUrl('/products'), cancel: true },
+        save: { press: () => this.save() },
+      }),
     });
   }
 

@@ -43,6 +43,7 @@ export class NewProductPage {
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
+        create: { press: () => this.router.navigateByUrl('/products'), cancel: true },
         save: { press: () => (this.from() ? this.createCopies() : this.form()?.save()) },
       }),
     });

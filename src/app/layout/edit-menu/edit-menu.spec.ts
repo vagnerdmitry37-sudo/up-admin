@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
-import { EditActionsService, EditActions, RouteCancel } from '@core/edit-actions.service';
+import { EditActionsService, EditActions } from '@core/edit-actions.service';
 import { EditMenu } from './edit-menu';
 
 const actions = signal<EditActions>({});
@@ -13,9 +12,6 @@ class Page {
   }
 }
 
-@Component({ template: '' })
-class Empty {}
-
 const actionLabels = (element: HTMLElement) =>
   [...element.querySelectorAll('.p-speeddial-item')]
     .filter((item) => !item.classList.contains('p-hidden'))
@@ -26,16 +22,6 @@ describe('EditMenu', () => {
     actions.set({});
     TestBed.configureTestingModule({
       imports: [EditMenu],
-      providers: [
-        provideRouter([
-          { path: 'list', component: Empty },
-          {
-            path: 'new',
-            component: Empty,
-            data: { cancel: { action: 'create', url: '/list' } satisfies RouteCancel },
-          },
-        ]),
-      ],
     });
   });
 
@@ -122,10 +108,9 @@ describe('EditMenu', () => {
     expect(menu.nativeElement.classList).not.toContain('suggesting');
   });
 
-  it('labels the cancelled action Cancel on routes that declare it', async () => {
-    await TestBed.inject(Router).navigateByUrl('/new');
+  it('shows an action marked as cancel as Cancel in its own slot', async () => {
     TestBed.createComponent(Page);
-    actions.set({ save: { press: vi.fn() } });
+    actions.set({ create: { press: vi.fn(), cancel: true }, save: { press: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 

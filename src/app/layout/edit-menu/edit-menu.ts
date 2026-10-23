@@ -50,10 +50,9 @@ export class EditMenu {
   );
   protected readonly items = computed<MenuItem[]>(() => {
     const actions = this.editActions.actions();
-    const cancelling = this.editActions.cancelling();
     const suggested = this.suggested();
     return ACTIONS.map(({ action, label, icon }) => {
-      const look = action === cancelling ? CANCEL : { label, icon };
+      const look = actions[action]?.cancel ? CANCEL : { label, icon };
       return this.item({
         action,
         label: look.label,
