@@ -41,9 +41,11 @@ export class NewProductPage {
   );
 
   constructor() {
-    inject(EditActionsService).register(() => ({
-      save: () => (this.from() ? this.createCopies() : this.form()?.save()),
-    }));
+    inject(EditActionsService).register({
+      handlers: () => ({
+        save: () => (this.from() ? this.createCopies() : this.form()?.save()),
+      }),
+    });
   }
 
   protected create(value: ProductFormValue): Promise<void> {

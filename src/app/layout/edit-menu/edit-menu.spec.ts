@@ -9,7 +9,7 @@ const handlers = signal<EditHandlers>({});
 @Component({ selector: 'app-page', template: '' })
 class Page {
   constructor() {
-    inject(EditActionsService).register(() => handlers());
+    inject(EditActionsService).register({ handlers: () => handlers() });
   }
 }
 

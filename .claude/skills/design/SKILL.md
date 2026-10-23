@@ -58,7 +58,7 @@ Create slot shows Cancel and navigates to the URL. A form never registers Save i
 show several forms, for example one per tab); it exposes a public `save()` that calls the shell's
 `submit()`, which marks all fields touched on an invalid form and emits `(submitted)` only for a
 valid one. The page registers Save and calls the right form:
-`inject(EditActionsService).register(() => ({ save: () => this.form().save() }))` with
+`inject(EditActionsService).register({ handlers: () => ({ save: () => this.form().save() }) })` with
 `form = viewChild.required(ProductForm)`. A page that saves several forms in one request calls each
 form's `validValue()` (returns the value, or marks errors and returns `undefined`) and sends one
 bulk request; the products API takes arrays and saves all or nothing. `register` takes a function that is re-read whenever

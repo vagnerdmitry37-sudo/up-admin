@@ -40,8 +40,8 @@ export class ProductsPage {
   ];
 
   constructor() {
-    inject(EditActionsService).register(
-      () => {
+    inject(EditActionsService).register({
+      handlers: () => {
         const ids = this.selected().map((product) => product.id);
         return {
           create: () =>
@@ -54,7 +54,8 @@ export class ProductsPage {
           }),
         };
       },
-      () => (this.products.hasValue() && this.products.value().length === 0 ? 'create' : undefined),
-    );
+      suggested: () =>
+        this.products.hasValue() && this.products.value().length === 0 ? 'create' : undefined,
+    });
   }
 }

@@ -32,7 +32,7 @@ export class EditProductPage {
   });
 
   constructor() {
-    inject(EditActionsService).register(() => ({ save: () => this.save() }));
+    inject(EditActionsService).register({ handlers: () => ({ save: () => this.save() }) });
   }
 
   private async save(): Promise<void> {

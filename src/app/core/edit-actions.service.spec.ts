@@ -9,17 +9,17 @@ const suggested = signal<'create' | undefined>(undefined);
 @Component({ template: '' })
 class PageHost {
   constructor() {
-    inject(EditActionsService).register(
-      () => handlers(),
-      () => suggested(),
-    );
+    inject(EditActionsService).register({
+      handlers: () => handlers(),
+      suggested: () => suggested(),
+    });
   }
 }
 
 @Component({ template: '' })
 class FormHost {
   constructor() {
-    inject(EditActionsService).register(() => ({ save: () => undefined }));
+    inject(EditActionsService).register({ handlers: () => ({ save: () => undefined }) });
   }
 }
 
