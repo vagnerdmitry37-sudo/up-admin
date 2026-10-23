@@ -4,6 +4,12 @@
   min-height: 100dvh;
 }
 
+footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
+
 .footer {
   border: none;
 }
