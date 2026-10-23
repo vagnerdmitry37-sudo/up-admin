@@ -7,3 +7,42 @@
   width: 2.8rem;
   height: 2.8rem;
 }
+
+.p-speeddial-action {
+  position: relative;
+  overflow: visible;
+}
+
+.cancel-badge {
+  position: absolute;
+  top: -0.5rem;
+  left: -0.5rem;
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--p-toolbar-background);
+  border-radius: 50%;
+  background: var(--p-button-secondary-background);
+  color: var(--p-button-secondary-color);
+  font-size: 0.5rem;
+  transition:
+    background var(--p-button-transition-duration) ease-in-out,
+    color var(--p-button-transition-duration) ease-in-out;
+}
+
+.p-speeddial-action:not(:disabled):hover .cancel-badge {
+  background: var(--p-button-danger-background);
+  color: var(--p-button-danger-color);
+}
+
+.p-speeddial-action:not(:disabled):active .cancel-badge {
+  background: var(--p-button-danger-active-background);
+  color: var(--p-button-danger-active-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cancel-badge {
+    transition: none;
+  }
+}

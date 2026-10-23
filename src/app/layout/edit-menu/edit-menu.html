@@ -27,6 +27,9 @@
         (longPress)="run(item.id, 'longPress')"
       >
         <span pButtonIcon [class]="item.icon"></span>
+        @if (item.state.cancel) {
+          <span class="cancel-badge" [class]="cancelIcon" aria-hidden="true"></span>
+        }
       </button>
     </ng-template>
   </p-speeddial>

@@ -108,13 +108,16 @@ describe('EditMenu', () => {
     expect(menu.nativeElement.classList).not.toContain('suggesting');
   });
 
-  it('shows an action marked as cancel as Cancel in its own slot', async () => {
+  it('shows which action Cancel cancels, keeping its icon with a cancel badge', async () => {
     TestBed.createComponent(Page);
     actions.set({ create: { press: vi.fn(), cancel: true }, save: { press: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
+    const cancel = menu.nativeElement.querySelector('[aria-label="Cancel create"]');
 
-    expect(actionLabels(menu.nativeElement)).toEqual(['Cancel', 'Save']);
+    expect(actionLabels(menu.nativeElement)).toEqual(['Cancel create', 'Save']);
+    expect(cancel.querySelector('.cancel-badge')).not.toBeNull();
+    expect(menu.nativeElement.querySelector('[aria-label="Save"] .cancel-badge')).toBeNull();
   });
 
   it('keeps the same buttons when the actions do not change', async () => {

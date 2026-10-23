@@ -27,7 +27,11 @@ const ACTIONS: Action[] = [
   { action: 'delete', label: 'Delete', icon: OpenngIcons.TRASH },
 ];
 
-const CANCEL = { label: 'Cancel', icon: OpenngIcons.TIMES_CIRCLE };
+interface MenuAction extends Action {
+  visible: boolean;
+  cancel: boolean;
+}
+
 const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
@@ -43,6 +47,7 @@ export class EditMenu {
   private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
 
+  protected readonly cancelIcon = OpenngIcons.TIMES;
   protected readonly open = signal(false);
   protected readonly suggested = this.editActions.suggested;
   protected readonly hasActions = computed(
@@ -52,12 +57,13 @@ export class EditMenu {
     const actions = this.editActions.actions();
     const suggested = this.suggested();
     return ACTIONS.map(({ action, label, icon }) => {
-      const look = actions[action]?.cancel ? CANCEL : { label, icon };
+      const cancel = Boolean(actions[action]?.cancel);
       return this.item({
         action,
-        label: look.label,
-        icon: suggested.includes(action) ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
+        label: cancel ? `Cancel ${label.toLowerCase()}` : label,
+        icon: suggested.includes(action) ? `${icon} ${SUGGESTED_CLASS}` : icon,
         visible: Boolean(actions[action]),
+        cancel,
       });
     });
   });
@@ -75,11 +81,18 @@ export class EditMenu {
   protected run = (action: EditAction, gesture: EditGesture) =>
     this.editActions.run(action, gesture);
 
-  private item({ action, label, icon, visible }: Action & { visible: boolean }): MenuItem {
-    const key = `${action}|${label}|${icon}|${visible}`;
+  private item({ action, label, icon, visible, cancel }: MenuAction): MenuItem {
+    const key = `${action}|${label}|${icon}|${visible}|${cancel}`;
     let item = this.itemCache.get(key);
     if (!item) {
-      item = { id: action, label, icon, visible, command: () => this.editActions.run(action) };
+      item = {
+        id: action,
+        label,
+        icon,
+        visible,
+        state: { cancel },
+        command: () => this.editActions.run(action),
+      };
       this.itemCache.set(key, item);
     }
     return item;
