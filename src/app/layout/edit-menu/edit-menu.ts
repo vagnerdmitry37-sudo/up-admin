@@ -33,7 +33,7 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 @Component({
   selector: 'app-edit-menu',
   imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, Press],
-  host: { '[class.suggesting]': 'suggested() && !open()' },
+  host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,7 +57,7 @@ export class EditMenu {
       return this.item({
         action,
         label: look.label,
-        icon: action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
+        icon: suggested.includes(action) ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
         visible: Boolean(actions[action]),
       });
     });

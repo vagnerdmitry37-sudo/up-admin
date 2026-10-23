@@ -11,7 +11,7 @@ import {
 import { Router } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Product } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
+import { EditActionConfig, EditActionsService } from '@core/edit-actions.service';
 import { DataTable, TableColumn } from '@shared/data-table/data-table';
 
 @Component({
@@ -44,19 +44,27 @@ export class ProductsPage {
       actions: () => {
         const ids = this.selected().map((product) => product.id);
         return {
-          create: { press: () => this.create(ids) },
-          edit: { press: () => this.edit(ids), visible: ids.length > 0 },
+          create: this.createAction(ids),
+          edit: this.editAction(ids),
         };
       },
-      suggested: () =>
-        this.products.hasValue() && this.products.value().length === 0 ? 'create' : undefined,
     });
   }
 
-  private create(ids: string[]) {
+  private createAction(ids: string[]): EditActionConfig {
     const queryParams = ids.length > 0 ? { from: ids.join(',') } : undefined;
-    this.router.navigate(['/products/new'], { queryParams });
+    const empty = this.products.hasValue() && this.products.value().length === 0;
+
+    return {
+      press: () => this.router.navigate(['/products/new'], { queryParams }),
+      suggested: empty,
+    };
   }
 
-  private edit = (ids: string[]) => this.router.navigate(['/products', ids.join(','), 'edit']);
+  private editAction(ids: string[]): EditActionConfig {
+    return {
+      press: () => this.router.navigate(['/products', ids.join(','), 'edit']),
+      visible: ids.length > 0,
+    };
+  }
 }

@@ -4,15 +4,11 @@ import { Router, provideRouter } from '@angular/router';
 import { EditActionsService, EditActions, RouteCancel } from './edit-actions.service';
 
 const actions = signal<EditActions>({});
-const suggested = signal<'create' | undefined>(undefined);
 
 @Component({ template: '' })
 class PageHost {
   constructor() {
-    inject(EditActionsService).register({
-      actions: () => actions(),
-      suggested: () => suggested(),
-    });
+    inject(EditActionsService).register({ actions: () => actions() });
   }
 }
 
@@ -31,7 +27,6 @@ describe('EditActionsService', () => {
 
   beforeEach(() => {
     actions.set({});
-    suggested.set(undefined);
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
@@ -127,12 +122,17 @@ describe('EditActionsService', () => {
     expect(service.actions()).toEqual({});
   });
 
-  it('exposes the suggested action of the active registration', () => {
+  it('lists every action the page marks as suggested', () => {
     TestBed.createComponent(PageHost);
 
-    suggested.set('create');
+    actions.set({
+      create: { press: vi.fn(), suggested: true },
+      edit: { press: vi.fn() },
+      save: { press: vi.fn(), suggested: true },
+      delete: { press: vi.fn(), suggested: true, visible: false },
+    });
 
-    expect(service.suggested()).toBe('create');
+    expect(service.suggested()).toEqual(['create', 'save']);
   });
 
   it('turns the action named by the route into Cancel that navigates back', async () => {

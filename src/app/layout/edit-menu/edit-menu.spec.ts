@@ -96,6 +96,32 @@ describe('EditMenu', () => {
     expect(press).not.toHaveBeenCalled();
   });
 
+  it('pulses the closed button and marks every suggested action', async () => {
+    TestBed.createComponent(Page);
+    actions.set({
+      create: { press: vi.fn(), suggested: true },
+      edit: { press: vi.fn() },
+      save: { press: vi.fn(), suggested: true },
+    });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+    const marked = [...menu.nativeElement.querySelectorAll('.edit-menu-suggested')].map((icon) =>
+      icon.closest('button')?.getAttribute('aria-label'),
+    );
+
+    expect(menu.nativeElement.classList).toContain('suggesting');
+    expect(marked).toEqual(['Create', 'Save']);
+  });
+
+  it('does not pulse when nothing is suggested', async () => {
+    TestBed.createComponent(Page);
+    actions.set({ create: { press: vi.fn() } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+
+    expect(menu.nativeElement.classList).not.toContain('suggesting');
+  });
+
   it('labels the cancelled action Cancel on routes that declare it', async () => {
     await TestBed.inject(Router).navigateByUrl('/new');
     TestBed.createComponent(Page);

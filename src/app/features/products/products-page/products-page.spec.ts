@@ -73,7 +73,7 @@ describe('ProductsPage', () => {
     const { element, editActions } = await render([]);
 
     expect(element.textContent).toContain('No products yet');
-    expect(editActions.suggested()).toBe('create');
+    expect(editActions.suggested()).toEqual(['create']);
   });
 
   it('creates an empty product when nothing is selected', async () => {
