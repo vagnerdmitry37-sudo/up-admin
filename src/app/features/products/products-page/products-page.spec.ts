@@ -80,7 +80,7 @@ describe('ProductsPage', () => {
     const { actions } = await render(products);
 
     expect(Object.keys(actions.handlers())).toEqual(['create']);
-    actions.handlers().create?.();
+    actions.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/products/new'], {});
   });
@@ -90,7 +90,7 @@ describe('ProductsPage', () => {
     await select(0);
     await select(1);
 
-    actions.handlers().create?.();
+    actions.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/products/new'], { queryParams: { from: 'p1,p2' } });
   });
@@ -100,7 +100,7 @@ describe('ProductsPage', () => {
     await select(1);
     await select(0);
 
-    actions.handlers().edit?.();
+    actions.run('edit');
 
     expect(navigate).toHaveBeenCalledWith(['/products', 'p2,p1', 'edit']);
   });

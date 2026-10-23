@@ -47,6 +47,8 @@ export class EditActionsService {
     );
   }
 
+  run = (action: EditAction) => this.handlers()[action]?.();
+
   private findRouteCancel(): RouteCancel | undefined {
     let route = this.router.routerState.snapshot.root;
     while (route.firstChild) {

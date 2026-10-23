@@ -56,7 +56,7 @@ describe('EditActionsService', () => {
     const create = vi.fn();
 
     handlers.set({ create });
-    service.handlers().create?.();
+    service.run('create');
 
     expect(Object.keys(service.handlers())).toEqual(['create']);
     expect(create).toHaveBeenCalled();
@@ -71,6 +71,16 @@ describe('EditActionsService', () => {
 
     form.destroy();
     expect(Object.keys(service.handlers())).toEqual(['create']);
+  });
+
+  it('ignores running an action the page did not register', () => {
+    TestBed.createComponent(PageHost);
+    const create = vi.fn();
+    handlers.set({ create });
+
+    service.run('delete');
+
+    expect(create).not.toHaveBeenCalled();
   });
 
   it('drops a registration when its page is destroyed', () => {
@@ -98,7 +108,7 @@ describe('EditActionsService', () => {
     expect(service.cancelling()).toBe('create');
     expect(Object.keys(service.handlers()).sort()).toEqual(['create', 'save']);
 
-    service.handlers().create?.();
+    service.run('create');
     await TestBed.inject(Router).navigated;
     await new Promise((resolve) => setTimeout(resolve));
 

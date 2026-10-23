@@ -44,18 +44,19 @@ export class ProductsPage {
       handlers: () => {
         const ids = this.selected().map((product) => product.id);
         return {
-          create: () =>
-            this.router.navigate(
-              ['/products/new'],
-              ids.length > 0 ? { queryParams: { from: ids.join(',') } } : {},
-            ),
-          ...(ids.length > 0 && {
-            edit: () => this.router.navigate(['/products', ids.join(','), 'edit']),
-          }),
+          create: () => this.create(ids),
+          ...(ids.length > 0 && { edit: () => this.edit(ids) }),
         };
       },
       suggested: () =>
         this.products.hasValue() && this.products.value().length === 0 ? 'create' : undefined,
     });
   }
+
+  private create(ids: string[]): Promise<boolean> {
+    const queryParams = ids.length > 0 ? { from: ids.join(',') } : undefined;
+    return this.router.navigate(['/products/new'], { queryParams });
+  }
+
+  private edit = (ids: string[]) => this.router.navigate(['/products', ids.join(','), 'edit']);
 }

@@ -51,12 +51,12 @@ export class EditMenu {
     const suggested = this.suggested();
     return ACTIONS.map(({ action, label, icon }) => {
       const look = action === cancelling ? CANCEL : { label, icon };
-      return this.item(
+      return this.item({
         action,
-        look.label,
-        action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
-        Boolean(handlers[action]),
-      );
+        label: look.label,
+        icon: action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
+        visible: Boolean(handlers[action]),
+      });
     });
   });
 
@@ -70,11 +70,11 @@ export class EditMenu {
 
   protected toggle = () => this.open.update((open) => !open);
 
-  private item(action: EditAction, label: string, icon: string, visible: boolean): MenuItem {
+  private item({ action, label, icon, visible }: Action & { visible: boolean }): MenuItem {
     const key = `${action}|${label}|${icon}|${visible}`;
     let item = this.itemCache.get(key);
     if (!item) {
-      item = { label, icon, visible, command: () => this.editActions.handlers()[action]?.() };
+      item = { label, icon, visible, command: () => this.editActions.run(action) };
       this.itemCache.set(key, item);
     }
     return item;

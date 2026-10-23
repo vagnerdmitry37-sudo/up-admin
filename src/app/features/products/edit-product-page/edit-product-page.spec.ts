@@ -43,7 +43,7 @@ describe('EditProductPage', () => {
   };
 
   const save = async () => {
-    TestBed.inject(EditActionsService).handlers().save?.();
+    TestBed.inject(EditActionsService).run('save');
     await settle();
   };
 
