@@ -14,10 +14,10 @@ import { NavMenu } from './nav-menu/nav-menu';
 })
 export class Shell {
   private readonly router = inject(Router);
-  private readonly session = inject(SessionService);
+  private readonly sessionService = inject(SessionService);
 
   protected async logout(): Promise<void> {
-    await this.session.logout();
+    await this.sessionService.logout();
     await this.router.navigateByUrl('/login');
   }
 }

@@ -9,8 +9,8 @@ import { authInterceptor } from './auth.interceptor';
 import { SessionService } from './session.service';
 
 describe('authInterceptor', () => {
-  let http: HttpClient;
-  let backend: HttpTestingController;
+  let httpClient: HttpClient;
+  let httpTestingController: HttpTestingController;
   let accessToken: ReturnType<typeof signal<string | null>>;
   let refresh: ReturnType<typeof vi.fn>;
   let navigateByUrl: ReturnType<typeof vi.fn>;
@@ -28,35 +28,37 @@ describe('authInterceptor', () => {
         { provide: Router, useValue: { navigateByUrl } },
       ],
     });
-    http = TestBed.inject(HttpClient);
-    backend = TestBed.inject(HttpTestingController);
+    httpClient = TestBed.inject(HttpClient);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => backend.verify());
+  afterEach(() => httpTestingController.verify());
 
   it('sends the access token to the API', () => {
-    void firstValueFrom(http.get('/api/products'));
+    void firstValueFrom(httpClient.get('/api/products'));
 
-    const request = backend.expectOne('/api/products');
+    const request = httpTestingController.expectOne('/api/products');
     expect(request.request.headers.get('Authorization')).toBe('Bearer old-token');
     request.flush([]);
   });
 
   it('does not send the token to other origins', () => {
-    void firstValueFrom(http.get('https://example.com/data'));
+    void firstValueFrom(httpClient.get('https://example.com/data'));
 
-    const request = backend.expectOne('https://example.com/data');
+    const request = httpTestingController.expectOne('https://example.com/data');
     expect(request.request.headers.has('Authorization')).toBe(false);
     request.flush({});
   });
 
   it('refreshes the token once and retries after a 401', async () => {
     refresh.mockResolvedValue('new-token');
-    const response = firstValueFrom(http.get('/api/products'));
+    const response = firstValueFrom(httpClient.get('/api/products'));
 
-    backend.expectOne('/api/products').flush(null, { status: 401, statusText: 'Unauthorized' });
+    httpTestingController
+      .expectOne('/api/products')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
     await Promise.resolve();
-    const retry = backend.expectOne('/api/products');
+    const retry = httpTestingController.expectOne('/api/products');
     expect(retry.request.headers.get('Authorization')).toBe('Bearer new-token');
     retry.flush(['product']);
 
@@ -65,12 +67,14 @@ describe('authInterceptor', () => {
   });
 
   it('reuses a token another request already refreshed', async () => {
-    const response = firstValueFrom(http.get('/api/products'));
+    const response = firstValueFrom(httpClient.get('/api/products'));
     accessToken.set('fresh-token');
 
-    backend.expectOne('/api/products').flush(null, { status: 401, statusText: 'Unauthorized' });
+    httpTestingController
+      .expectOne('/api/products')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
     await Promise.resolve();
-    const retry = backend.expectOne('/api/products');
+    const retry = httpTestingController.expectOne('/api/products');
     expect(retry.request.headers.get('Authorization')).toBe('Bearer fresh-token');
     retry.flush([]);
 
@@ -80,27 +84,33 @@ describe('authInterceptor', () => {
 
   it('goes to the login page when the session cannot be refreshed', async () => {
     refresh.mockResolvedValue(null);
-    const response = firstValueFrom(http.get('/api/products'));
+    const response = firstValueFrom(httpClient.get('/api/products'));
 
-    backend.expectOne('/api/products').flush(null, { status: 401, statusText: 'Unauthorized' });
+    httpTestingController
+      .expectOne('/api/products')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
 
     await expect(response).rejects.toMatchObject({ status: 401 });
     expect(navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('does not refresh when an auth request itself returns 401', async () => {
-    const response = firstValueFrom(http.post('/api/auth/login', {}));
+    const response = firstValueFrom(httpClient.post('/api/auth/login', {}));
 
-    backend.expectOne('/api/auth/login').flush(null, { status: 401, statusText: 'Unauthorized' });
+    httpTestingController
+      .expectOne('/api/auth/login')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
 
     await expect(response).rejects.toMatchObject({ status: 401 });
     expect(refresh).not.toHaveBeenCalled();
   });
 
   it('passes other errors through unchanged', async () => {
-    const response = firstValueFrom(http.get('/api/products'));
+    const response = firstValueFrom(httpClient.get('/api/products'));
 
-    backend.expectOne('/api/products').flush(null, { status: 500, statusText: 'Server Error' });
+    httpTestingController
+      .expectOne('/api/products')
+      .flush(null, { status: 500, statusText: 'Server Error' });
 
     await expect(response).rejects.toMatchObject({ status: 500 });
     expect(refresh).not.toHaveBeenCalled();

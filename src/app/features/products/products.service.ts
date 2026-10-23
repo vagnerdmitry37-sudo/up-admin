@@ -6,14 +6,14 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  private readonly http = inject(HttpClient);
+  private readonly httpClient = inject(HttpClient);
   private readonly url = `${inject(API_BASE_URL)}/products`;
 
-  get = (ids: string[]) => this.http.get<Product[]>(this.url, { params: { ids } });
+  get = (ids: string[]) => this.httpClient.get<Product[]>(this.url, { params: { ids } });
 
   create = (requests: CreateProductRequest[]) =>
-    firstValueFrom(this.http.post<Product[]>(this.url, requests));
+    firstValueFrom(this.httpClient.post<Product[]>(this.url, requests));
 
   update = (requests: UpdateProductRequest[]) =>
-    firstValueFrom(this.http.put<Product[]>(this.url, requests));
+    firstValueFrom(this.httpClient.put<Product[]>(this.url, requests));
 }

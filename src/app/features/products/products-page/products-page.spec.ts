@@ -37,7 +37,7 @@ describe('ProductsPage', () => {
     const element: HTMLElement = fixture.nativeElement;
     return {
       element,
-      editActions: TestBed.inject(EditActionsService),
+      editActionsService: TestBed.inject(EditActionsService),
       select: async (index: number) => {
         (element.querySelectorAll('tbody tr')[index] as HTMLElement).click();
         await fixture.whenStable();
@@ -70,37 +70,37 @@ describe('ProductsPage', () => {
   });
 
   it('suggests Create when there are no products', async () => {
-    const { element, editActions } = await render([]);
+    const { element, editActionsService } = await render([]);
 
     expect(element.textContent).toContain('No products yet');
-    expect(editActions.suggested()).toEqual(['create']);
+    expect(editActionsService.suggested()).toEqual(['create']);
   });
 
   it('creates an empty product when nothing is selected', async () => {
-    const { editActions } = await render(products);
+    const { editActionsService } = await render(products);
 
-    expect(Object.keys(editActions.actions())).toEqual(['create']);
-    editActions.run('create');
+    expect(Object.keys(editActionsService.actions())).toEqual(['create']);
+    editActionsService.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/products/new'], {});
   });
 
   it('copies the selected products with Create', async () => {
-    const { editActions, select } = await render(products);
+    const { editActionsService, select } = await render(products);
     await select(0);
     await select(1);
 
-    editActions.run('create');
+    editActionsService.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/products/new'], { queryParams: { from: 'p1,p2' } });
   });
 
   it('edits the selected products together', async () => {
-    const { editActions, select } = await render(products);
+    const { editActionsService, select } = await render(products);
     await select(1);
     await select(0);
 
-    editActions.run('edit');
+    editActionsService.run('edit');
 
     expect(navigate).toHaveBeenCalledWith(['/products', 'p2,p1', 'edit']);
   });

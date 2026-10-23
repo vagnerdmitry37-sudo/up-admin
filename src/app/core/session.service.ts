@@ -6,7 +6,7 @@ import { AccessToken } from './api/models';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
-  private readonly http = inject(HttpClient);
+  private readonly httpClient = inject(HttpClient);
   private readonly authUrl = `${inject(API_BASE_URL)}/auth`;
   private readonly token = signal<string | null>(null);
   private refreshing: Promise<string | null> | null = null;
@@ -37,7 +37,7 @@ export class SessionService {
 
   async logout(): Promise<void> {
     try {
-      await firstValueFrom(this.http.post<void>(`${this.authUrl}/logout`, {}));
+      await firstValueFrom(this.httpClient.post<void>(`${this.authUrl}/logout`, {}));
     } finally {
       this.token.set(null);
     }
@@ -57,7 +57,7 @@ export class SessionService {
 
   private async requestToken(endpoint: 'login' | 'refresh', body: object): Promise<string> {
     const { accessToken } = await firstValueFrom(
-      this.http.post<AccessToken>(`${this.authUrl}/${endpoint}`, body),
+      this.httpClient.post<AccessToken>(`${this.authUrl}/${endpoint}`, body),
     );
     this.token.set(accessToken);
     return accessToken;

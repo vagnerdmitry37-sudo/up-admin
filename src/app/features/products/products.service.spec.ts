@@ -15,7 +15,7 @@ const request = {
 
 describe('ProductsService', () => {
   let service: ProductsService;
-  let http: HttpTestingController;
+  let httpTestingController: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -26,15 +26,15 @@ describe('ProductsService', () => {
       ],
     });
     service = TestBed.inject(ProductsService);
-    http = TestBed.inject(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => httpTestingController.verify());
 
   it('loads several products with one request', () => {
     void firstValueFrom(service.get(['a', 'b']));
 
-    const call = http.expectOne((req) => req.url === '/api/products');
+    const call = httpTestingController.expectOne((req) => req.url === '/api/products');
     expect(call.request.method).toBe('GET');
     expect(call.request.params.getAll('ids')).toEqual(['a', 'b']);
     call.flush([]);
@@ -43,7 +43,7 @@ describe('ProductsService', () => {
   it('creates products with one POST of an array', async () => {
     const created = service.create([request, request]);
 
-    const call = http.expectOne('/api/products');
+    const call = httpTestingController.expectOne('/api/products');
     expect(call.request.method).toBe('POST');
     expect(call.request.body).toEqual([request, request]);
     call.flush([{ ...request, id: 'new' }]);
@@ -54,7 +54,7 @@ describe('ProductsService', () => {
   it('updates products with one PUT of an array', async () => {
     const updated = service.update([{ ...request, id: 'a' }]);
 
-    const call = http.expectOne('/api/products');
+    const call = httpTestingController.expectOne('/api/products');
     expect(call.request.method).toBe('PUT');
     expect(call.request.body).toEqual([{ ...request, id: 'a' }]);
     call.flush([]);

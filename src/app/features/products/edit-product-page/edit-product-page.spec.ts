@@ -29,14 +29,14 @@ const products: Product[] = [
 const settle = () => new Promise((resolve) => setTimeout(resolve));
 
 describe('EditProductPage', () => {
-  let http: HttpTestingController;
+  let httpTestingController: HttpTestingController;
   let navigateByUrl: ReturnType<typeof vi.spyOn>;
 
   const render = async (ids: string, loaded: Product[]) => {
     const fixture = TestBed.createComponent(EditProductPage);
     fixture.componentRef.setInput('ids', ids);
     TestBed.tick();
-    const load = http.expectOne((req) => req.url === '/api/products');
+    const load = httpTestingController.expectOne((req) => req.url === '/api/products');
     load.flush(loaded);
     await fixture.whenStable();
     return { fixture, element: fixture.nativeElement as HTMLElement, load };
@@ -56,11 +56,11 @@ describe('EditProductPage', () => {
         { provide: API_BASE_URL, useValue: '/api' },
       ],
     });
-    http = TestBed.inject(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
     navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => httpTestingController.verify());
 
   it('loads every product in the address with one request', async () => {
     const { load, element } = await render('p1,p2', products);
@@ -85,7 +85,7 @@ describe('EditProductPage', () => {
     name.dispatchEvent(new Event('input'));
 
     await save();
-    const call = http.expectOne((req) => req.method === 'PUT');
+    const call = httpTestingController.expectOne((req) => req.method === 'PUT');
     call.flush([]);
     await settle();
 
@@ -130,7 +130,7 @@ describe('EditProductPage', () => {
       await fixture.whenStable();
 
       await save();
-      const call = http.expectOne((req) => req.method === 'PUT');
+      const call = httpTestingController.expectOne((req) => req.method === 'PUT');
       call.flush([]);
       await settle();
 
@@ -139,14 +139,14 @@ describe('EditProductPage', () => {
 
     it('goes back to the products list when the last product is cancelled', async () => {
       const { fixture } = await render('p1,p2', products);
-      const actions = TestBed.inject(EditActionsService);
+      const editActionsService = TestBed.inject(EditActionsService);
 
-      actions.run('edit');
+      editActionsService.run('edit');
       await fixture.whenStable();
-      actions.run('edit');
+      editActionsService.run('edit');
 
       expect(navigateByUrl).toHaveBeenCalledWith('/products');
-      http.expectNone((req) => req.method === 'PUT');
+      httpTestingController.expectNone((req) => req.method === 'PUT');
     });
 
     it('cancels every product on long press', async () => {
@@ -155,19 +155,19 @@ describe('EditProductPage', () => {
       TestBed.inject(EditActionsService).run('edit', 'longPress');
 
       expect(navigateByUrl).toHaveBeenCalledWith('/products');
-      http.expectNone((req) => req.method === 'PUT');
+      httpTestingController.expectNone((req) => req.method === 'PUT');
     });
 
     it('treats press and long press the same for a single product', async () => {
       await render('p1', [products[0]]);
-      const actions = TestBed.inject(EditActionsService);
+      const editActionsService = TestBed.inject(EditActionsService);
 
-      actions.run('edit');
-      actions.run('edit', 'longPress');
+      editActionsService.run('edit');
+      editActionsService.run('edit', 'longPress');
 
       expect(navigateByUrl).toHaveBeenNthCalledWith(1, '/products');
       expect(navigateByUrl).toHaveBeenNthCalledWith(2, '/products');
-      http.expectNone((req) => req.method === 'PUT');
+      httpTestingController.expectNone((req) => req.method === 'PUT');
     });
   });
 
@@ -179,7 +179,7 @@ describe('EditProductPage', () => {
 
     await save();
 
-    http.expectNone((req) => req.method === 'PUT');
+    httpTestingController.expectNone((req) => req.method === 'PUT');
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
 });

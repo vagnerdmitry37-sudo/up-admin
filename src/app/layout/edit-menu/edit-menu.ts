@@ -43,18 +43,18 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditMenu {
-  private readonly editActions = inject(EditActionsService);
+  private readonly editActionsService = inject(EditActionsService);
   private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
 
   protected readonly cancelIcon = OpenngIcons.TIMES;
   protected readonly open = signal(false);
-  protected readonly suggested = this.editActions.suggested;
+  protected readonly suggested = this.editActionsService.suggested;
   protected readonly hasActions = computed(
-    () => Object.keys(this.editActions.actions()).length > 0,
+    () => Object.keys(this.editActionsService.actions()).length > 0,
   );
   protected readonly items = computed<MenuItem[]>(() => {
-    const actions = this.editActions.actions();
+    const actions = this.editActionsService.actions();
     const suggested = this.suggested();
     return ACTIONS.map(({ action, label, icon }) => {
       const cancel = Boolean(actions[action]?.cancel);
@@ -79,7 +79,7 @@ export class EditMenu {
   protected toggle = () => this.open.update((open) => !open);
 
   protected run = (action: EditAction, gesture: EditGesture) =>
-    this.editActions.run(action, gesture);
+    this.editActionsService.run(action, gesture);
 
   private item({ action, label, icon, visible, cancel }: MenuAction): MenuItem {
     const key = `${action}|${label}|${icon}|${visible}|${cancel}`;
@@ -91,7 +91,7 @@ export class EditMenu {
         icon,
         visible,
         state: { cancel },
-        command: () => this.editActions.run(action),
+        command: () => this.editActionsService.run(action),
       };
       this.itemCache.set(key, item);
     }

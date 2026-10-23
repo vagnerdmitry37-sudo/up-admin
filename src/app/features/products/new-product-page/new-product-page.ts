@@ -25,14 +25,14 @@ export class NewProductPage {
   readonly from = input<string>();
 
   private readonly router = inject(Router);
-  private readonly products = inject(ProductsService);
+  private readonly productsService = inject(ProductsService);
   private readonly form = viewChild(ProductForm);
   private readonly tabs = viewChild(ProductTabs);
   private readonly saving = signal(false);
 
   protected readonly sources = rxResource({
     params: () => this.from()?.split(','),
-    stream: ({ params }) => this.products.get(params),
+    stream: ({ params }) => this.productsService.get(params),
   });
   protected readonly copies = computed(() =>
     this.sources.hasValue()
@@ -80,7 +80,7 @@ export class NewProductPage {
     }
     this.saving.set(true);
     try {
-      await this.products.create(requests);
+      await this.productsService.create(requests);
       await this.router.navigateByUrl('/products');
     } finally {
       this.saving.set(false);

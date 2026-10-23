@@ -16,7 +16,7 @@ import { AppButton } from '@shared/button/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginPage {
-  private readonly session = inject(SessionService);
+  private readonly sessionService = inject(SessionService);
   private readonly router = inject(Router);
 
   protected readonly form = inject(NonNullableFormBuilder).group({
@@ -41,7 +41,7 @@ export class LoginPage {
     this.credentialsRejected.set(false);
     try {
       const { email, password } = this.form.getRawValue();
-      if (await this.session.login(email, password)) {
+      if (await this.sessionService.login(email, password)) {
         await this.router.navigateByUrl('/');
       } else {
         this.credentialsRejected.set(true);

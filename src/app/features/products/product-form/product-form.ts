@@ -30,18 +30,18 @@ export class ProductForm {
   readonly product = input<Product>();
   readonly submitted = output<ProductFormValue>();
 
-  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly shell = viewChild.required(FormShell);
 
   protected readonly typeOptions = PRODUCT_TYPES.map((type) => ({
     label: type,
     value: type,
   }));
-  protected readonly form = this.fb.group({
-    type: this.fb.control<ProductType>('Excursion', Validators.required),
+  protected readonly form = this.formBuilder.group({
+    type: this.formBuilder.control<ProductType>('Excursion', Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],
     description: ['', [Validators.required, Validators.maxLength(5000)]],
-    price: this.fb.control<number>(0, [Validators.required, Validators.min(0)]),
+    price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
   });
 
   constructor() {

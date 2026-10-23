@@ -9,7 +9,7 @@ const withToken = (request: HttpRequest<unknown>, token: string | null) =>
   token ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : request;
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const session = inject(SessionService);
+  const sessionService = inject(SessionService);
   const router = inject(Router);
   const apiUrl = `${inject(API_BASE_URL)}/`;
 
@@ -17,7 +17,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     return next(request);
   }
 
-  const sentAccessToken = session.accessToken();
+  const sentAccessToken = sessionService.accessToken();
   const isAuthRequest = request.url.startsWith(`${apiUrl}auth/`);
 
   return next(withToken(request, sentAccessToken)).pipe(
@@ -26,11 +26,11 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
-      const currentAccessToken = session.accessToken();
+      const currentAccessToken = sessionService.accessToken();
       const freshAccessToken =
         currentAccessToken && currentAccessToken !== sentAccessToken
           ? Promise.resolve(currentAccessToken)
-          : session.refresh();
+          : sessionService.refresh();
 
       return from(freshAccessToken).pipe(
         switchMap((token) => {

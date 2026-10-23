@@ -29,7 +29,7 @@ const sources: Product[] = [
 const settle = () => new Promise((resolve) => setTimeout(resolve));
 
 describe('NewProductPage', () => {
-  let http: HttpTestingController;
+  let httpTestingController: HttpTestingController;
   let navigateByUrl: ReturnType<typeof vi.spyOn>;
 
   const render = async (from?: string) => {
@@ -55,11 +55,11 @@ describe('NewProductPage', () => {
         { provide: API_BASE_URL, useValue: '/api' },
       ],
     });
-    http = TestBed.inject(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
     navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => httpTestingController.verify());
 
   it('creates a new product from the filled form', async () => {
     const { element } = await render();
@@ -71,7 +71,7 @@ describe('NewProductPage', () => {
     description.dispatchEvent(new Event('input'));
 
     await save();
-    const call = http.expectOne('/api/products');
+    const call = httpTestingController.expectOne('/api/products');
     call.flush([]);
     await settle();
 
@@ -94,7 +94,7 @@ describe('NewProductPage', () => {
     TestBed.inject(EditActionsService).run('create');
 
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
-    http.expectNone('/api/products');
+    httpTestingController.expectNone('/api/products');
   });
 
   it('sends nothing while the form is invalid', async () => {
@@ -102,14 +102,14 @@ describe('NewProductPage', () => {
 
     await save();
 
-    http.expectNone('/api/products');
+    httpTestingController.expectNone('/api/products');
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
   it('pre-fills copies of the source products, one tab each', async () => {
     const { fixture, element } = await render('p1,p2');
 
-    const load = http.expectOne((req) => req.url === '/api/products');
+    const load = httpTestingController.expectOne((req) => req.url === '/api/products');
     expect(load.request.params.getAll('ids')).toEqual(['p1', 'p2']);
     load.flush(sources);
     await fixture.whenStable();
@@ -127,7 +127,7 @@ describe('NewProductPage', () => {
 
     const renderCopies = async (from: string, products: Product[]) => {
       const rendered = await render(from);
-      http.expectOne((req) => req.url === '/api/products').flush(products);
+      httpTestingController.expectOne((req) => req.url === '/api/products').flush(products);
       await rendered.fixture.whenStable();
       return rendered;
     };
@@ -144,11 +144,11 @@ describe('NewProductPage', () => {
 
     it('goes back to the products list when the last copy is cancelled', async () => {
       const { fixture } = await renderCopies('p1,p2', sources);
-      const actions = TestBed.inject(EditActionsService);
+      const editActionsService = TestBed.inject(EditActionsService);
 
-      actions.run('create');
+      editActionsService.run('create');
       await fixture.whenStable();
-      actions.run('create');
+      editActionsService.run('create');
 
       expect(navigateByUrl).toHaveBeenCalledWith('/products');
     });
@@ -163,24 +163,24 @@ describe('NewProductPage', () => {
 
     it('treats press and long press the same for a single copy', async () => {
       await renderCopies('p1', [sources[0]]);
-      const actions = TestBed.inject(EditActionsService);
+      const editActionsService = TestBed.inject(EditActionsService);
 
-      actions.run('create');
-      actions.run('create', 'longPress');
+      editActionsService.run('create');
+      editActionsService.run('create', 'longPress');
 
       expect(navigateByUrl).toHaveBeenNthCalledWith(1, '/products');
       expect(navigateByUrl).toHaveBeenNthCalledWith(2, '/products');
-      http.expectNone((req) => req.method === 'POST');
+      httpTestingController.expectNone((req) => req.method === 'POST');
     });
   });
 
   it('saves the copies as new products without ids, keeping their attributes', async () => {
     const { fixture } = await render('p1,p2');
-    http.expectOne((req) => req.url === '/api/products').flush(sources);
+    httpTestingController.expectOne((req) => req.url === '/api/products').flush(sources);
     await fixture.whenStable();
 
     await save();
-    const call = http.expectOne((req) => req.method === 'POST');
+    const call = httpTestingController.expectOne((req) => req.method === 'POST');
     call.flush([]);
     await settle();
 
@@ -200,7 +200,7 @@ describe('NewProductPage', () => {
         attributes: {},
       },
     ]);
-    http.expectNone((req) => req.method === 'PUT');
+    httpTestingController.expectNone((req) => req.method === 'PUT');
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
 });
