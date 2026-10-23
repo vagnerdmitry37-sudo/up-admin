@@ -41,11 +41,11 @@ export class ProductsPage {
 
   constructor() {
     inject(EditActionsService).register({
-      handlers: () => {
+      actions: () => {
         const ids = this.selected().map((product) => product.id);
         return {
-          create: () => this.create(ids),
-          ...(ids.length > 0 && { edit: () => this.edit(ids) }),
+          create: { press: () => this.create(ids) },
+          edit: { press: () => this.edit(ids), visible: ids.length > 0 },
         };
       },
       suggested: () =>
@@ -53,9 +53,9 @@ export class ProductsPage {
     });
   }
 
-  private create(ids: string[]): Promise<boolean> {
+  private create(ids: string[]) {
     const queryParams = ids.length > 0 ? { from: ids.join(',') } : undefined;
-    return this.router.navigate(['/products/new'], { queryParams });
+    this.router.navigate(['/products/new'], { queryParams });
   }
 
   private edit = (ids: string[]) => this.router.navigate(['/products', ids.join(','), 'edit']);

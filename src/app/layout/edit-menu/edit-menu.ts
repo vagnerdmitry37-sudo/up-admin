@@ -7,9 +7,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditAction, EditActionsService } from '@core/edit-actions.service';
+import { EditAction, EditActionsService, EditGesture } from '@core/edit-actions.service';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
+import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
+import { Ripple } from '@openng/optimus-ui/ripple';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
+import { Press } from '@shared/press/press';
 
 interface Action {
   action: EditAction;
@@ -29,7 +32,7 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
   selector: 'app-edit-menu',
-  imports: [SpeedDial],
+  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, Press],
   host: { '[class.suggesting]': 'suggested() && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',
@@ -43,10 +46,10 @@ export class EditMenu {
   protected readonly open = signal(false);
   protected readonly suggested = this.editActions.suggested;
   protected readonly hasActions = computed(
-    () => Object.keys(this.editActions.handlers()).length > 0,
+    () => Object.keys(this.editActions.actions()).length > 0,
   );
   protected readonly items = computed<MenuItem[]>(() => {
-    const handlers = this.editActions.handlers();
+    const actions = this.editActions.actions();
     const cancelling = this.editActions.cancelling();
     const suggested = this.suggested();
     return ACTIONS.map(({ action, label, icon }) => {
@@ -55,7 +58,7 @@ export class EditMenu {
         action,
         label: look.label,
         icon: action === suggested ? `${look.icon} ${SUGGESTED_CLASS}` : look.icon,
-        visible: Boolean(handlers[action]),
+        visible: Boolean(actions[action]),
       });
     });
   });
@@ -70,11 +73,14 @@ export class EditMenu {
 
   protected toggle = () => this.open.update((open) => !open);
 
+  protected run = (action: EditAction, gesture: EditGesture) =>
+    this.editActions.run(action, gesture);
+
   private item({ action, label, icon, visible }: Action & { visible: boolean }): MenuItem {
     const key = `${action}|${label}|${icon}|${visible}`;
     let item = this.itemCache.get(key);
     if (!item) {
-      item = { label, icon, visible, command: () => this.editActions.run(action) };
+      item = { id: action, label, icon, visible, command: () => this.editActions.run(action) };
       this.itemCache.set(key, item);
     }
     return item;

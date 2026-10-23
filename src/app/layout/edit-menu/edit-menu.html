@@ -10,5 +10,24 @@
     ariaLabel="Edit actions"
     (onClick)="toggle()"
     (onHide)="keepOpen()"
-  />
+  >
+    <ng-template #item let-item>
+      <button
+        type="button"
+        pButton
+        pRipple
+        class="p-speeddial-action"
+        severity="secondary"
+        [rounded]="true"
+        size="small"
+        [attr.aria-label]="item.label"
+        [attr.tabindex]="open() ? 0 : null"
+        appPress
+        (press)="run(item.id, 'press')"
+        (longPress)="run(item.id, 'longPress')"
+      >
+        <span pButtonIcon [class]="item.icon"></span>
+      </button>
+    </ng-template>
+  </p-speeddial>
 }

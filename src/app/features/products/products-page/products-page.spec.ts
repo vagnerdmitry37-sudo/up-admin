@@ -37,7 +37,7 @@ describe('ProductsPage', () => {
     const element: HTMLElement = fixture.nativeElement;
     return {
       element,
-      actions: TestBed.inject(EditActionsService),
+      editActions: TestBed.inject(EditActionsService),
       select: async (index: number) => {
         (element.querySelectorAll('tbody tr')[index] as HTMLElement).click();
         await fixture.whenStable();
@@ -70,37 +70,37 @@ describe('ProductsPage', () => {
   });
 
   it('suggests Create when there are no products', async () => {
-    const { element, actions } = await render([]);
+    const { element, editActions } = await render([]);
 
     expect(element.textContent).toContain('No products yet');
-    expect(actions.suggested()).toBe('create');
+    expect(editActions.suggested()).toBe('create');
   });
 
   it('creates an empty product when nothing is selected', async () => {
-    const { actions } = await render(products);
+    const { editActions } = await render(products);
 
-    expect(Object.keys(actions.handlers())).toEqual(['create']);
-    actions.run('create');
+    expect(Object.keys(editActions.actions())).toEqual(['create']);
+    editActions.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/products/new'], {});
   });
 
   it('copies the selected products with Create', async () => {
-    const { actions, select } = await render(products);
+    const { editActions, select } = await render(products);
     await select(0);
     await select(1);
 
-    actions.run('create');
+    editActions.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/products/new'], { queryParams: { from: 'p1,p2' } });
   });
 
   it('edits the selected products together', async () => {
-    const { actions, select } = await render(products);
+    const { editActions, select } = await render(products);
     await select(1);
     await select(0);
 
-    actions.run('edit');
+    editActions.run('edit');
 
     expect(navigate).toHaveBeenCalledWith(['/products', 'p2,p1', 'edit']);
   });

@@ -4,7 +4,15 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 
 export type EditAction = 'create' | 'edit' | 'save' | 'delete';
-export type EditHandlers = Partial<Record<EditAction, VoidFunction>>;
+export type EditGesture = 'press' | 'longPress';
+
+export interface EditActionConfig {
+  press?: VoidFunction;
+  longPress?: VoidFunction;
+  visible?: boolean;
+}
+
+export type EditActions = Partial<Record<EditAction, EditActionConfig>>;
 
 export interface RouteCancel {
   action: EditAction;
@@ -12,7 +20,7 @@ export interface RouteCancel {
 }
 
 export interface EditActionsRegistration {
-  handlers: () => EditHandlers;
+  actions: () => EditActions;
   suggested?: () => EditAction | undefined;
 }
 
@@ -31,13 +39,15 @@ export class EditActionsService {
 
   readonly cancelling = computed(() => this.routeCancel()?.action);
   readonly suggested = computed(() => this.stack().at(-1)?.suggested?.());
-  readonly handlers = computed<EditHandlers>(() => {
+  readonly actions = computed(() => {
     const cancel = this.routeCancel();
-    const handlers = this.stack().at(-1)?.handlers() ?? {};
-    if (!cancel) {
-      return handlers;
-    }
-    return { ...handlers, [cancel.action]: () => this.router.navigateByUrl(cancel.url) };
+    const registered = this.stack().at(-1)?.actions() ?? {};
+    const actions: EditActions = cancel
+      ? { ...registered, [cancel.action]: { press: () => this.router.navigateByUrl(cancel.url) } }
+      : registered;
+    return Object.fromEntries(
+      Object.entries(actions).filter(([, config]) => config.visible !== false),
+    ) as EditActions;
   });
 
   register(registration: EditActionsRegistration): void {
@@ -47,7 +57,10 @@ export class EditActionsService {
     );
   }
 
-  run = (action: EditAction) => this.handlers()[action]?.();
+  run(action: EditAction, gesture: EditGesture = 'press'): void {
+    const config = this.actions()[action];
+    (config?.[gesture] ?? config?.press)?.();
+  }
 
   private findRouteCancel(): RouteCancel | undefined {
     let route = this.router.routerState.snapshot.root;

@@ -3,6 +3,7 @@ import { DestroyRef, Directive, inject, input, output } from '@angular/core';
 @Directive({
   selector: '[appPress]',
   host: {
+    style: 'user-select: none; -webkit-user-select: none; -webkit-touch-callout: none',
     '(pointerdown)': 'startHold()',
     '(pointerup)': 'stopHold()',
     '(pointercancel)': 'stopHold()',

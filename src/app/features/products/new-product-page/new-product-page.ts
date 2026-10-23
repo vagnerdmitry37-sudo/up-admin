@@ -42,8 +42,8 @@ export class NewProductPage {
 
   constructor() {
     inject(EditActionsService).register({
-      handlers: () => ({
-        save: () => (this.from() ? this.createCopies() : this.form()?.save()),
+      actions: () => ({
+        save: { press: () => (this.from() ? this.createCopies() : this.form()?.save()) },
       }),
     });
   }

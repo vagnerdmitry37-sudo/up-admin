@@ -1,15 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { EditActionsService, EditHandlers, RouteCancel } from '@core/edit-actions.service';
+import { EditActionsService, EditActions, RouteCancel } from '@core/edit-actions.service';
 import { EditMenu } from './edit-menu';
 
-const handlers = signal<EditHandlers>({});
+const actions = signal<EditActions>({});
 
 @Component({ selector: 'app-page', template: '' })
 class Page {
   constructor() {
-    inject(EditActionsService).register({ handlers: () => handlers() });
+    inject(EditActionsService).register({ actions: () => actions() });
   }
 }
 
@@ -23,7 +23,7 @@ const actionLabels = (element: HTMLElement) =>
 
 describe('EditMenu', () => {
   beforeEach(() => {
-    handlers.set({});
+    actions.set({});
     TestBed.configureTestingModule({
       imports: [EditMenu],
       providers: [
@@ -48,17 +48,26 @@ describe('EditMenu', () => {
 
   it('shows only the actions the page registered', async () => {
     TestBed.createComponent(Page);
-    handlers.set({ create: vi.fn(), edit: vi.fn() });
+    actions.set({ create: { press: vi.fn() }, edit: { press: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
     expect(actionLabels(menu.nativeElement)).toEqual(['Create', 'Edit']);
   });
 
+  it('hides an action the page marks as not visible', async () => {
+    TestBed.createComponent(Page);
+    actions.set({ create: { press: vi.fn() }, edit: { press: vi.fn(), visible: false } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+
+    expect(actionLabels(menu.nativeElement)).toEqual(['Create']);
+  });
+
   it('runs the registered handler when an action is pressed', async () => {
     const edit = vi.fn();
     TestBed.createComponent(Page);
-    handlers.set({ edit });
+    actions.set({ edit: { press: edit } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
@@ -67,10 +76,30 @@ describe('EditMenu', () => {
     expect(edit).toHaveBeenCalledTimes(1);
   });
 
+  it('runs the long press handler when an action is held', async () => {
+    const press = vi.fn();
+    const longPress = vi.fn();
+    TestBed.createComponent(Page);
+    actions.set({ edit: { press, longPress } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+    const button: HTMLButtonElement = menu.nativeElement.querySelector('[aria-label="Edit"]');
+
+    vi.useFakeTimers();
+    button.dispatchEvent(new Event('pointerdown'));
+    vi.advanceTimersByTime(600);
+    button.dispatchEvent(new Event('pointerup'));
+    button.click();
+    vi.useRealTimers();
+
+    expect(longPress).toHaveBeenCalledTimes(1);
+    expect(press).not.toHaveBeenCalled();
+  });
+
   it('labels the cancelled action Cancel on routes that declare it', async () => {
     await TestBed.inject(Router).navigateByUrl('/new');
     TestBed.createComponent(Page);
-    handlers.set({ save: vi.fn() });
+    actions.set({ save: { press: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
@@ -79,12 +108,12 @@ describe('EditMenu', () => {
 
   it('keeps the same buttons when the actions do not change', async () => {
     TestBed.createComponent(Page);
-    handlers.set({ create: vi.fn() });
+    actions.set({ create: { press: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
     const before = menu.nativeElement.querySelector('[aria-label="Create"]');
 
-    handlers.set({ create: vi.fn() });
+    actions.set({ create: { press: vi.fn() } });
     await menu.whenStable();
 
     expect(menu.nativeElement.querySelector('[aria-label="Create"]')).toBe(before);
