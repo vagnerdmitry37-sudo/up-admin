@@ -1,13 +1,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-}
-
-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+  height: 100dvh;
 }
 
 .footer {
@@ -22,9 +16,12 @@ footer {
 }
 
 .content {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
-  padding: 1rem;
 }
