@@ -104,14 +104,14 @@ export class ProductsPage implements OnInit {
     const queryParams = ids.length > 0 ? { from: ids.join(',') } : undefined;
 
     return {
-      press: () => this.router.navigate(['/products/new'], { queryParams }),
+      click: () => this.router.navigate(['/products/new'], { queryParams }),
       suggested: this.rows()?.length === 0,
     };
   }
 
   private editAction(ids: string[]): EditActionConfig {
     return {
-      press: () => this.router.navigate(['/products', ids.join(','), 'edit']),
+      click: () => this.router.navigate(['/products', ids.join(','), 'edit']),
       visible: ids.length > 0,
     };
   }

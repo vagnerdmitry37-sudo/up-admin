@@ -1,12 +1,12 @@
 @if (inTabs()) {
   <p-tabs [(value)]="active" scrollable lazy>
     <p-tablist>
-      @for (product of openProducts(); track product.id) {
+      @for (product of products(); track product.id) {
         <p-tab [value]="product.id">{{ product.name }}</p-tab>
       }
     </p-tablist>
     <p-tabpanels>
-      @for (product of openProducts(); track product.id) {
+      @for (product of products(); track product.id) {
         <p-tabpanel [value]="product.id">
           <ng-template #content>
             <app-product-form [heading]="heading()" [product]="product" />
@@ -16,7 +16,7 @@
     </p-tabpanels>
   </p-tabs>
 } @else {
-  @for (product of openProducts(); track product.id) {
+  @for (product of products(); track product.id) {
     <app-product-form [heading]="heading()" [product]="product" />
   }
 }

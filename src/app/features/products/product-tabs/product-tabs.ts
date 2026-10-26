@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   linkedSignal,
   viewChildren,
@@ -33,22 +34,12 @@ export class ProductTabs {
 
   private readonly forms = viewChildren(ProductForm);
 
-  protected readonly openProducts = linkedSignal(() => this.products());
-  protected readonly inTabs = linkedSignal<Product[], boolean>({
-    source: this.openProducts,
-    computation: (products, previous) => previous?.value === true || products.length > 1,
-  });
-  protected readonly active = linkedSignal(() => this.openProducts()[0]?.id);
-
-  closeActive(): number {
-    const remaining = this.openProducts().filter((product) => product.id !== this.active());
-    this.openProducts.set(remaining);
-    return remaining.length;
-  }
+  protected readonly inTabs = computed(() => this.products().length > 1);
+  protected readonly active = linkedSignal(() => this.products()[0]?.id);
 
   values(): ProductTabValue[] | undefined {
     const values: ProductTabValue[] = [];
-    for (const product of this.openProducts()) {
+    for (const product of this.products()) {
       const form = this.forms().find((candidate) => candidate.product() === product);
       const value = form ? form.validValue() : toFormValue(product);
       if (!value) {

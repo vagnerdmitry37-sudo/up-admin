@@ -34,7 +34,7 @@ describe('EditMenu', () => {
 
   it('shows only the actions the page registered', async () => {
     TestBed.createComponent(Page);
-    actions.set({ create: { press: vi.fn() }, edit: { press: vi.fn() } });
+    actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
@@ -43,17 +43,17 @@ describe('EditMenu', () => {
 
   it('hides an action the page marks as not visible', async () => {
     TestBed.createComponent(Page);
-    actions.set({ create: { press: vi.fn() }, edit: { press: vi.fn(), visible: false } });
+    actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn(), visible: false } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
     expect(actionLabels(menu.nativeElement)).toEqual(['Create']);
   });
 
-  it('runs the registered handler when an action is pressed', async () => {
+  it('runs the registered handler when an action is clicked', async () => {
     const edit = vi.fn();
     TestBed.createComponent(Page);
-    actions.set({ edit: { press: edit } });
+    actions.set({ edit: { click: edit } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
@@ -62,32 +62,12 @@ describe('EditMenu', () => {
     expect(edit).toHaveBeenCalledTimes(1);
   });
 
-  it('runs the long press handler when an action is held', async () => {
-    const press = vi.fn();
-    const longPress = vi.fn();
-    TestBed.createComponent(Page);
-    actions.set({ edit: { press, longPress } });
-    const menu = TestBed.createComponent(EditMenu);
-    await menu.whenStable();
-    const button: HTMLButtonElement = menu.nativeElement.querySelector('[aria-label="Edit"]');
-
-    vi.useFakeTimers();
-    button.dispatchEvent(new Event('pointerdown'));
-    vi.advanceTimersByTime(600);
-    button.dispatchEvent(new Event('pointerup'));
-    button.click();
-    vi.useRealTimers();
-
-    expect(longPress).toHaveBeenCalledTimes(1);
-    expect(press).not.toHaveBeenCalled();
-  });
-
   it('pulses the closed button and marks every suggested action', async () => {
     TestBed.createComponent(Page);
     actions.set({
-      create: { press: vi.fn(), suggested: true },
-      edit: { press: vi.fn() },
-      save: { press: vi.fn(), suggested: true },
+      create: { click: vi.fn(), suggested: true },
+      edit: { click: vi.fn() },
+      save: { click: vi.fn(), suggested: true },
     });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
@@ -101,33 +81,21 @@ describe('EditMenu', () => {
 
   it('does not pulse when nothing is suggested', async () => {
     TestBed.createComponent(Page);
-    actions.set({ create: { press: vi.fn() } });
+    actions.set({ create: { click: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
 
     expect(menu.nativeElement.classList).not.toContain('suggesting');
   });
 
-  it('shows which action Cancel cancels, keeping its icon with a cancel badge', async () => {
-    TestBed.createComponent(Page);
-    actions.set({ create: { press: vi.fn(), cancel: true }, save: { press: vi.fn() } });
-    const menu = TestBed.createComponent(EditMenu);
-    await menu.whenStable();
-    const cancel = menu.nativeElement.querySelector('[aria-label="Cancel create"]');
-
-    expect(actionLabels(menu.nativeElement)).toEqual(['Cancel create', 'Save']);
-    expect(cancel.querySelector('.cancel-badge')).not.toBeNull();
-    expect(menu.nativeElement.querySelector('[aria-label="Save"] .cancel-badge')).toBeNull();
-  });
-
   it('keeps the same buttons when the actions do not change', async () => {
     TestBed.createComponent(Page);
-    actions.set({ create: { press: vi.fn() } });
+    actions.set({ create: { click: vi.fn() } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
     const before = menu.nativeElement.querySelector('[aria-label="Create"]');
 
-    actions.set({ create: { press: vi.fn() } });
+    actions.set({ create: { click: vi.fn() } });
     await menu.whenStable();
 
     expect(menu.nativeElement.querySelector('[aria-label="Create"]')).toBe(before);

@@ -1,14 +1,11 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 
 export type EditAction = 'create' | 'edit' | 'save' | 'delete';
-export type EditGesture = 'press' | 'longPress';
 
 export interface EditActionConfig {
-  press?: VoidFunction;
-  longPress?: VoidFunction;
+  click?: VoidFunction;
   visible?: boolean;
   suggested?: boolean;
-  cancel?: boolean;
 }
 
 export type EditActions = Partial<Record<EditAction, EditActionConfig>>;
@@ -40,8 +37,5 @@ export class EditActionsService {
     );
   }
 
-  run(action: EditAction, gesture: EditGesture = 'press'): void {
-    const config = this.actions()[action];
-    (config?.[gesture] ?? config?.press)?.();
-  }
+  run = (action: EditAction) => this.actions()[action]?.click?.();
 }

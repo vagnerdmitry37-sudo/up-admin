@@ -110,67 +110,6 @@ describe('EditProductPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
 
-  describe('cancel', () => {
-    const tabNames = (element: HTMLElement) =>
-      [...element.querySelectorAll('p-tab')].map((tab) => tab.textContent?.trim());
-
-    it('stops editing only the product in the active tab on press', async () => {
-      const { fixture, element } = await render('p1,p2', products);
-
-      TestBed.inject(EditActionsService).run('edit');
-      await fixture.whenStable();
-
-      expect(tabNames(element)).toEqual(['Airport to hotel']);
-      expect(navigateByUrl).not.toHaveBeenCalled();
-    });
-
-    it('saves only the products still being edited', async () => {
-      const { fixture } = await render('p1,p2', products);
-      TestBed.inject(EditActionsService).run('edit');
-      await fixture.whenStable();
-
-      await save();
-      const call = httpTestingController.expectOne((req) => req.method === 'PUT');
-      call.flush([]);
-      await settle();
-
-      expect(call.request.body.map((product: Product) => product.id)).toEqual(['p2']);
-    });
-
-    it('goes back to the products list when the last product is cancelled', async () => {
-      const { fixture } = await render('p1,p2', products);
-      const editActionsService = TestBed.inject(EditActionsService);
-
-      editActionsService.run('edit');
-      await fixture.whenStable();
-      editActionsService.run('edit');
-
-      expect(navigateByUrl).toHaveBeenCalledWith('/products');
-      httpTestingController.expectNone((req) => req.method === 'PUT');
-    });
-
-    it('cancels every product on long press', async () => {
-      await render('p1,p2', products);
-
-      TestBed.inject(EditActionsService).run('edit', 'longPress');
-
-      expect(navigateByUrl).toHaveBeenCalledWith('/products');
-      httpTestingController.expectNone((req) => req.method === 'PUT');
-    });
-
-    it('treats press and long press the same for a single product', async () => {
-      await render('p1', [products[0]]);
-      const editActionsService = TestBed.inject(EditActionsService);
-
-      editActionsService.run('edit');
-      editActionsService.run('edit', 'longPress');
-
-      expect(navigateByUrl).toHaveBeenNthCalledWith(1, '/products');
-      expect(navigateByUrl).toHaveBeenNthCalledWith(2, '/products');
-      httpTestingController.expectNone((req) => req.method === 'PUT');
-    });
-  });
-
   it('sends nothing while a product is invalid', async () => {
     const { element } = await render('p1', [products[0]]);
     const name = element.querySelector('app-text-field input') as HTMLInputElement;

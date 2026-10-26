@@ -14,7 +14,7 @@ class PageHost {
 @Component({ template: '' })
 class FormHost {
   constructor() {
-    inject(EditActionsService).register({ actions: () => ({ save: { press: () => undefined } }) });
+    inject(EditActionsService).register({ actions: () => ({ save: { click: () => undefined } }) });
   }
 }
 
@@ -34,7 +34,7 @@ describe('EditActionsService', () => {
     TestBed.createComponent(PageHost);
     const create = vi.fn();
 
-    actions.set({ create: { press: create } });
+    actions.set({ create: { click: create } });
     service.run('create');
 
     expect(Object.keys(service.actions())).toEqual(['create']);
@@ -43,7 +43,7 @@ describe('EditActionsService', () => {
 
   it('lets the latest registration win and restores the previous one when it goes away', () => {
     TestBed.createComponent(PageHost);
-    actions.set({ create: { press: vi.fn() } });
+    actions.set({ create: { click: vi.fn() } });
 
     const form = TestBed.createComponent(FormHost);
     expect(Object.keys(service.actions())).toEqual(['save']);
@@ -55,7 +55,7 @@ describe('EditActionsService', () => {
   it('ignores running an action the page did not register', () => {
     TestBed.createComponent(PageHost);
     const create = vi.fn();
-    actions.set({ create: { press: create } });
+    actions.set({ create: { click: create } });
 
     service.run('delete');
 
@@ -65,7 +65,7 @@ describe('EditActionsService', () => {
   it('leaves out an action the page marks as not visible', () => {
     TestBed.createComponent(PageHost);
     const edit = vi.fn();
-    actions.set({ create: { press: vi.fn() }, edit: { press: edit, visible: false } });
+    actions.set({ create: { click: vi.fn() }, edit: { click: edit, visible: false } });
 
     service.run('edit');
 
@@ -73,33 +73,9 @@ describe('EditActionsService', () => {
     expect(edit).not.toHaveBeenCalled();
   });
 
-  it('runs the handler of the gesture the user made', () => {
-    TestBed.createComponent(PageHost);
-    const press = vi.fn();
-    const longPress = vi.fn();
-    actions.set({ edit: { press, longPress } });
-
-    service.run('edit', 'longPress');
-    expect(longPress).toHaveBeenCalledTimes(1);
-    expect(press).not.toHaveBeenCalled();
-
-    service.run('edit');
-    expect(press).toHaveBeenCalledTimes(1);
-  });
-
-  it('falls back to the press handler when an action has no long press', () => {
-    TestBed.createComponent(PageHost);
-    const edit = vi.fn();
-    actions.set({ edit: { press: edit } });
-
-    service.run('edit', 'longPress');
-
-    expect(edit).toHaveBeenCalledTimes(1);
-  });
-
   it('drops a registration when its page is destroyed', () => {
     const page = TestBed.createComponent(PageHost);
-    actions.set({ create: { press: vi.fn() } });
+    actions.set({ create: { click: vi.fn() } });
 
     page.destroy();
 
@@ -110,10 +86,10 @@ describe('EditActionsService', () => {
     TestBed.createComponent(PageHost);
 
     actions.set({
-      create: { press: vi.fn(), suggested: true },
-      edit: { press: vi.fn() },
-      save: { press: vi.fn(), suggested: true },
-      delete: { press: vi.fn(), suggested: true, visible: false },
+      create: { click: vi.fn(), suggested: true },
+      edit: { click: vi.fn() },
+      save: { click: vi.fn(), suggested: true },
+      delete: { click: vi.fn(), suggested: true, visible: false },
     });
 
     expect(service.suggested()).toEqual(['create', 'save']);

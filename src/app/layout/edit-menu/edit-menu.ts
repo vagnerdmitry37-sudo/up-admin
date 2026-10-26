@@ -7,12 +7,11 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditAction, EditActionsService, EditGesture } from '@core/edit-actions.service';
+import { EditAction, EditActionsService } from '@core/edit-actions.service';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
-import { Press } from '@shared/press/press';
 
 interface Action {
   action: EditAction;
@@ -29,14 +28,13 @@ const ACTIONS: Action[] = [
 
 interface MenuAction extends Action {
   visible: boolean;
-  cancel: boolean;
 }
 
 const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
   selector: 'app-edit-menu',
-  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, Press],
+  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple],
   host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',
@@ -47,7 +45,6 @@ export class EditMenu {
   private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
 
-  protected readonly cancelIcon = OpenngIcons.TIMES;
   protected readonly open = signal(false);
   protected readonly suggested = this.editActionsService.suggested;
   protected readonly hasActions = computed(
@@ -56,16 +53,14 @@ export class EditMenu {
   protected readonly items = computed<MenuItem[]>(() => {
     const actions = this.editActionsService.actions();
     const suggested = this.suggested();
-    return ACTIONS.map(({ action, label, icon }) => {
-      const cancel = Boolean(actions[action]?.cancel);
-      return this.item({
+    return ACTIONS.map(({ action, label, icon }) =>
+      this.item({
         action,
-        label: cancel ? `Cancel ${label.toLowerCase()}` : label,
+        label,
         icon: suggested.includes(action) ? `${icon} ${SUGGESTED_CLASS}` : icon,
         visible: Boolean(actions[action]),
-        cancel,
-      });
-    });
+      }),
+    );
   });
 
   constructor() {
@@ -78,11 +73,10 @@ export class EditMenu {
 
   protected toggle = () => this.open.update((open) => !open);
 
-  protected run = (action: EditAction, gesture: EditGesture) =>
-    this.editActionsService.run(action, gesture);
+  protected run = (action: EditAction) => this.editActionsService.run(action);
 
-  private item({ action, label, icon, visible, cancel }: MenuAction): MenuItem {
-    const key = `${action}|${label}|${icon}|${visible}|${cancel}`;
+  private item({ action, label, icon, visible }: MenuAction): MenuItem {
+    const key = `${action}|${label}|${icon}|${visible}`;
     let item = this.itemCache.get(key);
     if (!item) {
       item = {
@@ -90,8 +84,6 @@ export class EditMenu {
         label,
         icon,
         visible,
-        state: { cancel },
-        command: () => this.editActionsService.run(action),
       };
       this.itemCache.set(key, item);
     }

@@ -88,15 +88,6 @@ describe('NewProductPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
 
-  it('cancels back to the products list', async () => {
-    await render();
-
-    TestBed.inject(EditActionsService).run('create');
-
-    expect(navigateByUrl).toHaveBeenCalledWith('/products');
-    httpTestingController.expectNone('/api/products');
-  });
-
   it('sends nothing while the form is invalid', async () => {
     await render();
 
@@ -119,59 +110,6 @@ describe('NewProductPage', () => {
       'Old Town Walk (copy)',
       'Airport to hotel (copy)',
     ]);
-  });
-
-  describe('cancel', () => {
-    const tabNames = (element: HTMLElement) =>
-      [...element.querySelectorAll('p-tab')].map((tab) => tab.textContent?.trim());
-
-    const renderCopies = async (from: string, products: Product[]) => {
-      const rendered = await render(from);
-      httpTestingController.expectOne((req) => req.url === '/api/products/by-ids').flush(products);
-      await rendered.fixture.whenStable();
-      return rendered;
-    };
-
-    it('drops only the copy in the active tab on press, staying on the page', async () => {
-      const { fixture, element } = await renderCopies('p1,p2', sources);
-
-      TestBed.inject(EditActionsService).run('create');
-      await fixture.whenStable();
-
-      expect(tabNames(element)).toEqual(['Airport to hotel (copy)']);
-      expect(navigateByUrl).not.toHaveBeenCalled();
-    });
-
-    it('goes back to the products list when the last copy is cancelled', async () => {
-      const { fixture } = await renderCopies('p1,p2', sources);
-      const editActionsService = TestBed.inject(EditActionsService);
-
-      editActionsService.run('create');
-      await fixture.whenStable();
-      editActionsService.run('create');
-
-      expect(navigateByUrl).toHaveBeenCalledWith('/products');
-    });
-
-    it('cancels every copy on long press', async () => {
-      await renderCopies('p1,p2', sources);
-
-      TestBed.inject(EditActionsService).run('create', 'longPress');
-
-      expect(navigateByUrl).toHaveBeenCalledWith('/products');
-    });
-
-    it('treats press and long press the same for a single copy', async () => {
-      await renderCopies('p1', [sources[0]]);
-      const editActionsService = TestBed.inject(EditActionsService);
-
-      editActionsService.run('create');
-      editActionsService.run('create', 'longPress');
-
-      expect(navigateByUrl).toHaveBeenNthCalledWith(1, '/products');
-      expect(navigateByUrl).toHaveBeenNthCalledWith(2, '/products');
-      httpTestingController.expectNone((req) => req.method === 'POST');
-    });
   });
 
   it('saves the copies as new products without ids, keeping their attributes', async () => {

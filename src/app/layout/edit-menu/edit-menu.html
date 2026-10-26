@@ -22,14 +22,9 @@
         size="small"
         [attr.aria-label]="item.label"
         [attr.tabindex]="open() ? 0 : null"
-        appPress
-        (press)="run(item.id, 'press')"
-        (longPress)="run(item.id, 'longPress')"
+        (click)="run(item.id)"
       >
         <span pButtonIcon [class]="item.icon"></span>
-        @if (item.state.cancel) {
-          <span class="cancel-badge" [class]="cancelIcon" aria-hidden="true"></span>
-        }
       </button>
     </ng-template>
   </p-speeddial>
