@@ -22,7 +22,7 @@
         size="small"
         [attr.aria-label]="item.label"
         [attr.tabindex]="open() ? 0 : null"
-        (click)="run(item.id)"
+        (click)="runAction(item.id)"
       >
         <span pButtonIcon [class]="item.icon"></span>
       </button>

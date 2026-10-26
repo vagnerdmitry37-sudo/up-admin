@@ -73,7 +73,7 @@ export class EditMenu {
 
   protected toggle = () => this.open.update((open) => !open);
 
-  protected run = (action: EditAction) => this.editActionsService.run(action);
+  protected runAction = (action: EditAction) => this.editActionsService.run(action);
 
   private item({ action, label, icon, visible }: MenuAction): MenuItem {
     const key = `${action}|${label}|${icon}|${visible}`;
