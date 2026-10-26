@@ -17,6 +17,8 @@ const actionLabels = (element: HTMLElement) =>
     .filter((item) => !item.classList.contains('p-hidden'))
     .map((item) => item.querySelector('button')?.getAttribute('aria-label'));
 
+const isOpen = (element: HTMLElement) => Boolean(element.querySelector('.p-speeddial-open'));
+
 describe('EditMenu', () => {
   beforeEach(() => {
     actions.set({});
@@ -71,6 +73,8 @@ describe('EditMenu', () => {
     });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
+    menu.nativeElement.querySelector('.p-speeddial-button').click();
+    await menu.whenStable();
     const marked = [...menu.nativeElement.querySelectorAll('.edit-menu-suggested')].map((icon) =>
       icon.closest('button')?.getAttribute('aria-label'),
     );
@@ -86,6 +90,45 @@ describe('EditMenu', () => {
     await menu.whenStable();
 
     expect(menu.nativeElement.classList).not.toContain('suggesting');
+  });
+
+  it('opens when the page first offers actions', async () => {
+    TestBed.createComponent(Page);
+    actions.set({ create: { click: vi.fn() } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+
+    expect(isOpen(menu.nativeElement)).toBe(true);
+  });
+
+  it('stays closed after the user closes it while the actions stay the same', async () => {
+    TestBed.createComponent(Page);
+    actions.set({ create: { click: vi.fn() } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+
+    menu.nativeElement.querySelector('.p-speeddial-button').click();
+    await menu.whenStable();
+    actions.set({ create: { click: vi.fn(), suggested: true } });
+    await menu.whenStable();
+
+    expect(isOpen(menu.nativeElement)).toBe(false);
+  });
+
+  it('reopens after the user closed it when a new action becomes available', async () => {
+    TestBed.createComponent(Page);
+    actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn(), visible: false } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+
+    menu.nativeElement.querySelector('.p-speeddial-button').click();
+    await menu.whenStable();
+    expect(isOpen(menu.nativeElement)).toBe(false);
+
+    actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn() } });
+    await menu.whenStable();
+
+    expect(isOpen(menu.nativeElement)).toBe(true);
   });
 
   it('keeps the same buttons when the actions do not change', async () => {

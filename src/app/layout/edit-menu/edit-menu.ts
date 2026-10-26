@@ -63,11 +63,17 @@ export class EditMenu {
     );
   });
 
+  private availableActions = new Set<string>();
+
   constructor() {
     effect(() => {
-      if (!this.hasActions()) {
+      const availableActions = Object.keys(this.editActionsService.actions());
+      if (availableActions.length === 0) {
         this.open.set(false);
+      } else if (availableActions.some((action) => !this.availableActions.has(action))) {
+        this.open.set(true);
       }
+      this.availableActions = new Set(availableActions);
     });
   }
 
