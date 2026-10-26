@@ -33,6 +33,7 @@ export class DataTable<T extends object> {
   readonly lazyLoad = output<TableRange>();
 
   protected readonly rowHeight = ROW_HEIGHT;
+  protected readonly trackRow = (index: number, row: T | undefined) => row ?? index;
 
   protected loadRange({ first, rows }: TableLazyLoadEvent) {
     if (rows) {

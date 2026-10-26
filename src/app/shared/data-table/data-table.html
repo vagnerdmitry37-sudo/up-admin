@@ -2,6 +2,7 @@
   [value]="rows()"
   [loading]="loading()"
   [dataKey]="dataKey()"
+  [rowTrackBy]="trackRow"
   selectionMode="multiple"
   [selection]="selection()"
   (selectionChange)="selection.set($event)"

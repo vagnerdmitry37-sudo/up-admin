@@ -107,11 +107,13 @@ describe('ProductsPage', () => {
   });
 
   it('keeps empty rows in place of products that are not loaded yet', async () => {
+    const warn = vi.spyOn(console, 'warn');
     const { element } = await render(products, 60);
 
     const rows = element.querySelectorAll('tbody tr');
     expect(rows[1].textContent).toContain('Airport to hotel');
     expect(rows[2].textContent?.trim()).toBe('');
+    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('NG0955'));
   });
 
   it('loads the products the table scrolls to', async () => {
