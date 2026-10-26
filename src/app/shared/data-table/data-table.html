@@ -1,9 +1,18 @@
 <p-table
-  [value]="loading() ? placeholderRows : rows()"
+  [value]="rows()"
+  [loading]="loading()"
   [dataKey]="dataKey()"
   selectionMode="multiple"
   [selection]="selection()"
   (selectionChange)="selection.set($event)"
+  [lazy]="lazy()"
+  [scrollable]="lazy()"
+  scrollHeight="flex"
+  [virtualScroll]="lazy()"
+  [virtualScrollItemSize]="rowHeight"
+  [virtualScrollDelay]="0"
+  [virtualScrollOptions]="{ showLoader: false }"
+  (onLazyLoad)="loadRange($event)"
 >
   <ng-template #header>
     <tr>
@@ -13,18 +22,17 @@
     </tr>
   </ng-template>
   <ng-template #body let-row>
-    @if (loading()) {
-      <tr>
-        @for (column of columns(); track column.header) {
-          <td><p-skeleton /></td>
-        }
-      </tr>
-    } @else {
-      <tr [pSelectableRow]="row">
-        @for (column of columns(); track column.header) {
-          <td [class.end]="column.align === 'end'">{{ column.value(row) }}</td>
-        }
-      </tr>
-    }
+    <tr [pSelectableRow]="row" [style.height.px]="rowHeight">
+      @for (column of columns(); track column.header) {
+        <td [class.end]="column.align === 'end'">{{ column.value(row) }}</td>
+      }
+    </tr>
+  </ng-template>
+  <ng-template #loadingbody>
+    <tr [style.height.px]="rowHeight">
+      @for (column of columns(); track column.header) {
+        <td></td>
+      }
+    </tr>
   </ng-template>
 </p-table>

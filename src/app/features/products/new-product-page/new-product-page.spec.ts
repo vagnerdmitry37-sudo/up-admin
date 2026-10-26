@@ -109,7 +109,7 @@ describe('NewProductPage', () => {
   it('pre-fills copies of the source products, one tab each', async () => {
     const { fixture, element } = await render('p1,p2');
 
-    const load = httpTestingController.expectOne((req) => req.url === '/api/products');
+    const load = httpTestingController.expectOne((req) => req.url === '/api/products/by-ids');
     expect(load.request.params.getAll('ids')).toEqual(['p1', 'p2']);
     load.flush(sources);
     await fixture.whenStable();
@@ -127,7 +127,7 @@ describe('NewProductPage', () => {
 
     const renderCopies = async (from: string, products: Product[]) => {
       const rendered = await render(from);
-      httpTestingController.expectOne((req) => req.url === '/api/products').flush(products);
+      httpTestingController.expectOne((req) => req.url === '/api/products/by-ids').flush(products);
       await rendered.fixture.whenStable();
       return rendered;
     };
@@ -176,7 +176,7 @@ describe('NewProductPage', () => {
 
   it('saves the copies as new products without ids, keeping their attributes', async () => {
     const { fixture } = await render('p1,p2');
-    httpTestingController.expectOne((req) => req.url === '/api/products').flush(sources);
+    httpTestingController.expectOne((req) => req.url === '/api/products/by-ids').flush(sources);
     await fixture.whenStable();
 
     await save();

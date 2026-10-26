@@ -2,6 +2,20 @@
   display: block;
 }
 
+:host(.lazy) {
+  display: flex;
+  flex-direction: column;
+
+  p-table {
+    flex: 1;
+    min-height: 0;
+  }
+
+  td {
+    white-space: nowrap;
+  }
+}
+
 .end {
   text-align: end;
   white-space: nowrap;

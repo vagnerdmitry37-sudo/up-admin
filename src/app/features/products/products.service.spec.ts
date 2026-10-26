@@ -31,10 +31,18 @@ describe('ProductsService', () => {
 
   afterEach(() => httpTestingController.verify());
 
+  it('loads one page of products', () => {
+    void firstValueFrom(service.list(50, 25));
+
+    const call = httpTestingController.expectOne('/api/products?first=50&rows=25');
+    expect(call.request.method).toBe('GET');
+    call.flush({ items: [], totalRecords: 0 });
+  });
+
   it('loads several products with one request', () => {
     void firstValueFrom(service.get(['a', 'b']));
 
-    const call = httpTestingController.expectOne((req) => req.url === '/api/products');
+    const call = httpTestingController.expectOne((req) => req.url === '/api/products/by-ids');
     expect(call.request.method).toBe('GET');
     expect(call.request.params.getAll('ids')).toEqual(['a', 'b']);
     call.flush([]);

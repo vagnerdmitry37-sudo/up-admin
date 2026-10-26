@@ -36,7 +36,7 @@ describe('EditProductPage', () => {
     const fixture = TestBed.createComponent(EditProductPage);
     fixture.componentRef.setInput('ids', ids);
     TestBed.tick();
-    const load = httpTestingController.expectOne((req) => req.url === '/api/products');
+    const load = httpTestingController.expectOne((req) => req.url === '/api/products/by-ids');
     load.flush(loaded);
     await fixture.whenStable();
     return { fixture, element: fixture.nativeElement as HTMLElement, load };

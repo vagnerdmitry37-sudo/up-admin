@@ -1,13 +1,16 @@
 <h1 class="title">Products</h1>
 
-@if (products.isLoading() || rows().length > 0) {
+@let loaded = rows();
+@if (!loaded || loaded.length > 0) {
   <app-data-table
-    [rows]="rows()"
+    [rows]="loaded ?? []"
     [columns]="columns"
-    [loading]="products.isLoading()"
+    [loading]="loading()"
+    [lazy]="true"
+    (lazyLoad)="load($event)"
     [(selection)]="selected"
   />
-} @else if (products.hasValue()) {
+} @else {
   <section class="empty">
     <p class="empty-title">No products yet</p>
     <p>Tap + to add your first product.</p>
