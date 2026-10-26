@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Product } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { DataTable, TableRange } from '@shared/data-table/data-table';
 import { ProductsPage } from './products-page';
 
@@ -69,6 +70,7 @@ describe('ProductsPage', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
+        ConfirmationService,
       ],
     });
     navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
@@ -187,5 +189,51 @@ describe('ProductsPage', () => {
     editActionsService.run('edit');
 
     expect(navigate).toHaveBeenCalledWith(['/products', 'p2,p1', 'edit']);
+  });
+
+  it('offers Delete only while products are selected', async () => {
+    const { editActionsService, select } = await render(products);
+    expect(Object.keys(editActionsService.actions())).not.toContain('delete');
+
+    await select(0);
+
+    expect(Object.keys(editActionsService.actions())).toContain('delete');
+  });
+
+  it('asks before deleting and does nothing when the user cancels', async () => {
+    const { editActionsService, select, httpTestingController } = await render(products);
+    const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
+    await select(0);
+    await select(1);
+
+    editActionsService.run('delete');
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ header: 'Delete 2 products?', acceptLabel: 'Delete' }),
+    );
+    httpTestingController.expectNone((req) => req.method === 'DELETE');
+  });
+
+  it('deletes the selected products after confirming and reloads the list', async () => {
+    const { editActionsService, select, httpTestingController } = await render(products);
+    vi.spyOn(TestBed.inject(ConfirmationService), 'confirm').mockImplementation((confirmation) => {
+      confirmation.accept?.();
+      return TestBed.inject(ConfirmationService);
+    });
+    await select(1);
+    await select(0);
+
+    editActionsService.run('delete');
+    const request = httpTestingController.expectOne(
+      (req) => req.method === 'DELETE' && req.url === '/api/products',
+    );
+    expect(request.request.params.getAll('ids')).toEqual(['p2', 'p1']);
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    await new Promise((resolve) => setTimeout(resolve));
+
+    httpTestingController
+      .expectOne('/api/products?first=0&rows=50')
+      .flush({ items: [], totalRecords: 0 });
+    expect(Object.keys(editActionsService.actions())).toEqual(['create']);
   });
 });

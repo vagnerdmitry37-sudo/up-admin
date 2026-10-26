@@ -11,6 +11,7 @@ import {
 import { Router } from '@angular/router';
 import { Product } from '@core/api/models';
 import { EditActionConfig, EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
 import { finalize } from 'rxjs';
 import { ProductsService } from '../products.service';
@@ -28,6 +29,7 @@ export class ProductsPage implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly router = inject(Router);
   private readonly locale = inject(LOCALE_ID);
+  private readonly confirmationService = inject(ConfirmationService);
 
   protected readonly rows = signal<(Product | undefined)[] | undefined>(undefined);
   protected readonly selected = signal<Product[]>([]);
@@ -51,6 +53,7 @@ export class ProductsPage implements OnInit {
         return {
           create: this.createAction(ids),
           edit: this.editAction(ids),
+          delete: this.deleteAction(ids),
         };
       },
     });
@@ -114,5 +117,28 @@ export class ProductsPage implements OnInit {
       click: () => this.router.navigate(['/products', ids.join(','), 'edit']),
       visible: ids.length > 0,
     };
+  }
+
+  private deleteAction(ids: string[]): EditActionConfig {
+    return {
+      click: () =>
+        this.confirmationService.confirm({
+          header: ids.length === 1 ? 'Delete product?' : `Delete ${ids.length} products?`,
+          message: 'This cannot be undone.',
+          acceptLabel: 'Delete',
+          rejectLabel: 'Cancel',
+          acceptButtonProps: { severity: 'danger' },
+          rejectButtonProps: { severity: 'secondary', text: true },
+          accept: () => this.delete(ids),
+        }),
+      visible: ids.length > 0,
+    };
+  }
+
+  private async delete(ids: string[]): Promise<void> {
+    await this.productsService.delete(ids);
+    this.selected.set([]);
+    this.rows.set(undefined);
+    this.load({ first: 0, rows: PAGE_SIZE });
   }
 }
