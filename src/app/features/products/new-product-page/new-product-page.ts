@@ -40,10 +40,18 @@ export class NewProductPage {
       : undefined,
   );
 
+  private readonly activeForm = computed(() =>
+    this.from() ? this.tabs()?.activeForm() : this.form(),
+  );
+
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
         save: { click: () => (this.from() ? this.createCopies() : this.form()?.save()) },
+        delete: {
+          click: () => this.activeForm()?.deleteSelectedImages(),
+          visible: Boolean(this.activeForm()?.selectedImages().length),
+        },
       }),
     });
   }

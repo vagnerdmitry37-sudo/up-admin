@@ -25,13 +25,7 @@
     </div>
   </ng-template>
 
-  <ng-template
-    #content
-    let-files
-    let-uploadedFiles="uploadedFiles"
-    let-removeFileCallback="removeFileCallback"
-    let-messages="messages"
-  >
+  <ng-template #content let-files let-uploadedFiles="uploadedFiles" let-messages="messages">
     <div class="groups">
       @for (message of messages; track message) {
         <p-message
@@ -47,22 +41,19 @@
         <section class="group">
           <h2 class="group-title">Pending</h2>
           <ul class="files">
-            @for (file of files; track file; let index = $index) {
-              <li class="file">
-                <img class="thumbnail" [src]="previewUrl(file)" [alt]="file.name" />
-                <span class="name">{{ file.name }}</span>
-                <span>{{ formatSize(file.size) }}</span>
-                <p-badge value="Pending" severity="warn" />
+            @for (file of files; track file) {
+              <li>
                 <button
-                  pButton
                   type="button"
-                  [rounded]="true"
-                  [outlined]="true"
-                  severity="danger"
-                  [attr.aria-label]="'Remove ' + file.name"
-                  (click)="removeFileCallback($event, index)"
+                  class="file selectable"
+                  [class.selected]="isSelected(file)"
+                  [attr.aria-pressed]="isSelected(file)"
+                  (click)="toggle(file)"
                 >
-                  <i class="pi pi-times" pButtonIcon aria-hidden="true"></i>
+                  <img class="thumbnail" [src]="previewUrl(file)" [alt]="file.name" />
+                  <span class="name">{{ file.name }}</span>
+                  <span>{{ formatSize(file.size) }}</span>
+                  <p-badge value="Pending" severity="warn" />
                 </button>
               </li>
             }

@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -33,6 +34,9 @@ export class ProductForm {
 
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly shell = viewChild.required(FormShell);
+  private readonly imageUpload = viewChild(ImageUpload);
+
+  readonly selectedImages = computed(() => this.imageUpload()?.selection() ?? []);
 
   protected readonly typeOptions = PRODUCT_TYPES.map((type) => ({
     label: type,
@@ -55,6 +59,8 @@ export class ProductForm {
   }
 
   save = () => this.shell().submit();
+
+  deleteSelectedImages = () => this.imageUpload()?.deleteSelected();
 
   validValue(): ProductFormValue | undefined {
     if (this.form.invalid) {

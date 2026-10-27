@@ -37,6 +37,10 @@ export class ProductTabs {
   protected readonly inTabs = computed(() => this.products().length > 1);
   protected readonly active = linkedSignal(() => this.products()[0]?.id);
 
+  readonly activeForm = computed(() =>
+    this.forms().find((form) => form.product()?.id === this.active()),
+  );
+
   values(): ProductTabValue[] | undefined {
     const values: ProductTabValue[] = [];
     for (const product of this.products()) {

@@ -35,6 +35,10 @@ export class EditProductPage {
     inject(EditActionsService).register({
       actions: () => ({
         save: { click: () => this.save() },
+        delete: {
+          click: () => this.tabs()?.activeForm()?.deleteSelectedImages(),
+          visible: Boolean(this.tabs()?.activeForm()?.selectedImages().length),
+        },
       }),
     });
   }

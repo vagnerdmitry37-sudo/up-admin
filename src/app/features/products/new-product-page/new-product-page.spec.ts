@@ -141,4 +141,34 @@ describe('NewProductPage', () => {
     httpTestingController.expectNone((req) => req.method === 'PUT');
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
+
+  it('offers Delete only while images are selected and removes the selected ones', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render();
+    const editActionsService = TestBed.inject(EditActionsService);
+    const input = element.querySelector<HTMLInputElement>('app-image-upload input[type="file"]')!;
+    Object.defineProperty(input, 'files', {
+      value: [
+        new File(['a'], 'kept.jpg', { type: 'image/jpeg' }),
+        new File(['b'], 'deleted.jpg', { type: 'image/jpeg' }),
+      ],
+    });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const cards = () => element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]');
+    expect(editActionsService.actions().delete).toBeUndefined();
+
+    cards()[1].click();
+    await fixture.whenStable();
+    expect(editActionsService.actions().delete).toBeDefined();
+
+    editActionsService.run('delete');
+    await fixture.whenStable();
+
+    expect([...cards()].map((card) => card.querySelector('.name')?.textContent)).toEqual([
+      'kept.jpg',
+    ]);
+    expect(editActionsService.actions().delete).toBeUndefined();
+  });
 });

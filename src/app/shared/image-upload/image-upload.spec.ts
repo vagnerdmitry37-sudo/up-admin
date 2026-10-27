@@ -41,6 +41,57 @@ describe('ImageUpload', () => {
     expect(messages[1].textContent).toContain('notes.txt: Invalid file type');
   });
 
+  it('toggles a chosen image in and out of the selection, like a table row', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const fixture = TestBed.createComponent(ImageUpload);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const first = new File(['a'], 'first.jpg', { type: 'image/jpeg' });
+    const second = new File(['b'], 'second.jpg', { type: 'image/jpeg' });
+    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    Object.defineProperty(input, 'files', { value: [first, second] });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const cards = () => element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]');
+
+    cards()[0].click();
+    cards()[1].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.selection()).toEqual([first, second]);
+    expect(cards()[0].getAttribute('aria-pressed')).toBe('true');
+
+    cards()[0].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.selection()).toEqual([second]);
+    expect(cards()[0].getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('deletes only the selected images', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const fixture = TestBed.createComponent(ImageUpload);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const kept = new File(['a'], 'kept.jpg', { type: 'image/jpeg' });
+    const deleted = new File(['b'], 'deleted.jpg', { type: 'image/jpeg' });
+    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    Object.defineProperty(input, 'files', { value: [kept, deleted] });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')[1].click();
+    await fixture.whenStable();
+
+    fixture.componentInstance.deleteSelected();
+    await fixture.whenStable();
+
+    const names = [...element.querySelectorAll('button[aria-pressed] .name')].map(
+      (name) => name.textContent,
+    );
+    expect(names).toEqual(['kept.jpg']);
+    expect(fixture.componentInstance.selection()).toEqual([]);
+  });
+
   it('offers a button to choose images', async () => {
     const element = await render();
 

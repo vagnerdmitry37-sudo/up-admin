@@ -121,4 +121,26 @@ describe('EditProductPage', () => {
     httpTestingController.expectNone((req) => req.method === 'PUT');
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
+
+  it('deletes the selected images of the open tab', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render('p1,p2', products);
+    const editActionsService = TestBed.inject(EditActionsService);
+    const input = element.querySelector<HTMLInputElement>('app-image-upload input[type="file"]')!;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(editActionsService.actions().delete).toBeUndefined();
+
+    element.querySelector<HTMLButtonElement>('button[aria-pressed]')!.click();
+    await fixture.whenStable();
+    editActionsService.run('delete');
+    await fixture.whenStable();
+
+    expect(element.querySelector('button[aria-pressed]')).toBeNull();
+    expect(editActionsService.actions().delete).toBeUndefined();
+  });
 });
