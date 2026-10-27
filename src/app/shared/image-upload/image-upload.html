@@ -1,0 +1,96 @@
+<p-fileupload
+  name="files"
+  accept="image/jpeg,image/png,image/webp"
+  [multiple]="true"
+  [maxFileSize]="maxFileBytes"
+  [fileLimit]="maxFiles"
+  [customUpload]="true"
+>
+  <ng-template #header let-files let-chooseCallback="chooseCallback">
+    <div class="header">
+      <button
+        pButton
+        type="button"
+        [rounded]="true"
+        [outlined]="true"
+        aria-label="Choose images"
+        (click)="chooseCallback()"
+      >
+        <i class="pi pi-images" pButtonIcon aria-hidden="true"></i>
+      </button>
+      <div class="size">
+        <p-progressbar class="size-bar" [value]="totalSizePercent(files)" [showValue]="false" />
+        <span class="size-label">{{ formatSize(totalSize(files)) }} / {{ maxTotalSize }}</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template
+    #content
+    let-files
+    let-uploadedFiles="uploadedFiles"
+    let-removeFileCallback="removeFileCallback"
+    let-messages="messages"
+  >
+    <div class="groups">
+      @for (message of messages; track message) {
+        <p-message
+          styleClass="message"
+          [severity]="message.severity"
+          [life]="messageLife"
+          [closable]="true"
+        >
+          {{ message.text }}
+        </p-message>
+      }
+      @if (files.length) {
+        <section class="group">
+          <h2 class="group-title">Pending</h2>
+          <ul class="files">
+            @for (file of files; track file; let index = $index) {
+              <li class="file">
+                <img class="thumbnail" [src]="previewUrl(file)" [alt]="file.name" />
+                <span class="name">{{ file.name }}</span>
+                <span>{{ formatSize(file.size) }}</span>
+                <p-badge value="Pending" severity="warn" />
+                <button
+                  pButton
+                  type="button"
+                  [rounded]="true"
+                  [outlined]="true"
+                  severity="danger"
+                  [attr.aria-label]="'Remove ' + file.name"
+                  (click)="removeFileCallback($event, index)"
+                >
+                  <i class="pi pi-times" pButtonIcon aria-hidden="true"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+      @if (uploadedFiles.length) {
+        <section class="group">
+          <h2 class="group-title">Completed</h2>
+          <ul class="files">
+            @for (file of uploadedFiles; track file) {
+              <li class="file">
+                <img class="thumbnail" [src]="previewUrl(file)" [alt]="file.name" />
+                <span class="name">{{ file.name }}</span>
+                <span>{{ formatSize(file.size) }}</span>
+                <p-badge value="Completed" severity="success" />
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #empty>
+    <div class="empty">
+      <i class="pi pi-cloud-upload empty-icon" aria-hidden="true"></i>
+      <p class="empty-text">Drag and drop images here to upload.</p>
+    </div>
+  </ng-template>
+</p-fileupload>

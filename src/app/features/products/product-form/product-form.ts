@@ -14,13 +14,14 @@ import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
+import { ImageUpload } from '@shared/image-upload/image-upload';
 import { PRODUCT_TYPES } from '../constants';
 
 export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
 
 @Component({
   selector: 'app-product-form',
-  imports: [FormShell, NumberField, SelectField, TextField, TextareaField],
+  imports: [FormShell, ImageUpload, NumberField, SelectField, TextField, TextareaField],
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
