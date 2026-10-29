@@ -14,6 +14,37 @@ describe('ImageUpload', () => {
     expect(element.textContent).toContain('Drag and drop images here to upload.');
   });
 
+  it('opens the file picker when clicked anywhere or activated with Enter', async () => {
+    const element = await render();
+    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+
+    element.querySelector<HTMLElement>('.empty-text')!.click();
+    element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+
+    expect(openPicker).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not open the file picker when an image card is clicked', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const fixture = TestBed.createComponent(ImageUpload);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+
+    element.querySelector<HTMLButtonElement>('button[aria-pressed]')!.click();
+
+    expect(openPicker).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.selection()).toHaveLength(1);
+  });
+
   it('accepts only JPEG, PNG and WebP images', async () => {
     const element = await render();
 
@@ -90,11 +121,5 @@ describe('ImageUpload', () => {
     );
     expect(names).toEqual(['kept.jpg']);
     expect(fixture.componentInstance.selection()).toEqual([]);
-  });
-
-  it('offers a button to choose images', async () => {
-    const element = await render();
-
-    expect(element.querySelector('button[aria-label="Choose images"]')).not.toBeNull();
   });
 });

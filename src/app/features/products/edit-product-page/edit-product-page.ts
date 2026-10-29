@@ -9,7 +9,7 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { EditActionsService } from '@core/edit-actions.service';
-import { ProductTabs } from '../product-tabs/product-tabs';
+import { ProductTabs, ProductTabValue } from '../product-tabs/product-tabs';
 import { ProductsService } from '../products.service';
 
 @Component({
@@ -53,9 +53,18 @@ export class EditProductPage {
       await this.productsService.update(
         values.map(({ product, value }) => ({ ...value, id: product.id, attributes: {} })),
       );
+      await this.uploadImages(values);
       await this.router.navigateByUrl('/products');
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  private async uploadImages(values: ProductTabValue[]) {
+    for (const { product, images } of values) {
+      if (images.length) {
+        await this.productsService.uploadImages(product.id, images);
+      }
     }
   }
 }

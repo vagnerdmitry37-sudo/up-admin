@@ -6,18 +6,8 @@
   [fileLimit]="maxFiles"
   [customUpload]="true"
 >
-  <ng-template #header let-files let-chooseCallback="chooseCallback">
+  <ng-template #header let-files>
     <div class="header">
-      <button
-        pButton
-        type="button"
-        [rounded]="true"
-        [outlined]="true"
-        aria-label="Choose images"
-        (click)="chooseCallback()"
-      >
-        <i class="pi pi-images" pButtonIcon aria-hidden="true"></i>
-      </button>
       <div class="size">
         <p-progressbar class="size-bar" [value]="totalSizePercent(files)" [showValue]="false" />
         <span class="size-label">{{ formatSize(totalSize(files)) }} / {{ maxTotalSize }}</span>

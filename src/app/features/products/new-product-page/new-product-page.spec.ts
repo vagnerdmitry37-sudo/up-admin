@@ -142,6 +142,36 @@ describe('NewProductPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/products');
   });
 
+  it('uploads the chosen images for the newly created product', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render();
+    const name = element.querySelector('app-text-field input') as HTMLInputElement;
+    const description = element.querySelector('app-textarea-field textarea') as HTMLTextAreaElement;
+    name.value = 'Old Town Walk';
+    name.dispatchEvent(new Event('input'));
+    description.value = 'Three hours';
+    description.dispatchEvent(new Event('input'));
+    const input = element.querySelector<HTMLInputElement>('app-image-upload input[type="file"]')!;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await save();
+    httpTestingController.expectOne('/api/products').flush([{ ...sources[0], id: 'new-id' }]);
+    await settle();
+    const upload = httpTestingController.expectOne('/api/images');
+    const form = upload.request.body as FormData;
+    expect(form.get('entityId')).toBe('new-id');
+    expect((form.getAll('files') as File[]).map((file) => file.name)).toEqual(['photo.jpg']);
+    upload.flush([]);
+    await settle();
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+  });
+
   it('offers Delete only while images are selected and removes the selected ones', async () => {
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     const { fixture, element } = await render();

@@ -69,4 +69,19 @@ describe('ProductsService', () => {
 
     await updated;
   });
+
+  it('uploads images for a product as multipart form data', async () => {
+    const photo = new File(['a'], 'photo.jpg', { type: 'image/jpeg' });
+    const uploaded = service.uploadImages('p1', [photo]);
+
+    const call = httpTestingController.expectOne('/api/images');
+    expect(call.request.method).toBe('POST');
+    const form = call.request.body as FormData;
+    expect(form.get('entityType')).toBe('Product');
+    expect(form.get('entityId')).toBe('p1');
+    expect((form.getAll('files') as File[]).map((file) => file.name)).toEqual(['photo.jpg']);
+    call.flush([]);
+
+    await uploaded;
+  });
 });

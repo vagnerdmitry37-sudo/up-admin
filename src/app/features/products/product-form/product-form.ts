@@ -62,6 +62,8 @@ export class ProductForm {
 
   deleteSelectedImages = () => this.imageUpload()?.deleteSelected();
 
+  pendingImages = (): File[] => this.imageUpload()?.pendingFiles() ?? [];
+
   validValue(): ProductFormValue | undefined {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

@@ -57,24 +57,32 @@ export class NewProductPage {
   }
 
   protected create(value: ProductFormValue): Promise<void> {
-    return this.save([{ ...value, attributes: {} }]);
+    return this.save([{ ...value, attributes: {} }], [this.form()?.pendingImages() ?? []]);
   }
 
   private createCopies(): Promise<void> | undefined {
     const values = this.tabs()?.values();
     return (
       values &&
-      this.save(values.map(({ product, value }) => ({ ...value, attributes: product.attributes })))
+      this.save(
+        values.map(({ product, value }) => ({ ...value, attributes: product.attributes })),
+        values.map(({ images }) => images),
+      )
     );
   }
 
-  private async save(requests: CreateProductRequest[]): Promise<void> {
+  private async save(requests: CreateProductRequest[], images: File[][]): Promise<void> {
     if (this.saving()) {
       return;
     }
     this.saving.set(true);
     try {
-      await this.productsService.create(requests);
+      const created = await this.productsService.create(requests);
+      for (const [index, product] of created.entries()) {
+        if (images[index]?.length) {
+          await this.productsService.uploadImages(product.id, images[index]);
+        }
+      }
       await this.router.navigateByUrl('/products');
     } finally {
       this.saving.set(false);

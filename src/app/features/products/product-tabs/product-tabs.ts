@@ -13,6 +13,7 @@ import { ProductForm, ProductFormValue } from '../product-form/product-form';
 export interface ProductTabValue {
   product: Product;
   value: ProductFormValue;
+  images: File[];
 }
 
 const toFormValue = ({ type, name, description, price }: Product): ProductFormValue => ({
@@ -50,7 +51,7 @@ export class ProductTabs {
         this.active.set(product.id);
         return undefined;
       }
-      values.push({ product, value });
+      values.push({ product, value, images: form ? form.pendingImages() : [] });
     }
     return values;
   }

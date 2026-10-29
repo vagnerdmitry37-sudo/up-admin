@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
   CreateProductRequest,
+  Image,
   Product,
   ProductsPageResponse,
   UpdateProductRequest,
@@ -12,7 +13,9 @@ import { firstValueFrom } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   private readonly httpClient = inject(HttpClient);
-  private readonly url = `${inject(API_BASE_URL)}/products`;
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly url = `${this.apiBaseUrl}/products`;
+  private readonly imagesUrl = `${this.apiBaseUrl}/images`;
 
   list = (first: number, rows: number) =>
     this.httpClient.get<ProductsPageResponse>(this.url, { params: { first, rows } });
@@ -28,4 +31,14 @@ export class ProductsService {
 
   delete = (ids: string[]) =>
     firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
+
+  uploadImages(productId: string, files: File[]): Promise<Image[]> {
+    const form = new FormData();
+    form.append('entityType', 'Product');
+    form.append('entityId', productId);
+    for (const file of files) {
+      form.append('files', file, file.name);
+    }
+    return firstValueFrom(this.httpClient.post<Image[]>(this.imagesUrl, form));
+  }
 }

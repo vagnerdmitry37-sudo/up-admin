@@ -1,6 +1,12 @@
 :host {
   display: block;
   min-width: 0;
+  outline: none;
+  cursor: pointer;
+}
+
+:host(:focus-visible) p-fileupload {
+  --p-fileupload-border-color: var(--p-form-field-focus-border-color);
 }
 
 .header {

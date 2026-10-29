@@ -122,6 +122,31 @@ describe('EditProductPage', () => {
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
+  it('uploads the chosen images of a product after saving it', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render('p1,p2', products);
+    const input = element.querySelector<HTMLInputElement>('app-image-upload input[type="file"]')!;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    await save();
+    httpTestingController.expectOne((req) => req.method === 'PUT').flush([]);
+    await settle();
+    const upload = httpTestingController.expectOne('/api/images');
+    const form = upload.request.body as FormData;
+    expect(form.get('entityId')).toBe('p1');
+    expect((form.getAll('files') as File[]).map((file) => file.name)).toEqual(['photo.jpg']);
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    upload.flush([]);
+    await settle();
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+  });
+
   it('deletes the selected images of the open tab', async () => {
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     const { fixture, element } = await render('p1,p2', products);

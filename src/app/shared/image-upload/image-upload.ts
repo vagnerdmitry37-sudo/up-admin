@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, model, viewChild } from '@angular/core';
 import { SafeUrl } from '@angular/platform-browser';
 import { Badge } from '@openng/optimus-ui/badge';
-import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { Message } from '@openng/optimus-ui/message';
 import { ProgressBar } from '@openng/optimus-ui/progressbar';
@@ -15,10 +14,18 @@ const maxTotalBytes = maxFiles * maxFileBytes;
 
 @Component({
   selector: 'app-image-upload',
-  imports: [FileUpload, ButtonDirective, ButtonIcon, Badge, Message, ProgressBar],
+  imports: [FileUpload, Badge, Message, ProgressBar],
   templateUrl: './image-upload.html',
   styleUrl: './image-upload.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    role: 'button',
+    tabindex: '0',
+    'aria-label': 'Add images',
+    '(click)': 'openFilePicker($event)',
+    '(keydown.enter)': 'openFilePicker($event)',
+    '(keydown.space)': 'openFilePicker($event)',
+  },
 })
 export class ImageUpload {
   readonly selection = model<File[]>([]);
@@ -42,6 +49,8 @@ export class ImageUpload {
 
   protected readonly isSelected = (file: File) => this.selection().includes(file);
 
+  pendingFiles = (): File[] => this.fileUpload().files;
+
   deleteSelected(): void {
     const fileUpload = this.fileUpload();
     for (const file of this.selection()) {
@@ -52,6 +61,14 @@ export class ImageUpload {
     }
     this.selection.set([]);
     fileUpload.cd.markForCheck();
+  }
+
+  protected openFilePicker(event: Event): void {
+    if ((event.target as HTMLElement).closest('button, input')) {
+      return;
+    }
+    event.preventDefault();
+    this.fileUpload().choose();
   }
 
   protected toggle(file: File): void {
