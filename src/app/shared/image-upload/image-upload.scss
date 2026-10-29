@@ -1,21 +1,11 @@
 :host {
   display: block;
   min-width: 0;
-  outline: none;
-  cursor: pointer;
 }
 
-:host(:focus-visible) p-fileupload {
-  --p-fileupload-border-color: var(--p-form-field-focus-border-color);
-}
-
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex: 1;
+p-fileupload {
+  --p-fileupload-header-padding: 0;
+  --p-fileupload-content-padding: 1.125rem;
 }
 
 .size {
@@ -23,6 +13,7 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
+  margin-bottom: 0.75rem;
 }
 
 .size-bar {
@@ -44,7 +35,8 @@
   margin-bottom: 0.75rem;
 }
 
-.group + .group {
+.group + .group,
+.group + .drop-zone {
   margin-top: 1.5rem;
 }
 
@@ -118,15 +110,38 @@
   white-space: nowrap;
 }
 
-.empty {
+.drop-zone {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  width: 100%;
+  padding: 1.5rem 1rem;
+  border: 1px dashed var(--p-content-border-color);
+  border-radius: var(--p-content-border-radius);
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
-.empty-icon {
+.drop-zone:focus-visible {
+  outline: var(--p-focus-ring-width) var(--p-focus-ring-style) var(--p-focus-ring-color);
+  outline-offset: var(--p-focus-ring-offset);
+}
+
+@media (hover: hover) {
+  .drop-zone:hover {
+    border-color: var(--p-form-field-hover-border-color);
+    background: var(--p-content-hover-background);
+  }
+}
+
+.drop-zone-icon {
   padding: 1.5rem;
   border: 2px solid var(--p-content-border-color);
   border-radius: 50%;
@@ -134,8 +149,7 @@
   color: var(--p-text-muted-color);
 }
 
-.empty-text {
-  margin: 0;
+.drop-zone-text {
   text-align: center;
 }
 

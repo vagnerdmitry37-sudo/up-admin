@@ -70,6 +70,16 @@ describe('ProductsService', () => {
     await updated;
   });
 
+  it('loads the images of several products with one request', () => {
+    void firstValueFrom(service.getImages(['p1', 'p2']));
+
+    const call = httpTestingController.expectOne(
+      '/api/images?entityType=Product&entityIds=p1&entityIds=p2',
+    );
+    expect(call.request.method).toBe('GET');
+    call.flush([]);
+  });
+
   it('uploads images for a product as multipart form data', async () => {
     const photo = new File(['a'], 'photo.jpg', { type: 'image/jpeg' });
     const uploaded = service.uploadImages('p1', [photo]);

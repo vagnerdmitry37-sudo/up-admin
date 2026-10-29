@@ -32,6 +32,11 @@ export class ProductsService {
   delete = (ids: string[]) =>
     firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
 
+  getImages = (productIds: string[]) =>
+    this.httpClient.get<Image[]>(this.imagesUrl, {
+      params: { entityType: 'Product', entityIds: productIds },
+    });
+
   uploadImages(productId: string, files: File[]): Promise<Image[]> {
     const form = new FormData();
     form.append('entityType', 'Product');

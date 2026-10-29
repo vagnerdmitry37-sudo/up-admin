@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ImageUpload } from './image-upload';
 
 describe('ImageUpload', () => {
@@ -8,21 +8,48 @@ describe('ImageUpload', () => {
     return fixture.nativeElement as HTMLElement;
   };
 
-  it('shows the drop hint while no image is chosen', async () => {
+  const chooseFiles = async (fixture: ComponentFixture<ImageUpload>, files: File[]) => {
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[type="file"]',
+    )!;
+    Object.defineProperty(input, 'files', { value: files, configurable: true });
+    input.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  };
+
+  const savedImages = [
+    { id: 'i1', url: 'https://img/1.webp' },
+    { id: 'i2', url: 'https://img/2.webp' },
+  ];
+
+  it('shows the drop zone with drag and click instructions', async () => {
     const element = await render();
 
-    expect(element.textContent).toContain('Drag and drop images here to upload.');
+    expect(element.querySelector('button.drop-zone')?.textContent).toContain(
+      'Drag and drop images here, or click to choose files.',
+    );
   });
 
-  it('opens the file picker when clicked anywhere or activated with Enter', async () => {
+  it('opens the file picker when the drop zone is clicked', async () => {
     const element = await render();
     const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
     const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
 
-    element.querySelector<HTMLElement>('.empty-text')!.click();
-    element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    element.querySelector<HTMLButtonElement>('button.drop-zone')!.click();
 
-    expect(openPicker).toHaveBeenCalledTimes(2);
+    expect(openPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not open the file picker when the area outside the drop zone is clicked', async () => {
+    const element = await render();
+    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+
+    element.querySelector<HTMLElement>('.groups')!.click();
+
+    expect(openPicker).not.toHaveBeenCalled();
   });
 
   it('does not open the file picker when an image card is clicked', async () => {
@@ -43,6 +70,71 @@ describe('ImageUpload', () => {
 
     expect(openPicker).not.toHaveBeenCalled();
     expect(fixture.componentInstance.selection()).toHaveLength(1);
+  });
+
+  it('shows saved images as Saved cards and keeps the drop zone', async () => {
+    const fixture = TestBed.createComponent(ImageUpload);
+    fixture.componentRef.setInput('images', savedImages);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+
+    const cards = [...element.querySelectorAll('button[aria-pressed]')];
+    expect(cards.map((card) => card.querySelector('.name')?.textContent?.trim())).toEqual([
+      'Image 1',
+      'Image 2',
+    ]);
+    expect(cards.map((card) => card.querySelector('img')?.getAttribute('src'))).toEqual([
+      'https://img/1.webp',
+      'https://img/2.webp',
+    ]);
+    expect(cards.every((card) => card.textContent?.includes('Saved'))).toBe(true);
+    expect(element.querySelector('button.drop-zone')).not.toBeNull();
+  });
+
+  it('toggles saved images in and out of their own selection', async () => {
+    const fixture = TestBed.createComponent(ImageUpload);
+    fixture.componentRef.setInput('images', savedImages);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const cards = () => element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]');
+
+    cards()[1].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.savedSelection()).toEqual([savedImages[1]]);
+    expect(fixture.componentInstance.selection()).toEqual([]);
+    expect(cards()[1].getAttribute('aria-pressed')).toBe('true');
+
+    cards()[1].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.savedSelection()).toEqual([]);
+    expect(cards()[1].getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('shows the size bar inside the Pending section only while images are pending', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const fixture = TestBed.createComponent(ImageUpload);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.size-label')).toBeNull();
+
+    await chooseFiles(fixture, [new File(['ab'], 'photo.jpg', { type: 'image/jpeg' })]);
+
+    const pending = element.querySelector('.group')!;
+    expect(pending.querySelector('.group-title')?.textContent).toBe('Pending');
+    expect(pending.querySelector('.size-label')?.textContent).toContain('/ 100 MB');
+  });
+
+  it('shows rejection messages without an empty Pending block when no file was added', async () => {
+    const fixture = TestBed.createComponent(ImageUpload);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+
+    await chooseFiles(fixture, [new File(['x'], 'notes.txt', { type: 'text/plain' })]);
+
+    const pending = element.querySelector('.group')!;
+    expect(pending.querySelector('p-message')?.textContent).toContain('notes.txt');
+    expect(pending.querySelector('.group-title')).toBeNull();
+    expect(pending.querySelector('.size-label')).toBeNull();
   });
 
   it('accepts only JPEG, PNG and WebP images', async () => {

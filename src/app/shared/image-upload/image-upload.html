@@ -6,30 +6,57 @@
   [fileLimit]="maxFiles"
   [customUpload]="true"
 >
-  <ng-template #header let-files>
-    <div class="header">
-      <div class="size">
-        <p-progressbar class="size-bar" [value]="totalSizePercent(files)" [showValue]="false" />
-        <span class="size-label">{{ formatSize(totalSize(files)) }} / {{ maxTotalSize }}</span>
-      </div>
-    </div>
-  </ng-template>
+  <ng-template #header />
 
-  <ng-template #content let-files let-uploadedFiles="uploadedFiles" let-messages="messages">
+  <ng-template #content let-files let-messages="messages">
     <div class="groups">
-      @for (message of messages; track message) {
-        <p-message
-          styleClass="message"
-          [severity]="message.severity"
-          [life]="messageLife"
-          [closable]="true"
-        >
-          {{ message.text }}
-        </p-message>
-      }
-      @if (files.length) {
+      @if (images().length) {
         <section class="group">
-          <h2 class="group-title">Pending</h2>
+          <h2 class="group-title">Saved</h2>
+          <ul class="files">
+            @for (image of images(); track image.id; let index = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="file selectable"
+                  [class.selected]="isSavedSelected(image)"
+                  [attr.aria-pressed]="isSavedSelected(image)"
+                  (click)="toggleSaved(image)"
+                >
+                  <img class="thumbnail" [src]="image.url" [alt]="'Image ' + (index + 1)" />
+                  <span class="name">Image {{ index + 1 }}</span>
+                  <p-badge value="Saved" severity="success" />
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+      @if (files.length || messages?.length) {
+        <section class="group">
+          @if (files.length) {
+            <h2 class="group-title">Pending</h2>
+            <div class="size">
+              <p-progressbar
+                class="size-bar"
+                [value]="totalSizePercent(files)"
+                [showValue]="false"
+              />
+              <span class="size-label"
+                >{{ formatSize(totalSize(files)) }} / {{ maxTotalSize }}</span
+              >
+            </div>
+          }
+          @for (message of messages; track message) {
+            <p-message
+              styleClass="message"
+              [severity]="message.severity"
+              [life]="messageLife"
+              [closable]="true"
+            >
+              {{ message.text }}
+            </p-message>
+          }
           <ul class="files">
             @for (file of files; track file) {
               <li>
@@ -50,28 +77,10 @@
           </ul>
         </section>
       }
-      @if (uploadedFiles.length) {
-        <section class="group">
-          <h2 class="group-title">Completed</h2>
-          <ul class="files">
-            @for (file of uploadedFiles; track file) {
-              <li class="file">
-                <img class="thumbnail" [src]="previewUrl(file)" [alt]="file.name" />
-                <span class="name">{{ file.name }}</span>
-                <span>{{ formatSize(file.size) }}</span>
-                <p-badge value="Completed" severity="success" />
-              </li>
-            }
-          </ul>
-        </section>
-      }
-    </div>
-  </ng-template>
-
-  <ng-template #empty>
-    <div class="empty">
-      <i class="pi pi-cloud-upload empty-icon" aria-hidden="true"></i>
-      <p class="empty-text">Drag and drop images here to upload.</p>
+      <button type="button" class="drop-zone" (click)="openFilePicker()">
+        <i class="pi pi-cloud-upload drop-zone-icon" aria-hidden="true"></i>
+        <span class="drop-zone-text">Drag and drop images here, or click to choose files.</span>
+      </button>
     </div>
   </ng-template>
 </p-fileupload>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, model, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, viewChild } from '@angular/core';
 import { SafeUrl } from '@angular/platform-browser';
 import { Badge } from '@openng/optimus-ui/badge';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
@@ -6,6 +6,11 @@ import { Message } from '@openng/optimus-ui/message';
 import { ProgressBar } from '@openng/optimus-ui/progressbar';
 
 type SelectedFile = File & { objectURL?: SafeUrl };
+
+export interface SavedImage {
+  id: string;
+  url: string;
+}
 
 const megabyte = 1024 * 1024;
 const maxFiles = 10;
@@ -18,17 +23,11 @@ const maxTotalBytes = maxFiles * maxFileBytes;
   templateUrl: './image-upload.html',
   styleUrl: './image-upload.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    role: 'button',
-    tabindex: '0',
-    'aria-label': 'Add images',
-    '(click)': 'openFilePicker($event)',
-    '(keydown.enter)': 'openFilePicker($event)',
-    '(keydown.space)': 'openFilePicker($event)',
-  },
 })
 export class ImageUpload {
+  readonly images = input<SavedImage[]>([]);
   readonly selection = model<File[]>([]);
+  readonly savedSelection = model<SavedImage[]>([]);
 
   private readonly fileUpload = viewChild.required(FileUpload);
 
@@ -49,6 +48,8 @@ export class ImageUpload {
 
   protected readonly isSelected = (file: File) => this.selection().includes(file);
 
+  protected readonly isSavedSelected = (image: SavedImage) => this.savedSelection().includes(image);
+
   pendingFiles = (): File[] => this.fileUpload().files;
 
   deleteSelected(): void {
@@ -63,19 +64,16 @@ export class ImageUpload {
     fileUpload.cd.markForCheck();
   }
 
-  protected openFilePicker(event: Event): void {
-    if ((event.target as HTMLElement).closest('button, input')) {
-      return;
-    }
-    event.preventDefault();
-    this.fileUpload().choose();
-  }
+  protected openFilePicker = () => this.fileUpload().choose();
 
   protected toggle(file: File): void {
-    this.selection.update((selected) =>
-      selected.includes(file)
-        ? selected.filter((candidate) => candidate !== file)
-        : [...selected, file],
-    );
+    this.selection.update((selected) => toggled(selected, file));
+  }
+
+  protected toggleSaved(image: SavedImage): void {
+    this.savedSelection.update((selected) => toggled(selected, image));
   }
 }
+
+const toggled = <T>(items: T[], item: T): T[] =>
+  items.includes(item) ? items.filter((candidate) => candidate !== item) : [...items, item];

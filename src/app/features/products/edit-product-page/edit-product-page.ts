@@ -30,6 +30,10 @@ export class EditProductPage {
     params: () => this.ids().split(','),
     stream: ({ params }) => this.productsService.get(params),
   });
+  protected readonly images = rxResource({
+    params: () => this.ids().split(','),
+    stream: ({ params }) => this.productsService.getImages(params),
+  });
 
   constructor() {
     inject(EditActionsService).register({

@@ -1,3 +1,7 @@
 @if (products.hasValue()) {
-  <app-product-tabs heading="Edit product" [products]="products.value()" />
+  <app-product-tabs
+    heading="Edit product"
+    [products]="products.value()"
+    [images]="images.hasValue() ? images.value() : []"
+  />
 }

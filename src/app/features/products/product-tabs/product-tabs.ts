@@ -6,7 +6,7 @@ import {
   linkedSignal,
   viewChildren,
 } from '@angular/core';
-import { Product } from '@core/api/models';
+import { Image, Product } from '@core/api/models';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
 
@@ -32,11 +32,19 @@ const toFormValue = ({ type, name, description, price }: Product): ProductFormVa
 export class ProductTabs {
   readonly products = input.required<Product[]>();
   readonly heading = input.required<string>();
+  readonly images = input<Image[]>([]);
 
   private readonly forms = viewChildren(ProductForm);
 
   protected readonly inTabs = computed(() => this.products().length > 1);
   protected readonly active = linkedSignal(() => this.products()[0]?.id);
+  protected readonly imagesByProduct = computed(() => {
+    const byProduct = new Map<string, Image[]>();
+    for (const image of this.images()) {
+      byProduct.set(image.entityId, [...(byProduct.get(image.entityId) ?? []), image]);
+    }
+    return byProduct;
+  });
 
   readonly activeForm = computed(() =>
     this.forms().find((form) => form.product()?.id === this.active()),

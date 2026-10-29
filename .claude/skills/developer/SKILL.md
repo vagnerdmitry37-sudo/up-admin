@@ -1,6 +1,6 @@
 ---
 name: developer
-description: How to develop in this Angular repo fast without lowering code quality. Covers task sizing, efficient investigation, project conventions, risk-based verification, a browser check script, anti-patterns and reporting. Use for every coding task here, including features, bug fixes, refactors, debugging, reviews and config changes.
+description: How to develop in this Angular repo fast without lowering code quality. Covers task sizing, efficient investigation, project conventions, code checks (format, lint, build), anti-patterns and reporting. Tests are not part of it; they run only on request through the tester skill. Use for every coding task here, including features, bug fixes, refactors, debugging, reviews and config changes.
 ---
 
 **Goal: cut wasted effort, never essential engineering.** Quality is fixed: correct, secure, readable, consistent with the project and verified. Speed comes from doing less of the unnecessary, not less of the necessary.
@@ -11,17 +11,19 @@ For UI work, the `design` skill also applies. To commit, use the `commit` skill.
 
 Decide the size before doing anything else, and scale every later step to it.
 
-| Size          | Examples                                                                       | Investigation                                       | Plan                                                                         | Verification                            |
-| ------------- | ------------------------------------------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------- |
-| **S**         | Rename, style tweak, copy change, one-file fix                                 | Read the target file only                           | None, just do it                                                             | Format, lint, build                     |
-| **M**         | New page or component, behavior change across 2–5 files                        | The files involved and one similar existing example | 2–4 lines in your head or reply                                              | S checks + browser check                |
-| **L**         | New feature area, routing or state redesign, new dependency                    | The affected layers and their callers               | Short written plan with acceptance criteria; confirm product decisions first | M checks + edge cases and failure paths |
-| **High risk** | Auth, session, guards, HTTP interceptors, API contracts, secrets, dependencies | As L, plus every caller                             | As L, and state the risks                                                    | As L, plus security review of the diff  |
+| Size          | Examples                                                                       | Investigation                                       | Plan                                                                         | Verification                             |
+| ------------- | ------------------------------------------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------- |
+| **S**         | Rename, style tweak, copy change, one-file fix                                 | Read the target file only                           | None, just do it                                                             | Format, lint, build                      |
+| **M**         | New page or component, behavior change across 2–5 files                        | The files involved and one similar existing example | 2–4 lines in your head or reply                                              | Format, lint, build                      |
+| **L**         | New feature area, routing or state redesign, new dependency                    | The affected layers and their callers               | Short written plan with acceptance criteria; confirm product decisions first | M checks + review edge cases in the diff |
+| **High risk** | Auth, session, guards, HTTP interceptors, API contracts, secrets, dependencies | As L, plus every caller                             | As L, and state the risks                                                    | As L, plus security review of the diff   |
+
+**Tests are on demand.** Never write, rewrite or run tests (specs, `npm test`, browser checks) as part of a coding task. Do it only when the user explicitly asks to test, and then use the `tester` skill.
 
 ## 2. Know the project (do not rediscover it)
 
 - **Stack:** Angular 22 standalone components, signals, `ChangeDetectionStrategy.OnPush` (lint-enforced), new control flow, lazy `loadComponent` routes. UI is Optimus UI (see `design`). Prettier, ESLint, Vitest via `ng test`.
-- **Unit tests:** `npm test` (Vitest + jsdom, about 5 s). Specs sit next to the code (`x.spec.ts`) and test behaviour through the public API and the DOM: HTTP with `provideHttpClientTesting` + `HttpTestingController`, routing with `provideRouter([])` and a `vi.spyOn(router, 'navigate…')`, edit-menu actions through `EditActionsService.actions()` and `run(action, gesture)`. A page that loads data on start needs `TestBed.tick()`, then the request answered, then `await fixture.whenStable()`; awaiting `whenStable()` before answering hangs. `src/test-setup.ts` stubs browser APIs jsdom lacks (`ResizeObserver` for Optimus Tabs). Every change to a service, guard, interceptor, form or page flow comes with tests for it.
+- **Unit tests:** Vitest + jsdom, specs next to the code (`x.spec.ts`). Written and run only on the user's request, through the `tester` skill.
 - **Layers** (`src/app/`, lint-enforced): `core/` holds app-wide services and config, `layout/` the shell and its parts, `features/<name>/` the pages, `shared/` reusable UI. `features` must not import other features; `shared` imports none of core, layout or features; `core` imports neither layout nor features; `layout` does not import features. Use the aliases `@core/*`, `@shared/*`, `@layout/*`, `@features/*`.
 - **Conventions:** file `x-page.ts`, `.html`, `.scss` side by side; class `XPage` without the `Component` suffix; selector `app-x-page`; `inject()` instead of constructor injection; `protected readonly` for template members; `private` for the rest. Single-line methods use arrow functions: `getProfile = () => this.httpClient.get(...)`.
 - **Naming injected dependencies:** a property or variable holding an injected class is named after that class in lowerCamelCase, everywhere including specs: `productsService = inject(ProductsService)`, `sessionService`, `editActionsService`, `router = inject(Router)`, `httpClient = inject(HttpClient)`, `httpTestingController = TestBed.inject(HttpTestingController)`. Never shorten it (`products`, `session`, `http`, `fb`): the short form collides with data (`products` is the list, `productsService` loads it). Two exceptions: a qualifier prefix of a framework class is dropped (`formBuilder = inject(NonNullableFormBuilder)`), and an injection token gets a plain noun (`locale = inject(LOCALE_ID)`). In a service's own spec the subject under test is `service`. A one-off use needs no property: `inject(EditActionsService).register(...)`.
@@ -52,9 +54,9 @@ Before building something new, look for an existing piece to copy: an existing p
 - Write whole files with `Write` when most of a file changes; use `Edit` for targeted changes. Batch independent edits in one turn.
 - If a file changed on disk since you read it, re-read it before overwriting. The user often edits in parallel, so keep their changes.
 
-## 5. Verify by risk, in as few tool calls as possible
+## 5. Code checks, in as few tool calls as possible
 
-Measured on this machine: `prettier` about 1s, `ng lint` about 3s, `npm run build` about 3s, `ui-check.mjs` about 1.5s plus 1s per extra screen size. The checks are cheap. **Tool-call round trips are the expensive part**, so batch them.
+Measured on this machine: `prettier` about 1s, `ng lint` about 3s, `npm run build` about 3s. The checks are cheap. **Tool-call round trips are the expensive part**, so batch them.
 
 **One command for the code checks**, run once after the edits:
 
@@ -64,22 +66,11 @@ npx prettier --write <changed files> >/dev/null && npx ng lint 2>&1 | grep -E "p
 
 Do not pipe `ng lint` into `tail -1`, because its last line is blank. The build must finish without errors or new warnings; bundle budget warnings count.
 
-**Browser check** (any visual or behavior change):
+No `npm test` and no browser check here: those belong to the `tester` skill and run only when the user asks.
 
-- Use a dev server on port 4300, because the user's server on 4200 can serve stale code. **Reuse it:** start `npx ng serve --port 4300` in the background only if `curl -sk -o /dev/null -w "%{http_code}" https://localhost:4300/` does not print 200. Leave it running for the session, since it reloads changes by itself. Do not stop and restart it per task.
-- Check every relevant size in **one** run, in the same Bash call as the code checks:
+**Target flow for an S task, about four tool calls:** (1) read the target file and any library `.d.ts` in parallel; (2) edit; (3) one Bash call with the code checks; (4) report.
 
-  ```sh
-  node .claude/skills/developer/scripts/ui-check.mjs --url https://localhost:4300/ --sizes 320x568,375x667,768x1024,1280x800 --click .trigger --measure ".trigger,.p-menu" --out <scratchpad>/shot.png
-  ```
-
-  It fakes a logged-in session (`--logged-out` for the opposite), waits until the app has rendered, and prints JSON per size: scroll, horizontal overflow, element boxes and console errors. Judge from the numbers first, then `Read` **one** screenshot (the narrowest) to confirm the look. Read more only if the numbers show a problem.
-
-- `--click` can repeat (for example open, then close). For animation glitches such as blinking or shifting, add `--trace <selector>`: it records the element's box, opacity and transform on every frame after each click, so you can see exactly what moves.
-
-**Target flow for an S task, about five tool calls:** (1) read the target file and any library `.d.ts` in parallel, and start the 4300 server if it is not up; (2) edit; (3) one Bash call with the code checks plus `ui-check`; (4) `Read` one screenshot if the change is visual; (5) report.
-
-If a check cannot run, say which and why. Never report something as working without evidence.
+If a check cannot run, say which and why. Never report something as working without evidence; say plainly that it is untested until the user asks for testing.
 
 ## 6. Environment facts (Windows, Git Bash)
 
@@ -91,19 +82,19 @@ If a check cannot run, say which and why. Never report something as working with
 
 ## 7. Anti-patterns
 
-| Do not                                                          | Instead                                        |
-| --------------------------------------------------------------- | ---------------------------------------------- |
-| Plan, survey options or ask questions for an S task             | Do it and mention the one assumption           |
-| Re-read files or re-run identical searches                      | Use what is already in context                 |
-| Add abstractions, services or generic helpers "for later"       | Write the concrete code the task needs now     |
-| Refactor or reformat code outside the task                      | Mention it as a follow-up                      |
-| Add a package for something small                               | Use Angular, the platform or Optimus           |
-| Fight library CSS with specificity, `!important` or `::ng-deep` | Use the library's inputs, tokens or preset     |
-| Silence lint or type errors, or weaken checks                   | Fix the cause                                  |
-| Swallow errors with an empty `catch`                            | Handle the error, or let it surface            |
-| Guess why the UI looks wrong                                    | Measure it in the browser with the script      |
-| Claim "fixed" or "works" after only a build                     | Verify the behavior that was reported          |
-| Leave placeholder logic when working code was requested         | Implement it, or state clearly what is missing |
+| Do not                                                          | Instead                                                                   |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Plan, survey options or ask questions for an S task             | Do it and mention the one assumption                                      |
+| Re-read files or re-run identical searches                      | Use what is already in context                                            |
+| Add abstractions, services or generic helpers "for later"       | Write the concrete code the task needs now                                |
+| Refactor or reformat code outside the task                      | Mention it as a follow-up                                                 |
+| Add a package for something small                               | Use Angular, the platform or Optimus                                      |
+| Fight library CSS with specificity, `!important` or `::ng-deep` | Use the library's inputs, tokens or preset                                |
+| Silence lint or type errors, or weaken checks                   | Fix the cause                                                             |
+| Swallow errors with an empty `catch`                            | Handle the error, or let it surface                                       |
+| Guess why the UI looks wrong                                    | Read the code and library sources; offer a browser check through `tester` |
+| Claim "fixed" or "works" after only a build                     | Say "builds, untested" until the user asks to test                        |
+| Leave placeholder logic when working code was requested         | Implement it, or state clearly what is missing                            |
 
 ## 8. Before you finish
 
@@ -111,6 +102,6 @@ Read your own diff once and check: it solves the stated problem; nothing unrelat
 
 ## 9. Report
 
-Keep it short: what changed (with file links), any decision the user should know about, what you verified and how, and anything unverified or left open. Skip narration of routine steps.
+Keep it short: what changed (with file links), any decision the user should know about, which code checks ran, and a one-line note that tests were not written or run (the user asks for them with the `tester` skill). Skip narration of routine steps.
 
 **Explanations:** when the user asks how or why something works, give only the essential sentences: the cause, then the mechanism in short numbered steps, then the fix or options. No background and no repetition.

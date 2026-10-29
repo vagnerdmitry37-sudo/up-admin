@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
-import { Product } from '@core/api/models';
+import { Image, Product } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { EditProductPage } from './edit-product-page';
 
@@ -32,12 +32,13 @@ describe('EditProductPage', () => {
   let httpTestingController: HttpTestingController;
   let navigateByUrl: ReturnType<typeof vi.spyOn>;
 
-  const render = async (ids: string, loaded: Product[]) => {
+  const render = async (ids: string, loaded: Product[], saved: Image[] = []) => {
     const fixture = TestBed.createComponent(EditProductPage);
     fixture.componentRef.setInput('ids', ids);
     TestBed.tick();
     const load = httpTestingController.expectOne((req) => req.url === '/api/products/by-ids');
     load.flush(loaded);
+    httpTestingController.expectOne((req) => req.url === '/api/images').flush(saved);
     await fixture.whenStable();
     return { fixture, element: fixture.nativeElement as HTMLElement, load };
   };
@@ -67,6 +68,22 @@ describe('EditProductPage', () => {
 
     expect(load.request.params.getAll('ids')).toEqual(['p1', 'p2']);
     expect(element.querySelectorAll('p-tab')).toHaveLength(2);
+  });
+
+  it('shows the saved images of each product as Saved cards', async () => {
+    const saved: Image[] = [
+      { id: 'i1', entityType: 'Product', entityId: 'p1', sortOrder: 0, url: 'https://img/1.webp' },
+      { id: 'i2', entityType: 'Product', entityId: 'p1', sortOrder: 1, url: 'https://img/2.webp' },
+    ];
+
+    const { element } = await render('p1', [products[0]], saved);
+
+    const cards = [...element.querySelectorAll('app-image-upload button[aria-pressed]')];
+    expect(cards.map((card) => card.querySelector('img')?.getAttribute('src'))).toEqual([
+      'https://img/1.webp',
+      'https://img/2.webp',
+    ]);
+    expect(cards.every((card) => card.textContent?.includes('Saved'))).toBe(true);
   });
 
   it('shows a single product without tabs', async () => {

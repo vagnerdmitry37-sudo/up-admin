@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
-import { CreateProductRequest, Product, ProductType } from '@core/api/models';
+import { CreateProductRequest, Image, Product, ProductType } from '@core/api/models';
 import { FormShell } from '@shared/form-shell/form-shell';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
@@ -30,6 +30,7 @@ export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
 export class ProductForm {
   readonly heading = input('New product');
   readonly product = input<Product>();
+  readonly images = input<Image[]>([]);
   readonly submitted = output<ProductFormValue>();
 
   private readonly formBuilder = inject(NonNullableFormBuilder);

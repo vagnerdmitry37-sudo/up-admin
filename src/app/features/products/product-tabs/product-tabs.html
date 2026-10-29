@@ -9,7 +9,11 @@
       @for (product of products(); track product.id) {
         <p-tabpanel [value]="product.id">
           <ng-template #content>
-            <app-product-form [heading]="heading()" [product]="product" />
+            <app-product-form
+              [heading]="heading()"
+              [product]="product"
+              [images]="imagesByProduct().get(product.id) ?? []"
+            />
           </ng-template>
         </p-tabpanel>
       }
@@ -17,6 +21,10 @@
   </p-tabs>
 } @else {
   @for (product of products(); track product.id) {
-    <app-product-form [heading]="heading()" [product]="product" />
+    <app-product-form
+      [heading]="heading()"
+      [product]="product"
+      [images]="imagesByProduct().get(product.id) ?? []"
+    />
   }
 }

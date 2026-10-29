@@ -27,5 +27,5 @@
     [messages]="{ required: 'Enter a description.', maxlength: 'Use 5000 characters or fewer.' }"
   />
 
-  <app-image-upload />
+  <app-image-upload [images]="images()" />
 </app-form-shell>
