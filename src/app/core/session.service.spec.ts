@@ -99,4 +99,60 @@ describe('SessionService', () => {
     await expect(logout).rejects.toBeTruthy();
     expect(service.isAuthenticated()).toBe(false);
   });
+
+  const signInExpiringIn = async (milliseconds: number) => {
+    const login = service.login('seller@example.com', 'secret');
+    httpTestingController.expectOne('/api/auth/login').flush({
+      accessToken: 'token-1',
+      expiresAt: new Date(Date.now() + milliseconds).toISOString(),
+    });
+    await login;
+  };
+
+  it('does not report an expired token while signed out', () => {
+    expect(service.isExpired()).toBe(false);
+  });
+
+  it('does not report a fresh token as expired', async () => {
+    await signInExpiringIn(60_000);
+
+    expect(service.isExpired()).toBe(false);
+  });
+
+  it('reports a token as expired from one second before its expiry time', async () => {
+    await signInExpiringIn(500);
+
+    expect(service.isExpired()).toBe(true);
+  });
+
+  it('reports a token past its expiry time as expired', async () => {
+    await signInExpiringIn(-5_000);
+
+    expect(service.isExpired()).toBe(true);
+  });
+
+  it('takes the new expiry time from a refresh', async () => {
+    await signInExpiringIn(-5_000);
+
+    const refresh = service.refresh();
+    httpTestingController.expectOne('/api/auth/refresh').flush({
+      accessToken: 'token-2',
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    });
+    await refresh;
+
+    expect(service.isExpired()).toBe(false);
+  });
+
+  it('forgets the expiry time when the refresh token is rejected', async () => {
+    await signInExpiringIn(-5_000);
+
+    const refresh = service.refresh();
+    httpTestingController
+      .expectOne('/api/auth/refresh')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+    await refresh;
+
+    expect(service.isExpired()).toBe(false);
+  });
 });

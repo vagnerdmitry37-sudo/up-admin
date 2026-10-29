@@ -17,31 +17,37 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     return next(request);
   }
 
-  const sentAccessToken = sessionService.accessToken();
-  const isAuthRequest = request.url.startsWith(`${apiUrl}auth/`);
+  if (request.url.startsWith(`${apiUrl}auth/`)) {
+    return next(withToken(request, sessionService.accessToken()));
+  }
 
-  return next(withToken(request, sentAccessToken)).pipe(
-    catchError((error: unknown) => {
-      if (isAuthRequest || !(error instanceof HttpErrorResponse) || error.status !== 401) {
-        return throwError(() => error);
-      }
+  const send = (sentAccessToken: string | null) =>
+    next(withToken(request, sentAccessToken)).pipe(
+      catchError((error: unknown) => {
+        if (!(error instanceof HttpErrorResponse) || error.status !== 401) {
+          return throwError(() => error);
+        }
 
-      const currentAccessToken = sessionService.accessToken();
-      const freshAccessToken =
-        currentAccessToken && currentAccessToken !== sentAccessToken
-          ? Promise.resolve(currentAccessToken)
-          : sessionService.refresh();
+        const currentAccessToken = sessionService.accessToken();
+        const freshAccessToken =
+          currentAccessToken && currentAccessToken !== sentAccessToken
+            ? Promise.resolve(currentAccessToken)
+            : sessionService.refresh();
 
-      return from(freshAccessToken).pipe(
-        switchMap((token) => {
-          if (!token) {
-            void router.navigateByUrl('/login');
-            return throwError(() => error);
-          }
+        return from(freshAccessToken).pipe(
+          switchMap((token) => {
+            if (!token) {
+              void router.navigateByUrl('/login');
+              return throwError(() => error);
+            }
 
-          return next(withToken(request, token));
-        }),
-      );
-    }),
-  );
+            return next(withToken(request, token));
+          }),
+        );
+      }),
+    );
+
+  return sessionService.isExpired()
+    ? from(sessionService.refresh()).pipe(switchMap(send))
+    : send(sessionService.accessToken());
 };
