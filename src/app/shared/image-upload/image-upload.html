@@ -10,28 +10,10 @@
 
   <ng-template #content let-files let-messages="messages">
     <div class="groups">
-      @if (images().length) {
-        <section class="group">
-          <h2 class="group-title">Saved</h2>
-          <ul class="files">
-            @for (image of images(); track image.id; let index = $index) {
-              <li>
-                <button
-                  type="button"
-                  class="file selectable"
-                  [class.selected]="isSavedSelected(image)"
-                  [attr.aria-pressed]="isSavedSelected(image)"
-                  (click)="toggleSaved(image)"
-                >
-                  <img class="thumbnail" [src]="image.url" [alt]="'Image ' + (index + 1)" />
-                  <span class="name">Image {{ index + 1 }}</span>
-                  <p-badge value="Saved" severity="success" />
-                </button>
-              </li>
-            }
-          </ul>
-        </section>
-      }
+      <button type="button" class="drop-zone" (click)="openFilePicker()">
+        <i class="pi pi-cloud-upload drop-zone-icon" aria-hidden="true"></i>
+        <span class="drop-zone-text">Drag and drop images here, or click to choose files.</span>
+      </button>
       @if (files.length || messages?.length) {
         <section class="group">
           @if (files.length) {
@@ -77,10 +59,28 @@
           </ul>
         </section>
       }
-      <button type="button" class="drop-zone" (click)="openFilePicker()">
-        <i class="pi pi-cloud-upload drop-zone-icon" aria-hidden="true"></i>
-        <span class="drop-zone-text">Drag and drop images here, or click to choose files.</span>
-      </button>
+      @if (images().length) {
+        <section class="group">
+          <h2 class="group-title">Saved</h2>
+          <ul class="files">
+            @for (image of images(); track image.id; let index = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="file selectable"
+                  [class.selected]="isSavedSelected(image)"
+                  [attr.aria-pressed]="isSavedSelected(image)"
+                  (click)="toggleSaved(image)"
+                >
+                  <img class="thumbnail" [src]="image.url" [alt]="'Image ' + (index + 1)" />
+                  <span class="name">Image {{ index + 1 }}</span>
+                  <p-badge value="Saved" severity="success" />
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
     </div>
   </ng-template>
 </p-fileupload>

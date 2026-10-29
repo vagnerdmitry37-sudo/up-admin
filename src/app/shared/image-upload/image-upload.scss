@@ -29,15 +29,11 @@ p-fileupload {
 .groups {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
 }
 
 .message {
   margin-bottom: 0.75rem;
-}
-
-.group + .group,
-.group + .drop-zone {
-  margin-top: 1.5rem;
 }
 
 .group-title {
