@@ -13,6 +13,8 @@
               [heading]="heading()"
               [product]="product"
               [images]="imagesByProduct().get(product.id) ?? []"
+              [formStatus]="productFormStatuses()[product.id] ?? 'idle'"
+              [imagesStatus]="productImageStatuses()[product.id] ?? 'idle'"
             />
           </ng-template>
         </p-tabpanel>
@@ -25,6 +27,8 @@
       [heading]="heading()"
       [product]="product"
       [images]="imagesByProduct().get(product.id) ?? []"
+      [formStatus]="productFormStatuses()[product.id] ?? 'idle'"
+      [imagesStatus]="productImageStatuses()[product.id] ?? 'idle'"
     />
   }
 }

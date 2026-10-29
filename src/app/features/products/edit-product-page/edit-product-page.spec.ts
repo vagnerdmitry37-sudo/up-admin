@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { ApplicationRef } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Image, Product } from '@core/api/models';
@@ -27,6 +28,21 @@ const products: Product[] = [
 ];
 
 const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+const zoneStates = (element: HTMLElement) =>
+  [...element.querySelectorAll('app-save-zone')].map(
+    (zone) => zone.querySelector('[role="status"]')?.textContent?.trim() ?? '',
+  );
+
+const chooseImage = async (fixture: ComponentFixture<EditProductPage>, element: HTMLElement) => {
+  const input = element.querySelector<HTMLInputElement>('app-image-upload input[type="file"]')!;
+  Object.defineProperty(input, 'files', {
+    value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+  });
+  input.dispatchEvent(new Event('change'));
+  fixture.detectChanges();
+  await fixture.whenStable();
+};
 
 describe('EditProductPage', () => {
   let httpTestingController: HttpTestingController;
@@ -93,7 +109,7 @@ describe('EditProductPage', () => {
     expect(element.querySelector('h1')?.textContent).toBe('Edit product');
   });
 
-  it('saves every product with one PUT that keeps their ids', async () => {
+  it('sends only the edited products in one PUT and stays on the page', async () => {
     const { element } = await render('p1,p2', products);
     const name = element.querySelector(
       'p-tabpanel:not([hidden]) app-text-field input',
@@ -115,16 +131,61 @@ describe('EditProductPage', () => {
         price: 25,
         attributes: {},
       },
-      {
-        id: 'p2',
-        type: 'Transfer',
-        name: 'Airport to hotel',
-        description: 'y',
-        price: 40,
-        attributes: {},
-      },
     ]);
-    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('sends nothing when nothing changed', async () => {
+    await render('p1', [products[0]]);
+
+    await save();
+
+    httpTestingController.expectNone((req) => req.method === 'PUT');
+    httpTestingController.expectNone((req) => req.method === 'POST');
+  });
+
+  it('shows the form spinner, then its own Saved state, independently of the images', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render('p1', [products[0]]);
+    const name = element.querySelector('app-text-field input') as HTMLInputElement;
+    name.value = 'Night Walk';
+    name.dispatchEvent(new Event('input'));
+    await chooseImage(fixture, element);
+
+    await save();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['Saving…', 'Saving…']);
+
+    httpTestingController.expectOne((req) => req.method === 'PUT').flush([]);
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['Saved', 'Saving…']);
+
+    httpTestingController.expectOne((req) => req.method === 'POST').flush([]);
+    await settle();
+    TestBed.tick();
+    httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['Saved', 'Saved']);
+  });
+
+  it('shows a failure only in the zone whose request failed', async () => {
+    const { element } = await render('p1', [products[0]]);
+    const name = element.querySelector('app-text-field input') as HTMLInputElement;
+    name.value = 'Night Walk';
+    name.dispatchEvent(new Event('input'));
+
+    const saving = TestBed.inject(EditActionsService).run('save') as unknown as Promise<void>;
+    await settle();
+    httpTestingController
+      .expectOne((req) => req.method === 'PUT')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    await expect(saving).rejects.toBeTruthy();
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(["Couldn't save. Try again.", '']);
   });
 
   it('sends nothing while a product is invalid', async () => {
@@ -139,29 +200,47 @@ describe('EditProductPage', () => {
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
-  it('uploads the chosen images of a product after saving it', async () => {
+  it('uploads chosen images without sending unchanged product details', async () => {
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     const { fixture, element } = await render('p1,p2', products);
-    const input = element.querySelector<HTMLInputElement>('app-image-upload input[type="file"]')!;
-    Object.defineProperty(input, 'files', {
-      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
-    });
-    input.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
+    await chooseImage(fixture, element);
 
     await save();
-    httpTestingController.expectOne((req) => req.method === 'PUT').flush([]);
-    await settle();
-    const upload = httpTestingController.expectOne('/api/images');
+    httpTestingController.expectNone((req) => req.method === 'PUT');
+    expect(zoneStates(element)).toEqual(['', 'Saving…']);
+    const upload = httpTestingController.expectOne((req) => req.method === 'POST');
     const form = upload.request.body as FormData;
     expect(form.get('entityId')).toBe('p1');
     expect((form.getAll('files') as File[]).map((file) => file.name)).toEqual(['photo.jpg']);
-    expect(navigateByUrl).not.toHaveBeenCalled();
     upload.flush([]);
     await settle();
 
-    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    TestBed.tick();
+
+    httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['', 'Saved']);
+    expect(element.querySelector('app-image-upload button[aria-pressed]')).toBeNull();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('hides Delete while saving', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render('p1', [products[0]]);
+    const editActionsService = TestBed.inject(EditActionsService);
+    await chooseImage(fixture, element);
+    element.querySelector<HTMLButtonElement>('button[aria-pressed]')!.click();
+    await fixture.whenStable();
+    expect(editActionsService.actions().delete).toBeDefined();
+
+    await save();
+    expect(editActionsService.actions().delete).toBeUndefined();
+
+    httpTestingController.expectOne((req) => req.method === 'POST').flush([]);
+    await settle();
+    TestBed.tick();
+    httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
   });
 
   it('deletes the selected images of the open tab', async () => {

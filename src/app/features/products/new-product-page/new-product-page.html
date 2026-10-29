@@ -1,5 +1,14 @@
 @if (!from()) {
-  <app-product-form (submitted)="create($event)" />
+  <app-product-form
+    [formStatus]="productFormStatuses()[newProductKey] ?? 'idle'"
+    [imagesStatus]="productImageStatuses()[newProductKey] ?? 'idle'"
+    (submitted)="create($event)"
+  />
 } @else if (copies(); as copies) {
-  <app-product-tabs heading="Duplicate product" [products]="copies" />
+  <app-product-tabs
+    heading="Duplicate product"
+    [products]="copies"
+    [productFormStatuses]="productFormStatuses()"
+    [productImageStatuses]="productImageStatuses()"
+  />
 }

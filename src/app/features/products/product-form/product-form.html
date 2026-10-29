@@ -1,31 +1,40 @@
 <app-form-shell [heading]="heading()" [form]="form" (submitted)="submit()">
-  <div class="row">
-    <app-select-field
-      label="Type"
-      [control]="form.controls.type"
-      [options]="typeOptions"
-      [messages]="{ required: 'Select a type.' }"
-    />
-    <app-number-field
-      label="Price"
-      [control]="form.controls.price"
-      [min]="0"
-      [fractionDigits]="2"
-      [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
-    />
-  </div>
+  <app-save-zone [status]="formStatus()">
+    <div class="fields">
+      <div class="row">
+        <app-select-field
+          label="Type"
+          [control]="form.controls.type"
+          [options]="typeOptions"
+          [messages]="{ required: 'Select a type.' }"
+        />
+        <app-number-field
+          label="Price"
+          [control]="form.controls.price"
+          [min]="0"
+          [fractionDigits]="2"
+          [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
+        />
+      </div>
 
-  <app-text-field
-    label="Name"
-    [control]="form.controls.name"
-    [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
-  />
+      <app-text-field
+        label="Name"
+        [control]="form.controls.name"
+        [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
+      />
 
-  <app-textarea-field
-    label="Description"
-    [control]="form.controls.description"
-    [messages]="{ required: 'Enter a description.', maxlength: 'Use 5000 characters or fewer.' }"
-  />
+      <app-textarea-field
+        label="Description"
+        [control]="form.controls.description"
+        [messages]="{
+          required: 'Enter a description.',
+          maxlength: 'Use 5000 characters or fewer.',
+        }"
+      />
+    </div>
+  </app-save-zone>
 
-  <app-image-upload [images]="images()" />
+  <app-save-zone [status]="imagesStatus()" failedMessage="Couldn't upload images. Try again.">
+    <app-image-upload [images]="images()" />
+  </app-save-zone>
 </app-form-shell>

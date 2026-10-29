@@ -16,13 +16,14 @@ import { SelectField } from '@shared/form-fields/select-field/select-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
 import { ImageUpload } from '@shared/image-upload/image-upload';
+import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
 import { PRODUCT_TYPES } from '../constants';
 
 export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
 
 @Component({
   selector: 'app-product-form',
-  imports: [FormShell, ImageUpload, NumberField, SelectField, TextField, TextareaField],
+  imports: [FormShell, ImageUpload, NumberField, SaveZone, SelectField, TextField, TextareaField],
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,8 @@ export class ProductForm {
   readonly heading = input('New product');
   readonly product = input<Product>();
   readonly images = input<Image[]>([]);
+  readonly formStatus = input<SaveStatus>('idle');
+  readonly imagesStatus = input<SaveStatus>('idle');
   readonly submitted = output<ProductFormValue>();
 
   private readonly formBuilder = inject(NonNullableFormBuilder);
@@ -59,11 +62,17 @@ export class ProductForm {
     });
   }
 
+  hasChanges = () => this.form.dirty;
+
+  markSaved = () => this.form.markAsPristine();
+
   save = () => this.shell().submit();
 
   deleteSelectedImages = () => this.imageUpload()?.deleteSelected();
 
   pendingImages = (): File[] => this.imageUpload()?.pendingFiles() ?? [];
+
+  clearPendingImages = () => this.imageUpload()?.clearPending();
 
   validValue(): ProductFormValue | undefined {
     if (this.form.invalid) {

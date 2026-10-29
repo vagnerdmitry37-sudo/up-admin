@@ -64,6 +64,11 @@ export class ImageUpload {
     fileUpload.cd.markForCheck();
   }
 
+  clearPending(): void {
+    this.fileUpload().clear();
+    this.selection.set([]);
+  }
+
   protected openFilePicker = () => this.fileUpload().choose();
 
   protected toggle(file: File): void {

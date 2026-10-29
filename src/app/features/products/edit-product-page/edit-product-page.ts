@@ -7,10 +7,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ProductTabs, ProductTabValue } from '../product-tabs/product-tabs';
 import { ProductsService } from '../products.service';
+import { SaveStatuses, markSaving, showResult } from '../save-statuses';
 
 @Component({
   selector: 'app-edit-product-page',
@@ -21,11 +21,12 @@ import { ProductsService } from '../products.service';
 export class EditProductPage {
   readonly ids = input.required<string>();
 
-  private readonly router = inject(Router);
   private readonly productsService = inject(ProductsService);
   private readonly tabs = viewChild(ProductTabs);
   private readonly saving = signal(false);
 
+  protected readonly productFormStatuses = signal<SaveStatuses>({});
+  protected readonly productImageStatuses = signal<SaveStatuses>({});
   protected readonly products = rxResource({
     params: () => this.ids().split(','),
     stream: ({ params }) => this.productsService.get(params),
@@ -41,7 +42,7 @@ export class EditProductPage {
         save: { click: () => this.save() },
         delete: {
           click: () => this.tabs()?.activeForm()?.deleteSelectedImages(),
-          visible: Boolean(this.tabs()?.activeForm()?.selectedImages().length),
+          visible: !this.saving() && Boolean(this.tabs()?.activeForm()?.selectedImages().length),
         },
       }),
     });
@@ -52,23 +53,62 @@ export class EditProductPage {
     if (this.saving() || !values) {
       return;
     }
+    const changed = values.filter(({ changed }) => changed);
+    const withImages = values.filter(({ images }) => images.length);
+    if (!changed.length && !withImages.length) {
+      return;
+    }
     this.saving.set(true);
-    try {
-      await this.productsService.update(
-        values.map(({ product, value }) => ({ ...value, id: product.id, attributes: {} })),
-      );
-      await this.uploadImages(values);
-      await this.router.navigateByUrl('/products');
-    } finally {
-      this.saving.set(false);
+    markSaving(
+      this.productFormStatuses,
+      changed.map(({ product }) => product.id),
+    );
+    markSaving(
+      this.productImageStatuses,
+      withImages.map(({ product }) => product.id),
+    );
+    const results = await Promise.allSettled([
+      this.updateProducts(changed),
+      ...withImages.map((value) => this.uploadImages(value)),
+    ]);
+    this.saving.set(false);
+    if (withImages.length) {
+      this.images.reload();
+    }
+    const failure = results.find((result) => result.status === 'rejected');
+    if (failure) {
+      throw failure.reason;
     }
   }
 
-  private async uploadImages(values: ProductTabValue[]) {
-    for (const { product, images } of values) {
-      if (images.length) {
-        await this.productsService.uploadImages(product.id, images);
+  private async updateProducts(changed: ProductTabValue[]): Promise<void> {
+    if (!changed.length) {
+      return;
+    }
+    try {
+      await this.productsService.update(
+        changed.map(({ product, value }) => ({ ...value, id: product.id, attributes: {} })),
+      );
+      for (const { product } of changed) {
+        this.tabs()?.markSaved(product.id);
+        showResult(this.productFormStatuses, product.id, 'saved');
       }
+    } catch (error) {
+      for (const { product } of changed) {
+        showResult(this.productFormStatuses, product.id, 'failed');
+      }
+      throw error;
+    }
+  }
+
+  private async uploadImages({ product, images }: ProductTabValue): Promise<void> {
+    try {
+      await this.productsService.uploadImages(product.id, images);
+      this.tabs()?.clearPendingImages(product.id);
+      showResult(this.productImageStatuses, product.id, 'saved');
+    } catch (error) {
+      showResult(this.productImageStatuses, product.id, 'failed');
+      throw error;
     }
   }
 }

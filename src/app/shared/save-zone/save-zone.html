@@ -1,0 +1,27 @@
+<div class="content" [inert]="busy()">
+  <ng-content />
+</div>
+
+@if (status() !== 'idle') {
+  <div
+    class="overlay"
+    role="status"
+    (dragover)="$event.preventDefault()"
+    (drop)="$event.preventDefault()"
+  >
+    @switch (status()) {
+      @case ('saving') {
+        <svg data-p-icon="spinner" [spin]="true" class="icon" aria-hidden="true"></svg>
+        <span class="label">Saving…</span>
+      }
+      @case ('saved') {
+        <i class="pi pi-check-circle icon" aria-hidden="true"></i>
+        <span class="label">Saved</span>
+      }
+      @case ('failed') {
+        <i class="pi pi-times-circle icon" aria-hidden="true"></i>
+        <span class="label">{{ failedMessage() }}</span>
+      }
+    }
+  </div>
+}

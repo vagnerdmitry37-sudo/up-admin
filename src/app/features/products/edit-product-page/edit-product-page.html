@@ -3,5 +3,7 @@
     heading="Edit product"
     [products]="products.value()"
     [images]="images.hasValue() ? images.value() : []"
+    [productFormStatuses]="productFormStatuses()"
+    [productImageStatuses]="productImageStatuses()"
   />
 }

@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
@@ -59,9 +60,13 @@ describe('NewProductPage', () => {
     navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
   });
 
-  afterEach(() => httpTestingController.verify());
+  afterEach(() => {
+    httpTestingController.verify();
+    vi.useRealTimers();
+  });
 
-  it('creates a new product from the filled form', async () => {
+  it('creates a new product, then opens its edit page once the result was shown', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     const { element } = await render();
     const name = element.querySelector('app-text-field input') as HTMLInputElement;
     const description = element.querySelector('app-textarea-field textarea') as HTMLTextAreaElement;
@@ -72,8 +77,10 @@ describe('NewProductPage', () => {
 
     await save();
     const call = httpTestingController.expectOne('/api/products');
-    call.flush([]);
+    call.flush([{ ...sources[0], id: 'new-id' }]);
     await settle();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(2000);
 
     expect(call.request.method).toBe('POST');
     expect(call.request.body).toEqual([
@@ -85,7 +92,7 @@ describe('NewProductPage', () => {
         attributes: {},
       },
     ]);
-    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    expect(navigateByUrl).toHaveBeenCalledWith('/products/new-id/edit', { replaceUrl: true });
   });
 
   it('sends nothing while the form is invalid', async () => {
@@ -113,14 +120,19 @@ describe('NewProductPage', () => {
   });
 
   it('saves the copies as new products without ids, keeping their attributes', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     const { fixture } = await render('p1,p2');
     httpTestingController.expectOne((req) => req.url === '/api/products/by-ids').flush(sources);
     await fixture.whenStable();
 
     await save();
     const call = httpTestingController.expectOne((req) => req.method === 'POST');
-    call.flush([]);
+    call.flush([
+      { ...sources[0], id: 'c1' },
+      { ...sources[1], id: 'c2' },
+    ]);
     await settle();
+    await vi.advanceTimersByTimeAsync(2000);
 
     expect(call.request.body).toEqual([
       {
@@ -139,10 +151,11 @@ describe('NewProductPage', () => {
       },
     ]);
     httpTestingController.expectNone((req) => req.method === 'PUT');
-    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    expect(navigateByUrl).toHaveBeenCalledWith('/products/c1,c2/edit', { replaceUrl: true });
   });
 
   it('uploads the chosen images for the newly created product', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     const { fixture, element } = await render();
     const name = element.querySelector('app-text-field input') as HTMLInputElement;
@@ -168,8 +181,9 @@ describe('NewProductPage', () => {
     expect((form.getAll('files') as File[]).map((file) => file.name)).toEqual(['photo.jpg']);
     upload.flush([]);
     await settle();
+    await vi.advanceTimersByTimeAsync(2000);
 
-    expect(navigateByUrl).toHaveBeenCalledWith('/products');
+    expect(navigateByUrl).toHaveBeenCalledWith('/products/new-id/edit', { replaceUrl: true });
   });
 
   it('offers Delete only while images are selected and removes the selected ones', async () => {
@@ -201,4 +215,58 @@ describe('NewProductPage', () => {
     ]);
     expect(editActionsService.actions().delete).toBeUndefined();
   });
+
+  it('shows Saving, then Saved only in the form zone when no image was chosen', async () => {
+    const { element } = await render();
+    fillRequiredFields(element);
+
+    await save();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['Saving…', '']);
+
+    httpTestingController.expectOne('/api/products').flush([{ ...sources[0], id: 'new-id' }]);
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['Saved', '']);
+  });
+
+  it('stays on the create page and shows the error when creating fails', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const { fixture, element } = await render('p1,p2');
+    httpTestingController.expectOne((req) => req.url === '/api/products/by-ids').flush(sources);
+    await fixture.whenStable();
+
+    const saving = TestBed.inject(EditActionsService).run('save') as unknown as Promise<void>;
+    await settle();
+    httpTestingController
+      .expectOne('/api/products')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+
+    await expect(saving).rejects.toBeTruthy();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(["Couldn't save. Try again.", '']);
+
+    await vi.advanceTimersByTimeAsync(2000);
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(zoneStates(element)).toEqual(['', '']);
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    expect(
+      (element.querySelector('p-tabpanel:not([hidden]) app-text-field input') as HTMLInputElement)
+        .value,
+    ).toBe('Old Town Walk (copy)');
+  });
 });
+
+const zoneStates = (element: HTMLElement) =>
+  [...element.querySelectorAll('app-save-zone')].map(
+    (zone) => zone.querySelector('[role="status"]')?.textContent?.trim() ?? '',
+  );
+
+const fillRequiredFields = (element: HTMLElement) => {
+  const name = element.querySelector('app-text-field input') as HTMLInputElement;
+  const description = element.querySelector('app-textarea-field textarea') as HTMLTextAreaElement;
+  name.value = 'Old Town Walk';
+  name.dispatchEvent(new Event('input'));
+  description.value = 'Three hours';
+  description.dispatchEvent(new Event('input'));
+};

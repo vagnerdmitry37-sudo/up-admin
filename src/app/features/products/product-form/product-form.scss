@@ -1,3 +1,9 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .row {
   display: grid;
   gap: 0.25rem 0.75rem;

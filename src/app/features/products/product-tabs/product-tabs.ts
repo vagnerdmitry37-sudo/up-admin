@@ -8,11 +8,13 @@ import {
 } from '@angular/core';
 import { Image, Product } from '@core/api/models';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
+import { SaveStatus } from '@shared/save-zone/save-zone';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
 
 export interface ProductTabValue {
   product: Product;
   value: ProductFormValue;
+  changed: boolean;
   images: File[];
 }
 
@@ -33,6 +35,8 @@ export class ProductTabs {
   readonly products = input.required<Product[]>();
   readonly heading = input.required<string>();
   readonly images = input<Image[]>([]);
+  readonly productFormStatuses = input<Record<string, SaveStatus>>({});
+  readonly productImageStatuses = input<Record<string, SaveStatus>>({});
 
   private readonly forms = viewChildren(ProductForm);
 
@@ -50,6 +54,10 @@ export class ProductTabs {
     this.forms().find((form) => form.product()?.id === this.active()),
   );
 
+  clearPendingImages = (productId: string) => this.formOf(productId)?.clearPendingImages();
+
+  markSaved = (productId: string) => this.formOf(productId)?.markSaved();
+
   values(): ProductTabValue[] | undefined {
     const values: ProductTabValue[] = [];
     for (const product of this.products()) {
@@ -59,8 +67,17 @@ export class ProductTabs {
         this.active.set(product.id);
         return undefined;
       }
-      values.push({ product, value, images: form ? form.pendingImages() : [] });
+      values.push({
+        product,
+        value,
+        changed: Boolean(form?.hasChanges()),
+        images: form ? form.pendingImages() : [],
+      });
     }
     return values;
+  }
+
+  private formOf(productId: string): ProductForm | undefined {
+    return this.forms().find((form) => form.product()?.id === productId);
   }
 }
