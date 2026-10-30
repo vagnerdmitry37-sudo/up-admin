@@ -54,6 +54,10 @@ export class ProductTabs {
     this.forms().find((form) => form.product()?.id === this.active()),
   );
 
+  readonly hasUnsavedChanges = computed(() =>
+    this.forms().some((form) => form.hasUnsavedChanges()),
+  );
+
   clearPendingImages = (productId: string) => this.formOf(productId)?.clearPendingImages();
 
   markSaved = (productId: string) => this.formOf(productId)?.markSaved();

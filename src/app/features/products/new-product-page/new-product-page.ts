@@ -59,7 +59,10 @@ export class NewProductPage {
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
-        save: { click: () => (this.from() ? this.createCopies() : this.form()?.save()) },
+        save: {
+          click: () => (this.from() ? this.createCopies() : this.form()?.save()),
+          visible: Boolean(this.from()) || Boolean(this.form()?.hasUnsavedChanges()),
+        },
         delete: {
           click: () => this.activeForm()?.deleteSelectedImages(),
           visible: !this.saving() && Boolean(this.activeForm()?.selectedImages().length),

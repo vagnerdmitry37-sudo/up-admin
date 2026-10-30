@@ -95,6 +95,25 @@ describe('NewProductPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/products/new-id/edit', { replaceUrl: true });
   });
 
+  it('offers Save only after the new form is touched', async () => {
+    const { fixture, element } = await render();
+    const editActionsService = TestBed.inject(EditActionsService);
+    expect(editActionsService.actions().save).toBeUndefined();
+
+    fillRequiredFields(element);
+    await fixture.whenStable();
+
+    expect(editActionsService.actions().save).toBeDefined();
+  });
+
+  it('offers Save right away on the copy page', async () => {
+    const { fixture } = await render('p1,p2');
+    httpTestingController.expectOne((req) => req.url === '/api/products/by-ids').flush(sources);
+    await fixture.whenStable();
+
+    expect(TestBed.inject(EditActionsService).actions().save).toBeDefined();
+  });
+
   it('sends nothing while the form is invalid', async () => {
     await render();
 

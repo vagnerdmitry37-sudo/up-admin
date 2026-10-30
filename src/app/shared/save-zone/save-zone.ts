@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { SpinnerIcon } from '@openng/optimus-ui/icons/spinner';
+import { AppMotion } from '@shared/motion/motion';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
 @Component({
   selector: 'app-save-zone',
-  imports: [SpinnerIcon],
+  imports: [SpinnerIcon, AppMotion],
   templateUrl: './save-zone.html',
   styleUrl: './save-zone.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

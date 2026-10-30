@@ -8,6 +8,7 @@ import {
   output,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { CreateProductRequest, Image, Product, ProductType } from '@core/api/models';
 import { FormShell } from '@shared/form-shell/form-shell';
@@ -17,6 +18,7 @@ import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
 import { ImageUpload } from '@shared/image-upload/image-upload';
 import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
+import { map } from 'rxjs';
 import { PRODUCT_TYPES } from '../constants';
 
 export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
@@ -52,6 +54,14 @@ export class ProductForm {
     description: ['', [Validators.required, Validators.maxLength(5000)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
   });
+
+  private readonly fieldsChanged = toSignal(this.form.events.pipe(map(() => this.form.dirty)), {
+    initialValue: false,
+  });
+
+  readonly hasUnsavedChanges = computed(
+    () => this.fieldsChanged() || Boolean(this.imageUpload()?.pendingFiles().length),
+  );
 
   constructor() {
     effect(() => {

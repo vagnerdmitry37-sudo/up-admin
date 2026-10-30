@@ -12,6 +12,7 @@ import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
+import { AppMotion } from '@shared/motion/motion';
 
 interface Action {
   action: EditAction;
@@ -34,7 +35,7 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
   selector: 'app-edit-menu',
-  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple],
+  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion],
   host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',

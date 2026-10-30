@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, model, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, signal, viewChild } from '@angular/core';
 import { SafeUrl } from '@angular/platform-browser';
 import { Badge } from '@openng/optimus-ui/badge';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { Message } from '@openng/optimus-ui/message';
 import { ProgressBar } from '@openng/optimus-ui/progressbar';
+import { AppMotion } from '@shared/motion/motion';
 
 type SelectedFile = File & { objectURL?: SafeUrl };
 
@@ -19,7 +20,7 @@ const maxTotalBytes = maxFiles * maxFileBytes;
 
 @Component({
   selector: 'app-image-upload',
-  imports: [FileUpload, Badge, Message, ProgressBar],
+  imports: [FileUpload, Badge, Message, ProgressBar, AppMotion],
   templateUrl: './image-upload.html',
   styleUrl: './image-upload.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +31,9 @@ export class ImageUpload {
   readonly savedSelection = model<SavedImage[]>([]);
 
   private readonly fileUpload = viewChild.required(FileUpload);
+  private readonly pending = signal<File[]>([]);
+
+  readonly pendingFiles = this.pending.asReadonly();
 
   protected readonly maxFiles = maxFiles;
   protected readonly maxFileBytes = maxFileBytes;
@@ -50,8 +54,6 @@ export class ImageUpload {
 
   protected readonly isSavedSelected = (image: SavedImage) => this.savedSelection().includes(image);
 
-  pendingFiles = (): File[] => this.fileUpload().files;
-
   deleteSelected(): void {
     const fileUpload = this.fileUpload();
     for (const file of this.selection()) {
@@ -61,12 +63,18 @@ export class ImageUpload {
       }
     }
     this.selection.set([]);
+    this.syncPending();
     fileUpload.cd.markForCheck();
   }
 
   clearPending(): void {
     this.fileUpload().clear();
     this.selection.set([]);
+    this.syncPending();
+  }
+
+  protected syncPending(): void {
+    this.pending.set([...this.fileUpload().files]);
   }
 
   protected openFilePicker = () => this.fileUpload().choose();

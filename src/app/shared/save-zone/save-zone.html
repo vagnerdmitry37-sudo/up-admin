@@ -6,21 +6,29 @@
   <div
     class="overlay"
     role="status"
+    animate.enter="p-overlay-mask-enter-active"
+    animate.leave="p-overlay-mask-leave-active"
     (dragover)="$event.preventDefault()"
     (drop)="$event.preventDefault()"
   >
     @switch (status()) {
       @case ('saving') {
-        <svg data-p-icon="spinner" [spin]="true" class="icon" aria-hidden="true"></svg>
-        <span class="label">Saving…</span>
+        <div class="state" appMotion="pop">
+          <svg data-p-icon="spinner" [spin]="true" class="icon" aria-hidden="true"></svg>
+          <span class="label">Saving…</span>
+        </div>
       }
       @case ('saved') {
-        <i class="pi pi-check-circle icon" aria-hidden="true"></i>
-        <span class="label">Saved</span>
+        <div class="state" appMotion="pop">
+          <i class="pi pi-check-circle icon" aria-hidden="true"></i>
+          <span class="label">Saved</span>
+        </div>
       }
       @case ('failed') {
-        <i class="pi pi-times-circle icon" aria-hidden="true"></i>
-        <span class="label">{{ failedMessage() }}</span>
+        <div class="state" appMotion="pop">
+          <i class="pi pi-times-circle icon" aria-hidden="true"></i>
+          <span class="label">{{ failedMessage() }}</span>
+        </div>
       }
     }
   </div>

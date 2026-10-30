@@ -155,3 +155,10 @@ p-fileupload {
     min-width: 20rem;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .selectable,
+  .drop-zone {
+    transition: none;
+  }
+}

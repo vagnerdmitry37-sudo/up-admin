@@ -78,8 +78,28 @@ export const NoirPreset = definePreset(Aura, {
     },
     speeddial: {
       css: `
-        .p-speeddial-item.p-hidden {
+        .p-speeddial-item {
+          transition:
+            transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 200ms ease-out,
+            visibility 0s linear 0s;
+        }
+        .p-speeddial-open .p-speeddial-item.p-hidden {
+          transform: scale(0.6);
+          opacity: 0;
           visibility: hidden;
+          pointer-events: none;
+          transition:
+            transform 150ms ease-in,
+            opacity 150ms ease-in,
+            visibility 0s linear 150ms;
+          transition-delay: 0s, 0s, 150ms;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .p-speeddial-item,
+          .p-speeddial-open .p-speeddial-item.p-hidden {
+            transition: none;
+          }
         }
         .p-speeddial-action:has(.edit-menu-suggested),
         app-edit-menu.suggesting .p-speeddial-button {

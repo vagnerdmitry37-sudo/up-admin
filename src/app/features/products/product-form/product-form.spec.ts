@@ -93,4 +93,40 @@ describe('ProductForm', () => {
 
     expect(submitted).not.toHaveBeenCalled();
   });
+
+  it('has no unsaved changes when it shows a product as loaded', async () => {
+    const { form } = await render(product);
+
+    expect(form.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('has unsaved changes once a field is edited, and none once it is saved', async () => {
+    const { form, name, fixture } = await render(product);
+
+    type(name, 'Night transfer');
+    await fixture.whenStable();
+    expect(form.hasUnsavedChanges()).toBe(true);
+
+    form.markSaved();
+    await fixture.whenStable();
+    expect(form.hasUnsavedChanges()).toBe(false);
+  });
+
+  it('has unsaved changes while images are pending, and none once they are cleared', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { form, fixture } = await render(product);
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'app-image-upload input[type="file"]',
+    )!;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(form.hasUnsavedChanges()).toBe(true);
+
+    form.clearPendingImages();
+    await fixture.whenStable();
+    expect(form.hasUnsavedChanges()).toBe(false);
+  });
 });

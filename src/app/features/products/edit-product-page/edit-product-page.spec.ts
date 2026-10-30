@@ -135,6 +135,34 @@ describe('EditProductPage', () => {
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
+  it('offers Save only after a change, and hides it again once saved', async () => {
+    const { fixture, element } = await render('p1', [products[0]]);
+    const editActionsService = TestBed.inject(EditActionsService);
+    expect(editActionsService.actions().save).toBeUndefined();
+
+    const name = element.querySelector('app-text-field input') as HTMLInputElement;
+    name.value = 'Night Walk';
+    name.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(editActionsService.actions().save).toBeDefined();
+
+    await save();
+    httpTestingController.expectOne((req) => req.method === 'PUT').flush([]);
+    await settle();
+    await fixture.whenStable();
+    expect(editActionsService.actions().save).toBeUndefined();
+  });
+
+  it('offers Save once an image is added', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render('p1', [products[0]]);
+    const editActionsService = TestBed.inject(EditActionsService);
+
+    await chooseImage(fixture, element);
+
+    expect(editActionsService.actions().save).toBeDefined();
+  });
+
   it('sends nothing when nothing changed', async () => {
     await render('p1', [products[0]]);
 

@@ -24,6 +24,27 @@ describe('ImageUpload', () => {
     { id: 'i2', url: 'https://img/2.webp' },
   ];
 
+  it('keeps pendingFiles in step with choosing, deleting and clearing images', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const fixture = TestBed.createComponent(ImageUpload);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const kept = new File(['a'], 'kept.jpg', { type: 'image/jpeg' });
+    const deleted = new File(['b'], 'deleted.jpg', { type: 'image/jpeg' });
+    expect(fixture.componentInstance.pendingFiles()).toEqual([]);
+
+    await chooseFiles(fixture, [kept, deleted]);
+    expect(fixture.componentInstance.pendingFiles()).toEqual([kept, deleted]);
+
+    element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')[1].click();
+    await fixture.whenStable();
+    fixture.componentInstance.deleteSelected();
+    expect(fixture.componentInstance.pendingFiles()).toEqual([kept]);
+
+    fixture.componentInstance.clearPending();
+    expect(fixture.componentInstance.pendingFiles()).toEqual([]);
+  });
+
   it('shows the drop zone with drag and click instructions', async () => {
     const element = await render();
 

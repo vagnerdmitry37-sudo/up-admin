@@ -9,15 +9,27 @@
   inset: 0;
   z-index: 3;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
   padding: 1rem;
   border-radius: var(--p-content-border-radius);
   color: var(--p-mask-color);
   background: var(--p-mask-background);
   text-align: center;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay.p-overlay-mask-enter-active,
+  .overlay.p-overlay-mask-leave-active {
+    animation: none;
+  }
 }
 
 .icon {

@@ -5,6 +5,7 @@
   [maxFileSize]="maxFileBytes"
   [fileLimit]="maxFiles"
   [customUpload]="true"
+  (onSelect)="syncPending()"
 >
   <ng-template #header />
 
@@ -15,7 +16,7 @@
         <span class="drop-zone-text">Drag and drop images here, or click to choose files.</span>
       </button>
       @if (files.length || messages?.length) {
-        <section class="group">
+        <section class="group" appMotion="slide">
           @if (files.length) {
             <h2 class="group-title">Pending</h2>
             <div class="size">
@@ -41,7 +42,7 @@
           }
           <ul class="files">
             @for (file of files; track file) {
-              <li>
+              <li appMotion="slide">
                 <button
                   type="button"
                   class="file selectable"
@@ -60,11 +61,11 @@
         </section>
       }
       @if (images().length) {
-        <section class="group">
+        <section class="group" appMotion="slide">
           <h2 class="group-title">Saved</h2>
           <ul class="files">
             @for (image of images(); track image.id; let index = $index) {
-              <li>
+              <li appMotion="slide">
                 <button
                   type="button"
                   class="file selectable"
