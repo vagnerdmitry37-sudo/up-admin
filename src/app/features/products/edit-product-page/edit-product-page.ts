@@ -57,7 +57,7 @@ export class EditProductPage {
       return;
     }
     const changed = values.filter(({ changed }) => changed);
-    const withImages = values.filter(({ images }) => images.length);
+    const withImages = values.filter(({ images, imageOrder }) => images.length || imageOrder);
     if (!changed.length && !withImages.length) {
       return;
     }
@@ -72,7 +72,7 @@ export class EditProductPage {
     );
     const results = await Promise.allSettled([
       this.updateProducts(changed),
-      ...withImages.map((value) => this.uploadImages(value)),
+      ...withImages.map((value) => this.saveImages(value)),
     ]);
     this.saving.set(false);
     if (withImages.length) {
@@ -104,10 +104,15 @@ export class EditProductPage {
     }
   }
 
-  private async uploadImages({ product, images }: ProductTabValue): Promise<void> {
+  private async saveImages({ product, images, imageOrder }: ProductTabValue): Promise<void> {
     try {
-      await this.productsService.uploadImages(product.id, images);
-      this.tabs()?.clearPendingImages(product.id);
+      if (imageOrder) {
+        await this.productsService.updateImageOrder(product.id, imageOrder);
+      }
+      if (images.length) {
+        await this.productsService.uploadImages(product.id, images);
+        this.tabs()?.clearPendingImages(product.id);
+      }
       showResult(this.productImageStatuses, product.id, 'saved');
     } catch (error) {
       showResult(this.productImageStatuses, product.id, 'failed');

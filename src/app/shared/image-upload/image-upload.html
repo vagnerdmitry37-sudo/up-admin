@@ -60,12 +60,17 @@
           </ul>
         </section>
       }
-      @if (images().length) {
+      @if (orderedImages().length) {
         <section class="group" appMotion="slide">
           <h2 class="group-title">Saved</h2>
-          <ul class="files">
-            @for (image of images(); track image.id; let index = $index) {
-              <li appMotion="slide">
+          <ul
+            class="files"
+            cdkDropList
+            cdkDropListOrientation="mixed"
+            (cdkDropListDropped)="reorder($event)"
+          >
+            @for (image of orderedImages(); track image.id; let index = $index) {
+              <li class="draggable" appMotion="slide" cdkDrag>
                 <button
                   type="button"
                   class="file selectable"
@@ -77,6 +82,9 @@
                   <span class="name">Image {{ index + 1 }}</span>
                   <p-badge value="Saved" severity="success" />
                 </button>
+                <span class="drag-handle" cdkDragHandle aria-hidden="true">
+                  <i class="pi pi-arrows-alt"></i>
+                </span>
               </li>
             }
           </ul>

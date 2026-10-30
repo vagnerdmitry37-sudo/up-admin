@@ -80,6 +80,21 @@ describe('ProductsService', () => {
     call.flush([]);
   });
 
+  it('saves the new image order of a product', async () => {
+    const updated = service.updateImageOrder('p1', ['i2', 'i1']);
+
+    const call = httpTestingController.expectOne('/api/images/order');
+    expect(call.request.method).toBe('PUT');
+    expect(call.request.body).toEqual({
+      entityType: 'Product',
+      entityId: 'p1',
+      imageIds: ['i2', 'i1'],
+    });
+    call.flush([]);
+
+    await updated;
+  });
+
   it('uploads images for a product as multipart form data', async () => {
     const photo = new File(['a'], 'photo.jpg', { type: 'image/jpeg' });
     const uploaded = service.uploadImages('p1', [photo]);

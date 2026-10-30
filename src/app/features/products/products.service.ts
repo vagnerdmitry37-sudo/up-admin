@@ -6,6 +6,7 @@ import {
   Image,
   Product,
   ProductsPageResponse,
+  UpdateImageOrderRequest,
   UpdateProductRequest,
 } from '@core/api/models';
 import { firstValueFrom } from 'rxjs';
@@ -36,6 +37,15 @@ export class ProductsService {
     this.httpClient.get<Image[]>(this.imagesUrl, {
       params: { entityType: 'Product', entityIds: productIds },
     });
+
+  updateImageOrder = (productId: string, imageIds: string[]) =>
+    firstValueFrom(
+      this.httpClient.put<Image[]>(`${this.imagesUrl}/order`, {
+        entityType: 'Product',
+        entityId: productId,
+        imageIds,
+      } satisfies UpdateImageOrderRequest),
+    );
 
   uploadImages(productId: string, files: File[]): Promise<Image[]> {
     const form = new FormData();

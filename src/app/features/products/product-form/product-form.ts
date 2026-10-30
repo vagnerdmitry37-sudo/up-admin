@@ -60,7 +60,10 @@ export class ProductForm {
   });
 
   readonly hasUnsavedChanges = computed(
-    () => this.fieldsChanged() || Boolean(this.imageUpload()?.pendingFiles().length),
+    () =>
+      this.fieldsChanged() ||
+      Boolean(this.imageUpload()?.pendingFiles().length) ||
+      Boolean(this.imageUpload()?.orderChanged()),
   );
 
   constructor() {
@@ -83,6 +86,13 @@ export class ProductForm {
   pendingImages = (): File[] => this.imageUpload()?.pendingFiles() ?? [];
 
   clearPendingImages = () => this.imageUpload()?.clearPending();
+
+  changedImageOrder(): string[] | undefined {
+    const imageUpload = this.imageUpload();
+    return imageUpload?.orderChanged()
+      ? imageUpload.orderedImages().map((image) => image.id)
+      : undefined;
+  }
 
   validValue(): ProductFormValue | undefined {
     if (this.form.invalid) {

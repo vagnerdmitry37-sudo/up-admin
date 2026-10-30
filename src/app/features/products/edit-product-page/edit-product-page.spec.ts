@@ -1,7 +1,9 @@
+import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Image, Product } from '@core/api/models';
@@ -41,6 +43,28 @@ const chooseImage = async (fixture: ComponentFixture<EditProductPage>, element: 
   });
   input.dispatchEvent(new Event('change'));
   fixture.detectChanges();
+  await fixture.whenStable();
+};
+
+const savedImage = (id: string, sortOrder: number): Image => ({
+  id,
+  entityType: 'Product',
+  entityId: 'p1',
+  sortOrder,
+  url: `https://img/${id}.webp`,
+});
+
+const twoSavedImages = () => [savedImage('i1', 0), savedImage('i2', 1)];
+
+const moveSavedImage = async (
+  fixture: ComponentFixture<EditProductPage>,
+  previousIndex: number,
+  currentIndex: number,
+) => {
+  fixture.debugElement
+    .query(By.directive(CdkDropList))
+    .injector.get(CdkDropList)
+    .dropped.emit({ previousIndex, currentIndex } as CdkDragDrop<unknown>);
   await fixture.whenStable();
 };
 
@@ -251,6 +275,83 @@ describe('EditProductPage', () => {
     expect(zoneStates(element)).toEqual(['', 'Saved']);
     expect(element.querySelector('app-image-upload button[aria-pressed]')).toBeNull();
     expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('offers Save once the saved images are reordered', async () => {
+    const { fixture } = await render('p1', [products[0]], twoSavedImages());
+    const editActionsService = TestBed.inject(EditActionsService);
+    expect(editActionsService.actions().save).toBeUndefined();
+
+    await moveSavedImage(fixture, 1, 0);
+
+    expect(editActionsService.actions().save).toBeDefined();
+  });
+
+  it('saves the new image order, then shows the reloaded images as Saved', async () => {
+    const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+    await moveSavedImage(fixture, 1, 0);
+
+    await save();
+    httpTestingController.expectNone((req) => req.method === 'POST');
+    expect(zoneStates(element)).toEqual(['', 'Saving…']);
+    const order = httpTestingController.expectOne('/api/images/order');
+    expect(order.request.method).toBe('PUT');
+    expect(order.request.body).toEqual({
+      entityType: 'Product',
+      entityId: 'p1',
+      imageIds: ['i2', 'i1'],
+    });
+    order.flush([]);
+    await settle();
+
+    TestBed.tick();
+    httpTestingController
+      .expectOne((req) => req.url === '/api/images')
+      .flush([savedImage('i2', 0), savedImage('i1', 1)]);
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(zoneStates(element)).toEqual(['', 'Saved']);
+    expect(
+      [...element.querySelectorAll('.draggable img')].map((img) => img.getAttribute('src')),
+    ).toEqual(['https://img/i2.webp', 'https://img/i1.webp']);
+    expect(TestBed.inject(EditActionsService).actions().save).toBeUndefined();
+  });
+
+  it('saves the new image order before uploading new images', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+    await moveSavedImage(fixture, 1, 0);
+    await chooseImage(fixture, element);
+
+    await save();
+    httpTestingController.expectNone((req) => req.method === 'POST');
+    httpTestingController.expectOne('/api/images/order').flush([]);
+    await settle();
+
+    httpTestingController.expectOne((req) => req.method === 'POST').flush([]);
+    await settle();
+    TestBed.tick();
+    httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
+    await settle();
+  });
+
+  it('shows a failure in the images zone when the new order cannot be saved', async () => {
+    const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+    await moveSavedImage(fixture, 1, 0);
+
+    const saving = TestBed.inject(EditActionsService).run('save') as unknown as Promise<void>;
+    await settle();
+    httpTestingController
+      .expectOne('/api/images/order')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+    await expect(saving).rejects.toBeTruthy();
+    TestBed.tick();
+    httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
+    await settle();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(zoneStates(element)[1]).toContain("Couldn't save images. Try again.");
   });
 
   it('hides Delete while saving', async () => {

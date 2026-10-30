@@ -1,4 +1,6 @@
+import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ImageUpload } from './image-upload';
 
 describe('ImageUpload', () => {
@@ -234,5 +236,72 @@ describe('ImageUpload', () => {
     );
     expect(names).toEqual(['kept.jpg']);
     expect(fixture.componentInstance.selection()).toEqual([]);
+  });
+
+  describe('reordering saved images', () => {
+    const threeImages = [...savedImages, { id: 'i3', url: 'https://img/3.webp' }];
+
+    const renderSaved = async (images = threeImages) => {
+      const fixture = TestBed.createComponent(ImageUpload);
+      fixture.componentRef.setInput('images', images);
+      await fixture.whenStable();
+      return fixture;
+    };
+
+    const drop = async (
+      fixture: ComponentFixture<ImageUpload>,
+      previousIndex: number,
+      currentIndex: number,
+    ) => {
+      fixture.debugElement
+        .query(By.directive(CdkDropList))
+        .injector.get(CdkDropList)
+        .dropped.emit({ previousIndex, currentIndex } as CdkDragDrop<unknown>);
+      await fixture.whenStable();
+    };
+
+    const shownUrls = (fixture: ComponentFixture<ImageUpload>) =>
+      [...(fixture.nativeElement as HTMLElement).querySelectorAll('.draggable img')].map((img) =>
+        img.getAttribute('src'),
+      );
+
+    it('gives every saved image a move handle', async () => {
+      const element = (await renderSaved()).nativeElement as HTMLElement;
+
+      expect(element.querySelectorAll('.draggable .drag-handle')).toHaveLength(3);
+    });
+
+    it('moves a dropped image to its new place and reports the changed order', async () => {
+      const fixture = await renderSaved();
+      expect(fixture.componentInstance.orderChanged()).toBe(false);
+
+      await drop(fixture, 2, 0);
+
+      expect(shownUrls(fixture)).toEqual([
+        'https://img/3.webp',
+        'https://img/1.webp',
+        'https://img/2.webp',
+      ]);
+      expect(fixture.componentInstance.orderChanged()).toBe(true);
+    });
+
+    it('reports no change when an image is dropped back where it was', async () => {
+      const fixture = await renderSaved();
+
+      await drop(fixture, 1, 1);
+
+      expect(fixture.componentInstance.orderChanged()).toBe(false);
+    });
+
+    it('shows the server order again once new saved images arrive', async () => {
+      const fixture = await renderSaved();
+      await drop(fixture, 2, 0);
+
+      fixture.componentRef.setInput('images', [...threeImages]);
+      await fixture.whenStable();
+
+      expect(shownUrls(fixture)).toEqual(threeImages.map((image) => image.url));
+      expect(fixture.componentInstance.orderChanged()).toBe(false);
+    });
   });
 });

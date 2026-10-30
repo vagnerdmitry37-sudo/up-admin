@@ -16,6 +16,7 @@ export interface ProductTabValue {
   value: ProductFormValue;
   changed: boolean;
   images: File[];
+  imageOrder?: string[];
 }
 
 const toFormValue = ({ type, name, description, price }: Product): ProductFormValue => ({
@@ -76,6 +77,7 @@ export class ProductTabs {
         value,
         changed: Boolean(form?.hasChanges()),
         images: form ? form.pendingImages() : [],
+        imageOrder: form?.changedImageOrder(),
       });
     }
     return values;

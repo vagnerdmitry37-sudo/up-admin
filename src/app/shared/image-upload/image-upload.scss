@@ -41,6 +41,57 @@ p-fileupload {
   font-size: 1rem;
 }
 
+.draggable {
+  position: relative;
+
+  .file {
+    padding-top: 3.25rem;
+  }
+}
+
+.drag-handle {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--p-content-border-radius);
+  color: var(--p-text-muted-color);
+  cursor: grab;
+  transition: background-color 0.2s;
+}
+
+.selected + .drag-handle {
+  color: var(--p-highlight-color);
+}
+
+@media (hover: hover) {
+  .drag-handle:hover {
+    background: var(--p-content-hover-background);
+  }
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.cdk-drag-preview {
+  list-style: none;
+  cursor: grabbing;
+
+  .file {
+    background: var(--p-content-background);
+    box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.2);
+  }
+}
+
+.cdk-drag-animating {
+  transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1);
+}
+
 .files {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
@@ -158,7 +209,9 @@ p-fileupload {
 
 @media (prefers-reduced-motion: reduce) {
   .selectable,
-  .drop-zone {
+  .drop-zone,
+  .drag-handle,
+  .cdk-drag-animating {
     transition: none;
   }
 }

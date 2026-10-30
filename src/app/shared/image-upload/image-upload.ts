@@ -1,4 +1,20 @@
-import { ChangeDetectionStrategy, Component, input, model, signal, viewChild } from '@angular/core';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  linkedSignal,
+  model,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { SafeUrl } from '@angular/platform-browser';
 import { Badge } from '@openng/optimus-ui/badge';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
@@ -20,7 +36,16 @@ const maxTotalBytes = maxFiles * maxFileBytes;
 
 @Component({
   selector: 'app-image-upload',
-  imports: [FileUpload, Badge, Message, ProgressBar, AppMotion],
+  imports: [
+    FileUpload,
+    Badge,
+    Message,
+    ProgressBar,
+    AppMotion,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+  ],
   templateUrl: './image-upload.html',
   styleUrl: './image-upload.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +59,10 @@ export class ImageUpload {
   private readonly pending = signal<File[]>([]);
 
   readonly pendingFiles = this.pending.asReadonly();
+  readonly orderedImages = linkedSignal(() => this.images());
+  readonly orderChanged = computed(() =>
+    this.orderedImages().some((image, index) => image !== this.images()[index]),
+  );
 
   protected readonly maxFiles = maxFiles;
   protected readonly maxFileBytes = maxFileBytes;
@@ -81,6 +110,14 @@ export class ImageUpload {
 
   protected toggle(file: File): void {
     this.selection.update((selected) => toggled(selected, file));
+  }
+
+  protected reorder({ previousIndex, currentIndex }: CdkDragDrop<SavedImage[]>): void {
+    this.orderedImages.update((images) => {
+      const reordered = [...images];
+      moveItemInArray(reordered, previousIndex, currentIndex);
+      return reordered;
+    });
   }
 
   protected toggleSaved(image: SavedImage): void {
