@@ -13,6 +13,7 @@ import { Product } from '@core/api/models';
 import { EditActionConfig, EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
+import { PageTitle } from '@shared/page-title/page-title';
 import { finalize } from 'rxjs';
 import { ProductsService } from '../products.service';
 
@@ -20,7 +21,7 @@ const PAGE_SIZE = 50;
 
 @Component({
   selector: 'app-products-page',
-  imports: [DataTable],
+  imports: [DataTable, PageTitle],
   templateUrl: './products-page.html',
   styleUrl: './products-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,10 +1,29 @@
 :host {
+  --app-page-gutter-x: 1rem;
+  --app-page-gutter-y: 1rem;
+
   display: flex;
   flex-direction: column;
   height: 100dvh;
 }
 
+@media (min-width: 768px) {
+  :host {
+    --app-page-gutter-x: 1.5rem;
+    --app-page-gutter-y: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :host {
+    --app-page-gutter-x: 2rem;
+    --app-page-gutter-y: 2rem;
+  }
+}
+
 .footer {
+  --p-toolbar-padding: 0.75rem var(--app-page-gutter-x);
+
   border: none;
 }
 
@@ -24,4 +43,5 @@
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
+  padding: var(--app-page-gutter-y) var(--app-page-gutter-x);
 }

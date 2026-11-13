@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { PageTitle } from '@shared/page-title/page-title';
 
 @Component({
   selector: 'app-form-shell',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, PageTitle],
   templateUrl: './form-shell.html',
   styleUrl: './form-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
