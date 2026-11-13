@@ -959,7 +959,6 @@ export interface components {
     CreateProductRequest: {
       type: components['schemas']['ProductType'];
       name: string;
-      /** Format: html */
       seoDescription: string;
       /** Format: double */
       price: number;
@@ -1055,7 +1054,6 @@ export interface components {
       id: string;
       type: components['schemas']['ProductType'];
       name: string;
-      /** Format: html */
       seoDescription: string;
       /** Format: double */
       price: number;

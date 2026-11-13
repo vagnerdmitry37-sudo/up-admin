@@ -63,7 +63,7 @@ export class ProductForm {
     name: ['', [Validators.required, Validators.maxLength(200)]],
     shortDescription: ['', [Validators.maxLength(200)]],
     description: ['', [Validators.maxLength(20000)]],
-    seoDescription: ['', [Validators.required, Validators.maxLength(20000)]],
+    seoDescription: ['', [Validators.required, Validators.maxLength(160)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
   });
 

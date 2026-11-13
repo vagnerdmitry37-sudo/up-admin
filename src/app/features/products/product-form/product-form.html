@@ -35,12 +35,12 @@
         [messages]="{ maxlength: 'Description is too long.' }"
       />
 
-      <app-rich-text-field
+      <app-textarea-field
         label="SEO description"
         [control]="form.controls.seoDescription"
         [messages]="{
           required: 'Enter an SEO description.',
-          maxlength: 'SEO description is too long.',
+          maxlength: 'Use 160 characters or fewer.',
         }"
       />
     </div>
