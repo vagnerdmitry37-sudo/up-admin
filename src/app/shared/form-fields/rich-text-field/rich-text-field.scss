@@ -1,0 +1,50 @@
+app-rich-text-field {
+  display: block;
+  min-width: 0;
+
+  .p-editor.invalid {
+    --p-editor-toolbar-border-color: var(--p-form-field-invalid-border-color);
+    --p-editor-content-border-color: var(--p-form-field-invalid-border-color);
+  }
+
+  .p-editor-toolbar.ql-toolbar {
+    padding-block-start: var(--p-iftalabel-input-padding-top);
+  }
+
+  .p-editor.source .p-editor-content {
+    display: none;
+  }
+
+  .p-editor.source .format-tools {
+    opacity: var(--p-disabled-opacity);
+  }
+
+  .source-toggle {
+    color: var(--p-editor-toolbar-item-color);
+  }
+
+  .source-toggle[aria-pressed='true'] {
+    color: var(--p-editor-toolbar-item-active-color);
+  }
+
+  .source-text {
+    font-family: monospace;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-block-start: none;
+  }
+
+  .ql-editor {
+    min-height: 10rem;
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+  }
+
+  .ql-editor li[data-list='bullet'] {
+    counter-increment: none;
+  }
+
+  .ql-editor li[data-list='bullet']::before {
+    content: '\2022';
+  }
+}

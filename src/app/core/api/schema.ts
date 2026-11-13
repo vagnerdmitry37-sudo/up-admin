@@ -959,12 +959,18 @@ export interface components {
     CreateProductRequest: {
       type: components['schemas']['ProductType'];
       name: string;
+      /** Format: html */
       seoDescription: string;
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
       /** @default  */
       shortDescription: string;
+      /**
+       * Format: html
+       * @default
+       */
+      description: string;
     };
     /** @enum {unknown} */
     HistoryOperation: 'Created' | 'Updated' | 'Deleted';
@@ -1020,6 +1026,7 @@ export interface components {
       name: string;
       seoDescription: string;
       shortDescription: string;
+      description: string;
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
@@ -1048,12 +1055,18 @@ export interface components {
       id: string;
       type: components['schemas']['ProductType'];
       name: string;
+      /** Format: html */
       seoDescription: string;
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
       /** @default  */
       shortDescription: string;
+      /**
+       * Format: html
+       * @default
+       */
+      description: string;
     };
     UpdateUserProfileRequest: {
       currency: string;

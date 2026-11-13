@@ -14,6 +14,7 @@ import { CreateProductRequest, Image, Product, ProductType } from '@core/api/mod
 import { FormShell } from '@shared/form-shell/form-shell';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
+import { RichTextField } from '@shared/form-fields/rich-text-field/rich-text-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
 import { ImageUpload } from '@shared/image-upload/image-upload';
@@ -25,7 +26,16 @@ export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
 
 @Component({
   selector: 'app-product-form',
-  imports: [FormShell, ImageUpload, NumberField, SaveZone, SelectField, TextField, TextareaField],
+  imports: [
+    FormShell,
+    ImageUpload,
+    NumberField,
+    RichTextField,
+    SaveZone,
+    SelectField,
+    TextField,
+    TextareaField,
+  ],
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,7 +62,8 @@ export class ProductForm {
     type: this.formBuilder.control<ProductType>('Excursion', Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],
     shortDescription: ['', [Validators.maxLength(200)]],
-    seoDescription: ['', [Validators.required, Validators.maxLength(5000)]],
+    description: ['', [Validators.maxLength(20000)]],
+    seoDescription: ['', [Validators.required, Validators.maxLength(20000)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
   });
 
