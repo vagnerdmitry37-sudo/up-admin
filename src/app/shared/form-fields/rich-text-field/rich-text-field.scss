@@ -2,13 +2,23 @@ app-rich-text-field {
   display: block;
   min-width: 0;
 
-  .p-editor.invalid {
-    --p-editor-toolbar-border-color: var(--p-form-field-invalid-border-color);
-    --p-editor-content-border-color: var(--p-form-field-invalid-border-color);
-  }
-
   .p-editor-toolbar.ql-toolbar {
     padding-block-start: var(--p-iftalabel-input-padding-top);
+  }
+
+  .p-iftalabel:has(.ql-editor:focus) label {
+    color: var(--p-iftalabel-focus-color);
+  }
+
+  .ql-editor {
+    min-height: 10rem;
+    overflow-wrap: anywhere;
+  }
+
+  .p-editor.source {
+    border-block-end: none;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
   }
 
   .p-editor.source .p-editor-content {
@@ -27,24 +37,23 @@ app-rich-text-field {
     color: var(--p-editor-toolbar-item-active-color);
   }
 
-  .source-text {
+  .p-iftalabel:hover :is(.p-editor, .source-text) {
+    border-color: var(--p-form-field-hover-border-color);
+  }
+
+  .p-iftalabel:focus-within :is(.p-editor, .source-text) {
+    border-color: var(--p-form-field-focus-border-color);
+  }
+
+  .p-iftalabel :is(.p-editor.p-invalid, .source-text.p-invalid) {
+    border-color: var(--p-form-field-invalid-border-color);
+  }
+
+  .p-iftalabel .source-text {
+    padding-block-start: var(--p-form-field-padding-y);
     font-family: monospace;
+    border-block-start: none;
     border-start-start-radius: 0;
     border-start-end-radius: 0;
-    border-block-start: none;
-  }
-
-  .ql-editor {
-    min-height: 10rem;
-    font-size: 1rem;
-    overflow-wrap: anywhere;
-  }
-
-  .ql-editor li[data-list='bullet'] {
-    counter-increment: none;
-  }
-
-  .ql-editor li[data-list='bullet']::before {
-    content: '\2022';
   }
 }
