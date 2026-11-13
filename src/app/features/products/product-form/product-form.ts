@@ -52,7 +52,7 @@ export class ProductForm {
     type: this.formBuilder.control<ProductType>('Excursion', Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],
     shortDescription: ['', [Validators.maxLength(200)]],
-    description: ['', [Validators.required, Validators.maxLength(5000)]],
+    seoDescription: ['', [Validators.required, Validators.maxLength(5000)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
   });
 

@@ -23,13 +23,13 @@ const toFormValue = ({
   type,
   name,
   shortDescription,
-  description,
+  seoDescription,
   price,
 }: Product): ProductFormValue => ({
   type,
   name,
   shortDescription,
-  description,
+  seoDescription,
   price,
 });
 

@@ -959,7 +959,7 @@ export interface components {
     CreateProductRequest: {
       type: components['schemas']['ProductType'];
       name: string;
-      description: string;
+      seoDescription: string;
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
@@ -1018,7 +1018,7 @@ export interface components {
       id: string;
       type: components['schemas']['ProductType'];
       name: string;
-      description: string;
+      seoDescription: string;
       shortDescription: string;
       /** Format: double */
       price: number;
@@ -1048,7 +1048,7 @@ export interface components {
       id: string;
       type: components['schemas']['ProductType'];
       name: string;
-      description: string;
+      seoDescription: string;
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
