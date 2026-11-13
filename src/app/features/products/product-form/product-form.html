@@ -24,6 +24,12 @@
       />
 
       <app-textarea-field
+        label="Short description"
+        [control]="form.controls.shortDescription"
+        [messages]="{ maxlength: 'Use 200 characters or fewer.' }"
+      />
+
+      <app-textarea-field
         label="Description"
         [control]="form.controls.description"
         [messages]="{

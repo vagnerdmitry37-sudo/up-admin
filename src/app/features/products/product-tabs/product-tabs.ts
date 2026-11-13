@@ -19,9 +19,16 @@ export interface ProductTabValue {
   imageOrder?: string[];
 }
 
-const toFormValue = ({ type, name, description, price }: Product): ProductFormValue => ({
+const toFormValue = ({
   type,
   name,
+  shortDescription,
+  description,
+  price,
+}: Product): ProductFormValue => ({
+  type,
+  name,
+  shortDescription,
   description,
   price,
 });

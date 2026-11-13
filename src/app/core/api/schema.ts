@@ -963,6 +963,8 @@ export interface components {
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
+      /** @default  */
+      shortDescription: string;
     };
     /** @enum {unknown} */
     HistoryOperation: 'Created' | 'Updated' | 'Deleted';
@@ -1017,6 +1019,7 @@ export interface components {
       type: components['schemas']['ProductType'];
       name: string;
       description: string;
+      shortDescription: string;
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
@@ -1049,6 +1052,8 @@ export interface components {
       /** Format: double */
       price: number;
       attributes: components['schemas']['JsonElement'];
+      /** @default  */
+      shortDescription: string;
     };
     UpdateUserProfileRequest: {
       currency: string;
