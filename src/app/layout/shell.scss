@@ -1,4 +1,5 @@
 :host {
+  --app-page-max-width: 72rem;
   --app-page-gutter-x: 1rem;
   --app-page-gutter-y: 1rem;
 
@@ -24,6 +25,9 @@
 .footer {
   --p-toolbar-padding: 0.75rem var(--app-page-gutter-x);
 
+  width: 100%;
+  max-width: var(--app-page-max-width);
+  margin: 0 auto;
   border: none;
 }
 
@@ -41,7 +45,7 @@
   min-height: 0;
   overflow-y: auto;
   width: 100%;
-  max-width: 72rem;
+  max-width: var(--app-page-max-width);
   margin: 0 auto;
   padding: var(--app-page-gutter-y) var(--app-page-gutter-x);
 }
