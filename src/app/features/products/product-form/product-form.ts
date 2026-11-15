@@ -72,7 +72,7 @@ export class ProductForm {
   private readonly attributes = new FormRecord<FormControl<AttributeValue>>({});
 
   protected readonly typeOptions = computed(() =>
-    this.productTypes().map(({ type }) => ({ label: type, value: type })),
+    this.productTypes().map(({ type, label }) => ({ label, value: type })),
   );
   protected readonly form = this.formBuilder.group({
     type: this.formBuilder.control<ProductType | null>(null, Validators.required),

@@ -1071,6 +1071,7 @@ export interface components {
       /** Format: uuid */
       id: string;
       type: components['schemas']['ProductType'];
+      typeLabel: string;
       name: string;
       seoDescription: string;
       shortDescription: string;
@@ -1087,9 +1088,10 @@ export interface components {
       totalRecords: number;
     };
     /** @enum {unknown} */
-    ProductType: 'Excursion' | 'Transfer';
+    ProductType: 'GroupExcursion' | 'IndividualExcursion' | 'IndividualTransfer' | 'GroupTransfer';
     ProductTypeResponse: {
       type: components['schemas']['ProductType'];
+      label: string;
       priceLabel: string;
       attributes: components['schemas']['AttributeDefinitionResponse'][];
     };

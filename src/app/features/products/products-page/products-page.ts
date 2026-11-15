@@ -39,7 +39,7 @@ export class ProductsPage implements OnInit {
   protected readonly loading = computed(() => this.pendingRequests() > 0);
   protected readonly columns: TableColumn<Product>[] = [
     { header: 'Name', value: (product) => product.name },
-    { header: 'Type', value: (product) => product.type },
+    { header: 'Type', value: (product) => product.typeLabel },
     {
       header: 'Price',
       value: (product) => formatNumber(product.price, this.locale, '1.2-2'),
