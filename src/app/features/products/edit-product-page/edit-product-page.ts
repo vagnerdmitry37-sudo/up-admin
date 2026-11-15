@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { ProductTabs, ProductTabValue } from '../product-tabs/product-tabs';
 import { ProductsService } from '../products.service';
 import { SaveStatuses, markSaving, showResult } from '../save-statuses';
@@ -22,6 +23,7 @@ export class EditProductPage {
   readonly ids = input.required<string>();
 
   private readonly productsService = inject(ProductsService);
+  private readonly confirmationService = inject(ConfirmationService);
   protected readonly productTypes = this.productsService.productTypes;
   private readonly tabs = viewChild(ProductTabs);
   private readonly saving = signal(false);
@@ -45,11 +47,55 @@ export class EditProductPage {
           visible: Boolean(this.tabs()?.hasUnsavedChanges()),
         },
         delete: {
-          click: () => this.tabs()?.activeForm()?.deleteSelectedImages(),
-          visible: !this.saving() && Boolean(this.tabs()?.activeForm()?.selectedImages().length),
+          click: () => this.deleteSelectedImages(),
+          visible: !this.saving() && this.hasSelectedImages(),
         },
       }),
     });
+  }
+
+  private hasSelectedImages(): boolean {
+    const form = this.tabs()?.activeForm();
+    return Boolean(form?.selectedImages().length || form?.selectedSavedImages().length);
+  }
+
+  private deleteSelectedImages(): void {
+    const form = this.tabs()?.activeForm();
+    const product = form?.product();
+    if (!form || !product) {
+      return;
+    }
+    form.deleteSelectedImages();
+    const savedImageIds = form.selectedSavedImages().map((image) => image.id);
+    if (!savedImageIds.length) {
+      return;
+    }
+    this.confirmationService.confirm({
+      header:
+        savedImageIds.length === 1 ? 'Delete image?' : `Delete ${savedImageIds.length} images?`,
+      message: 'This cannot be undone.',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', text: true },
+      accept: () => this.deleteSavedImages(product.id, savedImageIds),
+    });
+  }
+
+  private async deleteSavedImages(productId: string, imageIds: string[]): Promise<void> {
+    this.saving.set(true);
+    markSaving(this.productImageStatuses, [productId]);
+    try {
+      await this.productsService.deleteImages(imageIds);
+      this.tabs()?.clearSavedImageSelection(productId);
+      showResult(this.productImageStatuses, productId, 'saved');
+      this.images.reload();
+    } catch (error) {
+      showResult(this.productImageStatuses, productId, 'failed');
+      throw error;
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   private async save(): Promise<void> {

@@ -68,6 +68,7 @@ export class ProductForm {
   private readonly imageUpload = viewChild(ImageUpload);
 
   readonly selectedImages = computed(() => this.imageUpload()?.selection() ?? []);
+  readonly selectedSavedImages = computed(() => this.imageUpload()?.savedSelection() ?? []);
 
   private readonly attributes = new FormRecord<FormControl<AttributeValue>>({});
 
@@ -143,6 +144,8 @@ export class ProductForm {
   save = () => this.shell().submit();
 
   deleteSelectedImages = () => this.imageUpload()?.deleteSelected();
+
+  clearSavedImageSelection = () => this.imageUpload()?.savedSelection.set([]);
 
   pendingImages = (): File[] => this.imageUpload()?.pendingFiles() ?? [];
 

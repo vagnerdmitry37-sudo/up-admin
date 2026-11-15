@@ -6,27 +6,39 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
-import { Image, Product } from '@core/api/models';
+import { Image, Product, ProductTypeDefinition } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { EditProductPage } from './edit-product-page';
 
 const products: Product[] = [
   {
     id: 'p1',
-    type: 'Excursion',
+    type: 'GroupExcursion',
+    typeLabel: 'Group excursion',
     name: 'Old Town Walk',
     description: 'x',
+    seoDescription: 'Walk through the old town',
+    shortDescription: '',
     price: 25,
     attributes: {},
   },
   {
     id: 'p2',
-    type: 'Transfer',
+    type: 'IndividualTransfer',
+    typeLabel: 'Individual transfer',
     name: 'Airport to hotel',
     description: 'y',
+    seoDescription: 'Private transfer from the airport',
+    shortDescription: '',
     price: 40,
     attributes: {},
   },
+];
+
+const productTypes: ProductTypeDefinition[] = [
+  { type: 'GroupExcursion', label: 'Group excursion', priceLabel: 'Price', attributes: [] },
+  { type: 'IndividualTransfer', label: 'Individual transfer', priceLabel: 'Price', attributes: [] },
 ];
 
 const settle = () => new Promise((resolve) => setTimeout(resolve));
@@ -79,6 +91,7 @@ describe('EditProductPage', () => {
     const load = httpTestingController.expectOne((req) => req.url === '/api/products/by-ids');
     load.flush(loaded);
     httpTestingController.expectOne((req) => req.url === '/api/images').flush(saved);
+    httpTestingController.expectOne('/api/product-types').flush(productTypes);
     await fixture.whenStable();
     return { fixture, element: fixture.nativeElement as HTMLElement, load };
   };
@@ -94,6 +107,7 @@ describe('EditProductPage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        ConfirmationService,
         { provide: API_BASE_URL, useValue: '/api' },
       ],
     });
@@ -149,9 +163,11 @@ describe('EditProductPage', () => {
     expect(call.request.body).toEqual([
       {
         id: 'p1',
-        type: 'Excursion',
+        type: 'GroupExcursion',
         name: 'Night Walk',
         description: 'x',
+        seoDescription: 'Walk through the old town',
+        shortDescription: '',
         price: 25,
         attributes: {},
       },
@@ -359,7 +375,7 @@ describe('EditProductPage', () => {
     const { fixture, element } = await render('p1', [products[0]]);
     const editActionsService = TestBed.inject(EditActionsService);
     await chooseImage(fixture, element);
-    element.querySelector<HTMLButtonElement>('button[aria-pressed]')!.click();
+    element.querySelector<HTMLButtonElement>('app-image-upload button[aria-pressed]')!.click();
     await fixture.whenStable();
     expect(editActionsService.actions().delete).toBeDefined();
 
@@ -385,12 +401,101 @@ describe('EditProductPage', () => {
     await fixture.whenStable();
     expect(editActionsService.actions().delete).toBeUndefined();
 
-    element.querySelector<HTMLButtonElement>('button[aria-pressed]')!.click();
+    element.querySelector<HTMLButtonElement>('app-image-upload button[aria-pressed]')!.click();
     await fixture.whenStable();
     editActionsService.run('delete');
     await fixture.whenStable();
 
-    expect(element.querySelector('button[aria-pressed]')).toBeNull();
+    expect(element.querySelector('app-image-upload button[aria-pressed]')).toBeNull();
     expect(editActionsService.actions().delete).toBeUndefined();
+  });
+
+  describe('deleting saved images', () => {
+    const savedCards = (element: HTMLElement) => [
+      ...element.querySelectorAll<HTMLButtonElement>('.draggable button[aria-pressed]'),
+    ];
+
+    const savedSources = (element: HTMLElement) =>
+      savedCards(element).map((card) => card.querySelector('img')?.getAttribute('src'));
+
+    const answerConfirmation = (answer: 'accept' | 'reject') => {
+      const confirmationService = TestBed.inject(ConfirmationService);
+      return vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
+        confirmation[answer]?.();
+        return confirmationService;
+      });
+    };
+
+    const selectSaved = async (
+      fixture: ComponentFixture<EditProductPage>,
+      element: HTMLElement,
+      index: number,
+    ) => {
+      savedCards(element)[index].click();
+      await fixture.whenStable();
+    };
+
+    it('offers Delete once a saved image is selected', async () => {
+      const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+      const editActionsService = TestBed.inject(EditActionsService);
+      expect(editActionsService.actions().delete).toBeUndefined();
+
+      await selectSaved(fixture, element, 0);
+
+      expect(editActionsService.actions().delete).toBeDefined();
+    });
+
+    it('asks for confirmation before deleting', async () => {
+      const confirm = answerConfirmation('reject');
+      const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+      await selectSaved(fixture, element, 0);
+      await selectSaved(fixture, element, 1);
+
+      TestBed.inject(EditActionsService).run('delete');
+
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ header: 'Delete 2 images?', message: 'This cannot be undone.' }),
+      );
+    });
+
+    it('deletes only the selected saved images after confirming, then shows the rest', async () => {
+      answerConfirmation('accept');
+      const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+      await selectSaved(fixture, element, 0);
+
+      TestBed.inject(EditActionsService).run('delete');
+      await settle();
+      const deletion = httpTestingController.expectOne(
+        (req) => req.method === 'DELETE' && req.url === '/api/images',
+      );
+      expect(deletion.request.params.getAll('ids')).toEqual(['i1']);
+      expect(zoneStates(element)).toEqual(['', 'Saving…']);
+      deletion.flush(null);
+      await settle();
+
+      TestBed.tick();
+      httpTestingController
+        .expectOne((req) => req.method === 'GET' && req.url === '/api/images')
+        .flush([savedImage('i2', 0)]);
+      await settle();
+      await TestBed.inject(ApplicationRef).whenStable();
+
+      expect(savedSources(element)).toEqual(['https://img/i2.webp']);
+      expect(zoneStates(element)).toEqual(['', 'Saved']);
+      expect(TestBed.inject(EditActionsService).actions().delete).toBeUndefined();
+    });
+
+    it('keeps the saved images when the deletion is cancelled', async () => {
+      answerConfirmation('reject');
+      const { fixture, element } = await render('p1', [products[0]], twoSavedImages());
+      await selectSaved(fixture, element, 0);
+
+      TestBed.inject(EditActionsService).run('delete');
+      await settle();
+
+      httpTestingController.expectNone((req) => req.method === 'DELETE');
+      expect(savedSources(element)).toEqual(['https://img/i1.webp', 'https://img/i2.webp']);
+      expect(savedCards(element)[0].getAttribute('aria-pressed')).toBe('true');
+    });
   });
 });

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "pre-commit: running the unit tests (npm test)..."
+
+if ! npm test; then
+  echo "pre-commit: unit tests failed, so the commit was blocked. Fix the tests and commit again." >&2
+  exit 1
+fi
+
+echo "pre-commit: unit tests passed."

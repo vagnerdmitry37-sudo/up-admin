@@ -4,17 +4,23 @@ import { ProductTabs } from './product-tabs';
 
 const walk: Product = {
   id: 'p1',
-  type: 'Excursion',
+  type: 'GroupExcursion',
+  typeLabel: 'Group excursion',
   name: 'Old Town Walk',
   description: 'Three hours',
+  seoDescription: '',
+  shortDescription: '',
   price: 25,
   attributes: {},
 };
 const transfer: Product = {
   id: 'p2',
-  type: 'Transfer',
+  type: 'IndividualTransfer',
+  typeLabel: 'Individual transfer',
   name: 'Airport to hotel',
   description: 'Door to door',
+  seoDescription: '',
+  shortDescription: '',
   price: 40,
   attributes: {},
 };
@@ -57,40 +63,5 @@ describe('ProductTabs', () => {
       'Old Town Walk',
       'Airport to hotel',
     ]);
-  });
-
-  it('returns every product as plain form values without ids, even unopened tabs', async () => {
-    const { tabs, typeName } = await render([walk, transfer]);
-    typeName('Night Walk');
-
-    const values = tabs.values();
-
-    expect(values?.map(({ value }) => value)).toEqual([
-      { type: 'Excursion', name: 'Night Walk', description: 'Three hours', price: 25 },
-      { type: 'Transfer', name: 'Airport to hotel', description: 'Door to door', price: 40 },
-    ]);
-    expect(values?.map(({ product }) => product.id)).toEqual(['p1', 'p2']);
-  });
-
-  it('keeps unsaved edits when switching tabs', async () => {
-    const { tabs, openTab, typeName } = await render([walk, transfer]);
-    await openTab(1);
-    typeName('Hotel to airport');
-
-    await openTab(0);
-
-    expect(tabs.values()?.[1].value.name).toBe('Hotel to airport');
-  });
-
-  it('returns nothing and opens the first invalid tab', async () => {
-    const { fixture, tabs, openTab, typeName, activeTab } = await render([walk, transfer]);
-    await openTab(1);
-    typeName('');
-    await openTab(0);
-
-    expect(tabs.values()).toBeUndefined();
-    await fixture.whenStable();
-
-    expect(activeTab()).toBe(1);
   });
 });

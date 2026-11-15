@@ -11,7 +11,8 @@
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate:api": "openapi-typescript ../UP/src/UP.Api/openapi/UP.Api.json -o src/app/core/api/schema.ts && prettier --write src/app/core/api/schema.ts"
+    "generate:api": "openapi-typescript ../UP/src/UP.Api/openapi/UP.Api.json -o src/app/core/api/schema.ts && prettier --write src/app/core/api/schema.ts",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "private": true,
   "engines": {

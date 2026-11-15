@@ -41,6 +41,9 @@ export class ProductsService {
   delete = (ids: string[]) =>
     firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
 
+  deleteImages = (ids: string[]) =>
+    firstValueFrom(this.httpClient.delete<void>(this.imagesUrl, { params: { ids } }));
+
   getImages = (productIds: string[]) =>
     this.httpClient.get<Image[]>(this.imagesUrl, {
       params: { entityType: 'Product', entityIds: productIds },

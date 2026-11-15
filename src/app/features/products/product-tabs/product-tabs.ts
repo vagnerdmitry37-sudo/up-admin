@@ -73,6 +73,9 @@ export class ProductTabs {
 
   clearPendingImages = (productId: string) => this.formOf(productId)?.clearPendingImages();
 
+  clearSavedImageSelection = (productId: string) =>
+    this.formOf(productId)?.clearSavedImageSelection();
+
   markSaved = (productId: string) => this.formOf(productId)?.markSaved();
 
   values(): ProductTabValue[] | undefined {

@@ -6,9 +6,11 @@ import { firstValueFrom } from 'rxjs';
 import { ProductsService } from './products.service';
 
 const request = {
-  type: 'Excursion' as const,
+  type: 'GroupExcursion' as const,
   name: 'Old Town Walk',
   description: 'Three hours',
+  seoDescription: '',
+  shortDescription: '',
   price: 25.5,
   attributes: {},
 };
@@ -93,6 +95,17 @@ describe('ProductsService', () => {
     call.flush([]);
 
     await updated;
+  });
+
+  it('deletes images with one DELETE of their ids', async () => {
+    const deleted = service.deleteImages(['i1', 'i2']);
+
+    const call = httpTestingController.expectOne((req) => req.url === '/api/images');
+    expect(call.request.method).toBe('DELETE');
+    expect(call.request.params.getAll('ids')).toEqual(['i1', 'i2']);
+    call.flush(null);
+
+    await deleted;
   });
 
   it('uploads images for a product as multipart form data', async () => {

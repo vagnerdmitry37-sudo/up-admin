@@ -18,7 +18,7 @@ Decide the size before doing anything else, and scale every later step to it.
 | **L**         | New feature area, routing or state redesign, new dependency                    | The affected layers and their callers               | Short written plan with acceptance criteria; confirm product decisions first | M checks + review edge cases in the diff |
 | **High risk** | Auth, session, guards, HTTP interceptors, API contracts, secrets, dependencies | As L, plus every caller                             | As L, and state the risks                                                    | As L, plus security review of the diff   |
 
-**Tests are on demand.** Never write, rewrite or run tests (specs, `npm test`, browser checks) as part of a coding task. Do it only when the user explicitly asks to test, and then use the `tester` skill.
+**Tests are on demand.** Never write, rewrite or run tests (specs, `npm test`, browser checks) as part of a coding task. Do it only when the user explicitly asks to test, and then use the `tester` skill. The one exception is committing: the `commit` skill and the git pre-commit hook (`.githooks/pre-commit`) run the existing suite with `npm test`, and a failing test blocks the commit.
 
 ## 2. Know the project (do not rediscover it)
 

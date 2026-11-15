@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Commit changes to the Angular client in client/. Auto-formats with Prettier, then checks lint and build, and commits only if everything passes; otherwise stops and reports a checklist table. Pushes to origin only when the user explicitly says "push". Use whenever the user asks to commit and the changes are under client/.
+description: Commit changes to the Angular client in client/. Auto-formats with Prettier, then checks lint, build and the unit tests, and commits only if everything passes; otherwise stops and reports a checklist table. Pushes to origin only when the user explicitly says "push". Use whenever the user asks to commit and the changes are under client/.
 ---
 
 Run git commands from the repo root and npm commands from `client/`. Run every step in order. Never skip a check and never use `--no-verify`. Push only when the user's request explicitly says to push (e.g. "commit and push"); otherwise never push.
@@ -29,7 +29,9 @@ Run every check, even if an earlier one fails, so the report is complete. This s
 | 1   | Format (Prettier)                                            | `npm run format:check` |
 | 2   | Lint (ESLint, zero warnings, layer import rules)             | `npm run lint`         |
 | 3   | Build (strict TypeScript, `strictTemplates`, bundle budgets) | `npm run build`        |
+| 4   | Unit tests (Vitest, the whole suite)                         | `npm test`             |
 
+- **Unit tests:** run the whole suite, even for small changes. If even one test fails, do not commit. Never delete, skip or weaken a test to get a commit through; report the failure instead. The repo's git pre-commit hook (`.githooks/pre-commit`, enabled by `npm install` through the `prepare` script) runs `npm test` again on `git commit` and blocks the commit on failure. Never bypass it with `--no-verify`. If `git config core.hooksPath` doesn't print `.githooks`, run `npm run prepare` once.
 - **No comments:** scan the diff of hand-written `.ts`, `.html` and `.scss` files for `//`, `/*` or `<!--`. Any hit fails this check (the rule is in CLAUDE.md, and lint can't enforce it).
 - Collect each error as file, line, rule/code and message, with repo-relative paths and duplicates removed.
 
@@ -64,6 +66,7 @@ Skip this step unless the request contains an explicit push instruction such as 
 | Format                 | ✅ / ❌      | N files                                      |
 | Lint                   | ✅ / ❌      | N errors                                     |
 | Build                  | ✅ / ❌      | N errors                                     |
+| Unit tests             | ✅ / ❌      | "N passed", or "N failed of M"               |
 | No comments            | ✅ / ❌      | N found                                      |
 | Commit                 | ✅ / ❌      | short hash, or "Not created"                 |
 | Push                   | ✅ / ❌ / ⏭️ | "origin/<branch>", error, or "not requested" |
