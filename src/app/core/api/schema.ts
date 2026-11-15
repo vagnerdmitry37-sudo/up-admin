@@ -90,6 +90,43 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/product-types': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProductTypeResponse'][];
+            'application/json': components['schemas']['ProductTypeResponse'][];
+            'text/json': components['schemas']['ProductTypeResponse'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/products': {
     parameters: {
       query?: never;
@@ -956,6 +993,18 @@ export interface components {
       /** Format: date-time */
       expiresAt: string;
     };
+    AttributeDefinitionResponse: {
+      key: string;
+      label: string;
+      kind: components['schemas']['AttributeKind'];
+      required: boolean;
+      /** Format: int32 */
+      maxLength: null | number;
+      /** Format: int32 */
+      min: null | number;
+    };
+    /** @enum {unknown} */
+    AttributeKind: 'Text' | 'WholeNumber';
     CreateProductRequest: {
       type: components['schemas']['ProductType'];
       name: string;
@@ -1039,6 +1088,11 @@ export interface components {
     };
     /** @enum {unknown} */
     ProductType: 'Excursion' | 'Transfer';
+    ProductTypeResponse: {
+      type: components['schemas']['ProductType'];
+      priceLabel: string;
+      attributes: components['schemas']['AttributeDefinitionResponse'][];
+    };
     RegisterRequest: {
       email: string;
       password: string;

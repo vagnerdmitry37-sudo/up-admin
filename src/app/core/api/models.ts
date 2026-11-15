@@ -12,3 +12,5 @@ export type Image = Schema<'ImageResponse'>;
 export type UpdateImageOrderRequest = Schema<'UpdateImageOrderRequest'>;
 export type AccessToken = Schema<'AccessTokenResponse'>;
 export type UserProfile = Schema<'UserProfileResponse'>;
+export type ProductTypeDefinition = Schema<'ProductTypeResponse'>;
+export type AttributeDefinition = Schema<'AttributeDefinitionResponse'>;

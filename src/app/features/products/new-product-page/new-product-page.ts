@@ -35,6 +35,7 @@ export class NewProductPage {
 
   private readonly router = inject(Router);
   private readonly productsService = inject(ProductsService);
+  protected readonly productTypes = this.productsService.productTypes;
   private readonly form = viewChild(ProductForm);
   private readonly tabs = viewChild(ProductTabs);
   private readonly saving = signal(false);
@@ -75,7 +76,7 @@ export class NewProductPage {
     return this.save([
       {
         key: NEW_PRODUCT_KEY,
-        request: { ...value, attributes: {} },
+        request: value,
         images: this.form()?.pendingImages() ?? [],
       },
     ]);
@@ -88,7 +89,7 @@ export class NewProductPage {
       this.save(
         values.map(({ product, value, images }) => ({
           key: product.id,
-          request: { ...value, attributes: product.attributes },
+          request: value,
           images,
         })),
       )

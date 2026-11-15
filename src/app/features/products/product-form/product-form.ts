@@ -6,11 +6,19 @@ import {
   inject,
   input,
   output,
+  signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NonNullableFormBuilder, Validators } from '@angular/forms';
-import { CreateProductRequest, Image, Product, ProductType } from '@core/api/models';
+import { FormControl, FormRecord, NonNullableFormBuilder, Validators } from '@angular/forms';
+import {
+  CreateProductRequest,
+  Image,
+  Product,
+  ProductType,
+  ProductTypeDefinition,
+} from '@core/api/models';
 import { FormShell } from '@shared/form-shell/form-shell';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
@@ -19,10 +27,16 @@ import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
 import { ImageUpload } from '@shared/image-upload/image-upload';
 import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
-import { map } from 'rxjs';
-import { PRODUCT_TYPES } from '../constants';
+import { map, startWith } from 'rxjs';
+import {
+  AttributeField,
+  AttributeValue,
+  attributeField,
+  attributeValues,
+  filledAttributes,
+} from '../product-attributes';
 
-export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
+export type ProductFormValue = CreateProductRequest;
 
 @Component({
   selector: 'app-product-form',
@@ -43,6 +57,7 @@ export type ProductFormValue = Omit<CreateProductRequest, 'attributes'>;
 export class ProductForm {
   readonly heading = input('New product');
   readonly product = input<Product>();
+  readonly productTypes = input<ProductTypeDefinition[]>([]);
   readonly images = input<Image[]>([]);
   readonly formStatus = input<SaveStatus>('idle');
   readonly imagesStatus = input<SaveStatus>('idle');
@@ -54,18 +69,30 @@ export class ProductForm {
 
   readonly selectedImages = computed(() => this.imageUpload()?.selection() ?? []);
 
-  protected readonly typeOptions = PRODUCT_TYPES.map((type) => ({
-    label: type,
-    value: type,
-  }));
+  private readonly attributes = new FormRecord<FormControl<AttributeValue>>({});
+
+  protected readonly typeOptions = computed(() =>
+    this.productTypes().map(({ type }) => ({ label: type, value: type })),
+  );
   protected readonly form = this.formBuilder.group({
-    type: this.formBuilder.control<ProductType>('Excursion', Validators.required),
+    type: this.formBuilder.control<ProductType | null>(null, Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],
     shortDescription: ['', [Validators.maxLength(200)]],
     description: ['', [Validators.maxLength(20000)]],
     seoDescription: ['', [Validators.required, Validators.maxLength(160)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
+    attributes: this.attributes,
   });
+
+  private readonly selectedType = toSignal(
+    this.form.controls.type.valueChanges.pipe(startWith(this.form.controls.type.value)),
+    { requireSync: true },
+  );
+
+  protected readonly definition = computed(() =>
+    this.productTypes().find(({ type }) => type === this.selectedType()),
+  );
+  protected readonly attributeFields = signal<AttributeField[]>([]);
 
   private readonly fieldsChanged = toSignal(this.form.events.pipe(map(() => this.form.dirty)), {
     initialValue: false,
@@ -80,10 +107,32 @@ export class ProductForm {
 
   constructor() {
     effect(() => {
+      const firstType = this.productTypes()[0]?.type;
+      const typeControl = this.form.controls.type;
+      if (firstType && typeControl.value === null && !untracked(this.product)) {
+        typeControl.setValue(firstType);
+      }
+    });
+
+    effect(() => {
       const product = this.product();
       if (product) {
-        this.form.reset(product);
+        untracked(() => {
+          const { attributes, ...fields } = product;
+          this.form.reset(fields);
+          this.showAttributes(attributeValues(attributes));
+        });
       }
+    });
+
+    effect(() => {
+      this.definition();
+      untracked(() =>
+        this.showAttributes({
+          ...attributeValues(this.product()?.attributes),
+          ...this.attributes.getRawValue(),
+        }),
+      );
     });
   }
 
@@ -111,10 +160,32 @@ export class ProductForm {
       this.form.markAllAsTouched();
       return undefined;
     }
-    return this.form.getRawValue();
+    return this.formValue();
   }
 
   protected submit(): void {
-    this.submitted.emit(this.form.getRawValue());
+    const value = this.formValue();
+    if (value) {
+      this.submitted.emit(value);
+    }
+  }
+
+  private formValue(): ProductFormValue | undefined {
+    const { type, attributes, ...fields } = this.form.getRawValue();
+    return type ? { ...fields, type, attributes: filledAttributes(attributes) } : undefined;
+  }
+
+  private showAttributes(values: Record<string, unknown>): void {
+    for (const key of Object.keys(this.attributes.controls)) {
+      this.attributes.removeControl(key, { emitEvent: false });
+    }
+    const fields = (this.definition()?.attributes ?? []).map((definition) =>
+      attributeField(definition, values[definition.key]),
+    );
+    for (const field of fields) {
+      this.attributes.addControl(field.definition.key, field.control, { emitEvent: false });
+    }
+    this.attributes.updateValueAndValidity();
+    this.attributeFields.set(fields);
   }
 }

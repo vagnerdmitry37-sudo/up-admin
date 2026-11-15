@@ -5,17 +5,41 @@
         <app-select-field
           label="Type"
           [control]="form.controls.type"
-          [options]="typeOptions"
+          [options]="typeOptions()"
           [messages]="{ required: 'Select a type.' }"
         />
         <app-number-field
-          label="Price"
+          [label]="definition()?.priceLabel ?? 'Price'"
           [control]="form.controls.price"
           [min]="0"
           [fractionDigits]="2"
           [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
         />
       </div>
+
+      @if (attributeFields().length) {
+        <div class="row">
+          @for (field of attributeFields(); track field.definition.key) {
+            @switch (field.definition.kind) {
+              @case ('Text') {
+                <app-text-field
+                  [label]="field.definition.label"
+                  [control]="field.control"
+                  [messages]="field.messages"
+                />
+              }
+              @case ('WholeNumber') {
+                <app-number-field
+                  [label]="field.definition.label"
+                  [control]="field.control"
+                  [min]="field.definition.min ?? undefined"
+                  [messages]="field.messages"
+                />
+              }
+            }
+          }
+        </div>
+      }
 
       <app-text-field
         label="Name"

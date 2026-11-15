@@ -2,6 +2,7 @@
   <app-product-tabs
     heading="Edit product"
     [products]="products.value()"
+    [productTypes]="productTypes()"
     [images]="images.hasValue() ? images.value() : []"
     [productFormStatuses]="productFormStatuses()"
     [productImageStatuses]="productImageStatuses()"

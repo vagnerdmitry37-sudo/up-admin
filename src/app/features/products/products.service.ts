@@ -1,11 +1,12 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { HttpClient, httpResource } from '@angular/common/http';
+import { Injectable, computed, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
   CreateProductRequest,
   Image,
   Product,
   ProductsPageResponse,
+  ProductTypeDefinition,
   UpdateImageOrderRequest,
   UpdateProductRequest,
 } from '@core/api/models';
@@ -17,6 +18,13 @@ export class ProductsService {
   private readonly apiBaseUrl = inject(API_BASE_URL);
   private readonly url = `${this.apiBaseUrl}/products`;
   private readonly imagesUrl = `${this.apiBaseUrl}/images`;
+  private readonly productTypesResource = httpResource<ProductTypeDefinition[]>(
+    () => `${this.apiBaseUrl}/product-types`,
+  );
+
+  readonly productTypes = computed(() =>
+    this.productTypesResource.hasValue() ? this.productTypesResource.value() : [],
+  );
 
   list = (first: number, rows: number) =>
     this.httpClient.get<ProductsPageResponse>(this.url, { params: { first, rows } });

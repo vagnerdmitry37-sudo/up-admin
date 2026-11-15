@@ -6,7 +6,7 @@ import {
   linkedSignal,
   viewChildren,
 } from '@angular/core';
-import { Image, Product } from '@core/api/models';
+import { Image, Product, ProductTypeDefinition } from '@core/api/models';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
 import { SaveStatus } from '@shared/save-zone/save-zone';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
@@ -26,6 +26,7 @@ const toFormValue = ({
   description,
   seoDescription,
   price,
+  attributes,
 }: Product): ProductFormValue => ({
   type,
   name,
@@ -33,6 +34,7 @@ const toFormValue = ({
   description,
   seoDescription,
   price,
+  attributes,
 });
 
 @Component({
@@ -44,6 +46,7 @@ const toFormValue = ({
 export class ProductTabs {
   readonly products = input.required<Product[]>();
   readonly heading = input.required<string>();
+  readonly productTypes = input<ProductTypeDefinition[]>([]);
   readonly images = input<Image[]>([]);
   readonly productFormStatuses = input<Record<string, SaveStatus>>({});
   readonly productImageStatuses = input<Record<string, SaveStatus>>({});

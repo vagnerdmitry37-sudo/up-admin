@@ -22,6 +22,7 @@ export class EditProductPage {
   readonly ids = input.required<string>();
 
   private readonly productsService = inject(ProductsService);
+  protected readonly productTypes = this.productsService.productTypes;
   private readonly tabs = viewChild(ProductTabs);
   private readonly saving = signal(false);
 
@@ -90,7 +91,7 @@ export class EditProductPage {
     }
     try {
       await this.productsService.update(
-        changed.map(({ product, value }) => ({ ...value, id: product.id, attributes: {} })),
+        changed.map(({ product, value }) => ({ ...value, id: product.id })),
       );
       for (const { product } of changed) {
         this.tabs()?.markSaved(product.id);

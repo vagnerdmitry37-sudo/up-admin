@@ -12,6 +12,7 @@
             <app-product-form
               [heading]="heading()"
               [product]="product"
+              [productTypes]="productTypes()"
               [images]="imagesByProduct().get(product.id) ?? []"
               [formStatus]="productFormStatuses()[product.id] ?? 'idle'"
               [imagesStatus]="productImageStatuses()[product.id] ?? 'idle'"
@@ -26,6 +27,7 @@
     <app-product-form
       [heading]="heading()"
       [product]="product"
+      [productTypes]="productTypes()"
       [images]="imagesByProduct().get(product.id) ?? []"
       [formStatus]="productFormStatuses()[product.id] ?? 'idle'"
       [imagesStatus]="productImageStatuses()[product.id] ?? 'idle'"
