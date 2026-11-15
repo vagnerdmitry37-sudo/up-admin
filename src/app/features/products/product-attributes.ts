@@ -17,6 +17,32 @@ export const filledAttributes = (
 ): Record<string, AttributeValue> =>
   Object.fromEntries(Object.entries(values).filter(([, value]) => value !== null && value !== ''));
 
+const initialValue = (definition: AttributeDefinition, value: unknown): AttributeValue => {
+  if (definition.kind === 'Text') {
+    return typeof value === 'string' ? value : '';
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  return definition.required ? definition.min : null;
+};
+
+const attributeValidators = ({ required, maxLength, min }: AttributeDefinition): ValidatorFn[] => [
+  ...(required ? [Validators.required] : []),
+  ...(maxLength === null ? [] : [Validators.maxLength(maxLength)]),
+  ...(min === null ? [] : [Validators.min(min)]),
+];
+
+const attributeMessages = ({
+  label,
+  maxLength,
+  min,
+}: AttributeDefinition): Record<string, string> => ({
+  required: `Enter ${label.toLowerCase()}.`,
+  maxlength: `Use ${maxLength} characters or fewer.`,
+  min: `Enter ${min} or more.`,
+});
+
 export const attributeField = (
   definition: AttributeDefinition,
   value: unknown,
@@ -28,29 +54,3 @@ export const attributeField = (
   }),
   messages: attributeMessages(definition),
 });
-
-function initialValue(definition: AttributeDefinition, value: unknown): AttributeValue {
-  if (definition.kind === 'Text') {
-    return typeof value === 'string' ? value : '';
-  }
-  if (typeof value === 'number') {
-    return value;
-  }
-  return definition.required ? definition.min : null;
-}
-
-function attributeValidators({ required, maxLength, min }: AttributeDefinition): ValidatorFn[] {
-  return [
-    ...(required ? [Validators.required] : []),
-    ...(maxLength === null ? [] : [Validators.maxLength(maxLength)]),
-    ...(min === null ? [] : [Validators.min(min)]),
-  ];
-}
-
-function attributeMessages({ label, maxLength, min }: AttributeDefinition): Record<string, string> {
-  return {
-    required: `Enter ${label.toLowerCase()}.`,
-    maxlength: `Use ${maxLength} characters or fewer.`,
-    min: `Enter ${min} or more.`,
-  };
-}

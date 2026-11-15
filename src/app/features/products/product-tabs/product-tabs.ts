@@ -95,7 +95,6 @@ export class ProductTabs {
     return values;
   }
 
-  private formOf(productId: string): ProductForm | undefined {
-    return this.forms().find((form) => form.product()?.id === productId);
-  }
+  private formOf = (productId: string): ProductForm | undefined =>
+    this.forms().find((form) => form.product()?.id === productId);
 }

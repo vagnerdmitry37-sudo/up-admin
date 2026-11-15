@@ -102,15 +102,11 @@ export class ImageUpload {
     this.syncPending();
   }
 
-  protected syncPending(): void {
-    this.pending.set([...this.fileUpload().files]);
-  }
+  protected syncPending = () => this.pending.set([...this.fileUpload().files]);
 
   protected openFilePicker = () => this.fileUpload().choose();
 
-  protected toggle(file: File): void {
-    this.selection.update((selected) => toggled(selected, file));
-  }
+  protected toggle = (file: File) => this.selection.update((selected) => toggled(selected, file));
 
   protected reorder({ previousIndex, currentIndex }: CdkDragDrop<SavedImage[]>): void {
     this.orderedImages.update((images) => {
@@ -120,9 +116,8 @@ export class ImageUpload {
     });
   }
 
-  protected toggleSaved(image: SavedImage): void {
+  protected toggleSaved = (image: SavedImage) =>
     this.savedSelection.update((selected) => toggled(selected, image));
-  }
 }
 
 const toggled = <T>(items: T[], item: T): T[] =>
