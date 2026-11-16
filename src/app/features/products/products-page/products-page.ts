@@ -15,6 +15,7 @@ import { DataTable, TableColumn } from '@shared/data-table/data-table';
 import { LazyRows } from '@shared/data-table/lazy-rows';
 import { EmptyState } from '@shared/empty-state/empty-state';
 import { PageTitle } from '@shared/page-title/page-title';
+import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { ProductsService } from '../products.service';
 
 @Component({
@@ -60,7 +61,7 @@ export class ProductsPage implements OnInit {
   }
 
   private createAction(ids: string[]): EditActionConfig {
-    const queryParams = ids.length > 0 ? { from: ids.join(',') } : undefined;
+    const queryParams = ids.length > 0 ? { from: joinRouteIds(ids) } : undefined;
 
     return {
       click: () => this.router.navigate(['/products/new'], { queryParams }),
@@ -70,7 +71,7 @@ export class ProductsPage implements OnInit {
 
   private editAction(ids: string[]): EditActionConfig {
     return {
-      click: () => this.router.navigate(['/products', ids.join(','), 'edit']),
+      click: () => this.router.navigate(['/products', joinRouteIds(ids), 'edit']),
       visible: ids.length > 0,
     };
   }

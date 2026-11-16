@@ -9,6 +9,7 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
+import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { SaveStatuses, saveWithStatus } from '@shared/save-zone/save-statuses';
 import { ProductTabs, ProductTabValue } from '../product-tabs/product-tabs';
 import { ProductsService } from '../products.service';
@@ -31,11 +32,11 @@ export class EditProductPage {
   protected readonly productFormStatuses = signal<SaveStatuses>({});
   protected readonly productImageStatuses = signal<SaveStatuses>({});
   protected readonly products = rxResource({
-    params: () => this.ids().split(','),
+    params: () => parseRouteIds(this.ids()),
     stream: ({ params }) => this.productsService.get(params),
   });
   protected readonly images = rxResource({
-    params: () => this.ids().split(','),
+    params: () => parseRouteIds(this.ids()),
     stream: ({ params }) => this.productsService.getImages(params),
   });
 

@@ -7,7 +7,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import { Image, Product, ProductTypeDefinition } from '@core/api/models';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
+import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { SaveStatus } from '@shared/save-zone/save-zone';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
 
@@ -39,7 +39,7 @@ const toFormValue = ({
 
 @Component({
   selector: 'app-product-tabs',
-  imports: [ProductForm, Tabs, TabList, Tab, TabPanels, TabPanel],
+  imports: [EntityTabs, ProductForm],
   templateUrl: './product-tabs.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -53,7 +53,7 @@ export class ProductTabs {
 
   private readonly forms = viewChildren(ProductForm);
 
-  protected readonly inTabs = computed(() => this.products().length > 1);
+  protected readonly productName = (product: Product) => product.name;
   protected readonly active = linkedSignal(() => this.products()[0]?.id);
   protected readonly imagesByProduct = computed(() => {
     const byProduct = new Map<string, Image[]>();

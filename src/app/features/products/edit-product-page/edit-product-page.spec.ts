@@ -9,6 +9,7 @@ import { API_BASE_URL } from '@core/api-base-url';
 import { Image, Product, ProductTypeDefinition } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
+import { MIN_SAVING_MS } from '@shared/save-zone/save-zone';
 import { EditProductPage } from './edit-product-page';
 
 const products: Product[] = [
@@ -42,6 +43,11 @@ const productTypes: ProductTypeDefinition[] = [
 ];
 
 const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+const showResults = async () => {
+  await vi.advanceTimersByTimeAsync(MIN_SAVING_MS);
+  await TestBed.inject(ApplicationRef).whenStable();
+};
 
 const zoneStates = (element: HTMLElement) =>
   [...element.querySelectorAll('app-save-zone')].map(
@@ -102,6 +108,7 @@ describe('EditProductPage', () => {
   };
 
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -115,7 +122,10 @@ describe('EditProductPage', () => {
     navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
   });
 
-  afterEach(() => httpTestingController.verify());
+  afterEach(() => {
+    httpTestingController.verify();
+    vi.useRealTimers();
+  });
 
   it('loads every product in the address with one request', async () => {
     const { load, element } = await render('p1,p2', products);
@@ -227,6 +237,7 @@ describe('EditProductPage', () => {
     httpTestingController.expectOne((req) => req.method === 'PUT').flush([]);
     await settle();
     await TestBed.inject(ApplicationRef).whenStable();
+    await showResults();
     expect(zoneStates(element)).toEqual(['Saved', 'Saving…']);
 
     httpTestingController.expectOne((req) => req.method === 'POST').flush([]);
@@ -235,6 +246,7 @@ describe('EditProductPage', () => {
     httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
     await settle();
     await TestBed.inject(ApplicationRef).whenStable();
+    await showResults();
     expect(zoneStates(element)).toEqual(['Saved', 'Saved']);
   });
 
@@ -253,6 +265,7 @@ describe('EditProductPage', () => {
     await expect(saving).rejects.toBeTruthy();
     await settle();
     await TestBed.inject(ApplicationRef).whenStable();
+    await showResults();
     expect(zoneStates(element)).toEqual(["Couldn't save. Try again.", '']);
   });
 
@@ -288,6 +301,7 @@ describe('EditProductPage', () => {
     httpTestingController.expectOne((req) => req.url === '/api/images').flush([]);
     await settle();
     await TestBed.inject(ApplicationRef).whenStable();
+    await showResults();
     expect(zoneStates(element)).toEqual(['', 'Saved']);
     expect(element.querySelector('app-image-upload button[aria-pressed]')).toBeNull();
     expect(navigateByUrl).not.toHaveBeenCalled();
@@ -327,6 +341,7 @@ describe('EditProductPage', () => {
     await settle();
     await TestBed.inject(ApplicationRef).whenStable();
 
+    await showResults();
     expect(zoneStates(element)).toEqual(['', 'Saved']);
     expect(
       [...element.querySelectorAll('.draggable img')].map((img) => img.getAttribute('src')),
@@ -367,6 +382,7 @@ describe('EditProductPage', () => {
     await settle();
     await TestBed.inject(ApplicationRef).whenStable();
 
+    await showResults();
     expect(zoneStates(element)[1]).toContain("Couldn't save images. Try again.");
   });
 
@@ -481,6 +497,7 @@ describe('EditProductPage', () => {
       await TestBed.inject(ApplicationRef).whenStable();
 
       expect(savedSources(element)).toEqual(['https://img/i2.webp']);
+      await showResults();
       expect(zoneStates(element)).toEqual(['', 'Saved']);
       expect(TestBed.inject(EditActionsService).actions().delete).toBeUndefined();
     });

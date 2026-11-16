@@ -23,7 +23,7 @@ export class OrdersService {
   list = (first: number, rows: number) =>
     this.httpClient.get<OrdersPageResponse>(this.url, { params: { first, rows } });
 
-  get = (id: string) => this.httpClient.get<Order>(`${this.url}/${id}`);
+  get = (ids: string[]) => this.httpClient.get<Order[]>(`${this.url}/by-ids`, { params: { ids } });
 
   create = (request: CreateOrderRequest) =>
     firstValueFrom(this.httpClient.post<Order>(this.url, request));

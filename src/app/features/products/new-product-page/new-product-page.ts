@@ -20,6 +20,7 @@ import {
   saveWithStatus,
   showResult,
 } from '@shared/save-zone/save-statuses';
+import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { ProductsService } from '../products.service';
 
 const NEW_PRODUCT_KEY = 'new';
@@ -50,7 +51,10 @@ export class NewProductPage {
   protected readonly productFormStatuses = signal<SaveStatuses>({});
   protected readonly productImageStatuses = signal<SaveStatuses>({});
   protected readonly sources = rxResource({
-    params: () => this.from()?.split(','),
+    params: () => {
+      const from = this.from();
+      return from ? parseRouteIds(from) : undefined;
+    },
     stream: ({ params }) => this.productsService.get(params),
   });
   protected readonly copies = computed(() =>

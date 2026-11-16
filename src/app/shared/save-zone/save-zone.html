@@ -2,7 +2,7 @@
   <ng-content />
 </div>
 
-@if (status() !== 'idle') {
+@if (shownStatus() !== 'idle') {
   <div
     class="overlay"
     role="status"
@@ -11,7 +11,7 @@
     (dragover)="$event.preventDefault()"
     (drop)="$event.preventDefault()"
   >
-    @switch (status()) {
+    @switch (shownStatus()) {
       @case ('saving') {
         <div class="state" appMotion="pop">
           <svg data-p-icon="spinner" [spin]="true" class="icon" aria-hidden="true"></svg>

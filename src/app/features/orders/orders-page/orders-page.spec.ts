@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
@@ -90,5 +91,20 @@ describe('OrdersPage', () => {
 
     expect(editActionsService.actions().create).toBeDefined();
     expect(editActionsService.suggested()).toEqual([]);
+  });
+
+  it('offers Edit only while orders are selected, and opens every selected order together', async () => {
+    const editActionsService = TestBed.inject(EditActionsService);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const element = await render([order, { ...order, id: 'o2', number: 'ORD-2026-000043' }]);
+    expect(editActionsService.actions().edit).toBeUndefined();
+
+    for (const index of [1, 0]) {
+      (element.querySelectorAll('tbody tr')[index] as HTMLElement).click();
+      await TestBed.inject(ApplicationRef).whenStable();
+    }
+    editActionsService.run('edit');
+
+    expect(navigate).toHaveBeenCalledWith(['/orders', 'o2,o1', 'edit']);
   });
 });

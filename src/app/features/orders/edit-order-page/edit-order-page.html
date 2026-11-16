@@ -1,0 +1,12 @@
+@if (orders.hasValue()) {
+  <app-entity-tabs [entities]="orders.value()" [label]="orderNumber" [(active)]="active">
+    <ng-template let-order>
+      <app-order-form
+        [order]="order"
+        [products]="productList()"
+        [formStatuses]="formStatuses()"
+        (submitted)="save()"
+      />
+    </ng-template>
+  </app-entity-tabs>
+}

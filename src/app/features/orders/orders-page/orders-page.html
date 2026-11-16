@@ -12,5 +12,6 @@
     [loading]="lazyRows.loading()"
     [lazy]="true"
     (lazyLoad)="lazyRows.load($event)"
+    [(selection)]="selected"
   />
 }

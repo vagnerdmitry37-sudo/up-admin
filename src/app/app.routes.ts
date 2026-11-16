@@ -31,10 +31,15 @@ export const routes: Routes = [
           import('@features/orders/order-page/order-page').then((m) => m.OrderPage),
       },
       {
-        path: 'orders/:id',
-        title: 'Order · UP',
+        path: 'orders/:ids/edit',
+        title: 'Edit orders · UP',
         loadComponent: () =>
-          import('@features/orders/order-page/order-page').then((m) => m.OrderPage),
+          import('@features/orders/edit-order-page/edit-order-page').then((m) => m.EditOrderPage),
+      },
+      {
+        path: 'orders/:id',
+        pathMatch: 'full',
+        redirectTo: 'orders/:id/edit',
       },
       {
         path: 'products',

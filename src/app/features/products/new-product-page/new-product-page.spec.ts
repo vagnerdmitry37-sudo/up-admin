@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Product, ProductTypeDefinition } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
+import { MIN_SAVING_MS } from '@shared/save-zone/save-zone';
 import { NewProductPage } from './new-product-page';
 
 const productTypes: ProductTypeDefinition[] = [
@@ -67,7 +68,7 @@ const zoneStates = (element: HTMLElement) =>
   );
 
 const showStatuses = async () => {
-  await settle();
+  await vi.advanceTimersByTimeAsync(MIN_SAVING_MS);
   await TestBed.inject(ApplicationRef).whenStable();
 };
 
@@ -140,6 +141,7 @@ describe('NewProductPage', () => {
   };
 
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -188,7 +190,6 @@ describe('NewProductPage', () => {
     });
 
     it('creates the product, then opens its edit page once the result was shown', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
       const { element } = await render();
       fillRequiredFields(element);
 
@@ -230,7 +231,6 @@ describe('NewProductPage', () => {
     });
 
     it('uploads the chosen images for the created product', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
       const { fixture, element } = await render();
       fillRequiredFields(element);
       await chooseImages(fixture, element, ['photo.jpg']);
@@ -301,7 +301,6 @@ describe('NewProductPage', () => {
     });
 
     it('saves the copies as new products without ids, keeping their attributes', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
       await renderCopies();
 
       await save();
@@ -353,7 +352,6 @@ describe('NewProductPage', () => {
     });
 
     it('stays on the page and shows the error in both zones when creating fails', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
       const { fixture, element } = await renderCopies();
       await chooseImages(fixture, element, ['photo.jpg']);
 
@@ -381,7 +379,6 @@ describe('NewProductPage', () => {
     });
 
     it('shows the image failure but still opens the created products when an upload fails', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
       const { fixture, element } = await renderCopies();
       await chooseImages(fixture, element, ['photo.jpg']);
 

@@ -1,29 +1,5 @@
-@if (inTabs()) {
-  <p-tabs [(value)]="active" scrollable lazy>
-    <p-tablist>
-      @for (product of products(); track product.id) {
-        <p-tab [value]="product.id">{{ product.name }}</p-tab>
-      }
-    </p-tablist>
-    <p-tabpanels>
-      @for (product of products(); track product.id) {
-        <p-tabpanel [value]="product.id">
-          <ng-template #content>
-            <app-product-form
-              [heading]="heading()"
-              [product]="product"
-              [productTypes]="productTypes()"
-              [images]="imagesByProduct().get(product.id) ?? []"
-              [formStatus]="productFormStatuses()[product.id] ?? 'idle'"
-              [imagesStatus]="productImageStatuses()[product.id] ?? 'idle'"
-            />
-          </ng-template>
-        </p-tabpanel>
-      }
-    </p-tabpanels>
-  </p-tabs>
-} @else {
-  @for (product of products(); track product.id) {
+<app-entity-tabs [entities]="products()" [label]="productName" [(active)]="active">
+  <ng-template let-product>
     <app-product-form
       [heading]="heading()"
       [product]="product"
@@ -32,5 +8,5 @@
       [formStatus]="productFormStatuses()[product.id] ?? 'idle'"
       [imagesStatus]="productImageStatuses()[product.id] ?? 'idle'"
     />
-  }
-}
+  </ng-template>
+</app-entity-tabs>
