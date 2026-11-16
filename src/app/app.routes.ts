@@ -16,8 +16,7 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        title: 'UP',
-        loadComponent: () => import('@features/home/home-page').then((m) => m.HomePage),
+        redirectTo: 'products',
       },
       {
         path: 'orders',
