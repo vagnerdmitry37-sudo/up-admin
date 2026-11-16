@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Order } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
+import { EditActionConfig, EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { DataTable, TableColumn } from '@shared/data-table/data-table';
 import { LazyRows } from '@shared/data-table/lazy-rows';
 import { EmptyState } from '@shared/empty-state/empty-state';
@@ -26,7 +27,9 @@ import { OrdersService } from '../orders.service';
 })
 export class OrdersPage implements OnInit {
   private readonly ordersService = inject(OrdersService);
+  private readonly router = inject(Router);
   private readonly locale = inject(LOCALE_ID);
+  private readonly confirmationService = inject(ConfirmationService);
 
   protected readonly lazyRows = new LazyRows<Order>(this.ordersService.list);
   protected readonly selected = signal<Order[]>([]);
@@ -39,25 +42,47 @@ export class OrdersPage implements OnInit {
   ];
 
   constructor() {
-    const router = inject(Router);
     inject(EditActionsService).register({
       actions: () => {
         const ids = this.selected().map((order) => order.id);
         return {
           create: {
-            click: () => router.navigate(['/orders/new']),
+            click: () => this.router.navigate(['/orders/new']),
             suggested: this.lazyRows.empty(),
           },
           edit: {
-            click: () => router.navigate(['/orders', joinRouteIds(ids), 'edit']),
+            click: () => this.router.navigate(['/orders', joinRouteIds(ids), 'edit']),
             visible: ids.length > 0,
           },
+          delete: this.deleteAction(ids),
         };
       },
     });
   }
 
   ngOnInit() {
+    this.lazyRows.reload();
+  }
+
+  private deleteAction(ids: string[]): EditActionConfig {
+    return {
+      click: () =>
+        this.confirmationService.confirm({
+          header: ids.length === 1 ? 'Delete order?' : `Delete ${ids.length} orders?`,
+          message: 'This cannot be undone.',
+          acceptLabel: 'Delete',
+          rejectLabel: 'Cancel',
+          acceptButtonProps: { severity: 'danger' },
+          rejectButtonProps: { severity: 'secondary', text: true },
+          accept: () => this.delete(ids),
+        }),
+      visible: ids.length > 0,
+    };
+  }
+
+  private async delete(ids: string[]): Promise<void> {
+    await this.ordersService.delete(ids);
+    this.selected.set([]);
     this.lazyRows.reload();
   }
 }

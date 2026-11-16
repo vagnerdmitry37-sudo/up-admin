@@ -34,6 +34,9 @@ export class OrdersService {
   updateCustomer = (orderId: string, request: UpdateOrderCustomerRequest) =>
     firstValueFrom(this.httpClient.put<Order>(`${this.url}/${orderId}/customer`, request));
 
+  delete = (ids: string[]) =>
+    firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
+
   getProducts = () =>
     this.httpClient
       .get<ProductsPageResponse>(`${this.apiBaseUrl}/products`, {
