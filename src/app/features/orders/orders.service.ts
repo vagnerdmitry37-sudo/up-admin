@@ -31,6 +31,11 @@ export class OrdersService {
   createItem = (orderId: string, request: CreateOrderItemRequest) =>
     firstValueFrom(this.httpClient.post<Order>(`${this.url}/${orderId}/items`, request));
 
+  deleteItems = (orderId: string, ids: string[]) =>
+    firstValueFrom(
+      this.httpClient.delete<Order>(`${this.url}/${orderId}/items`, { params: { ids } }),
+    );
+
   updateCustomer = (orderId: string, request: UpdateOrderCustomerRequest) =>
     firstValueFrom(this.httpClient.put<Order>(`${this.url}/${orderId}/customer`, request));
 

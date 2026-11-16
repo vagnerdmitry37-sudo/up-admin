@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Order } from '@core/api/models';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { EditActionsService } from '@core/edit-actions.service';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
@@ -33,6 +34,7 @@ export class EditOrderPage {
   readonly ids = input.required<string>();
 
   private readonly ordersService = inject(OrdersService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly forms = viewChildren(OrderForm);
   private readonly saving = signal(false);
   private readonly firstOrderId = computed(() =>
@@ -65,8 +67,42 @@ export class EditOrderPage {
           click: () => this.save(),
           visible: !this.saving() && this.forms().some((form) => form.hasUnsavedChanges()),
         },
+        delete: {
+          click: () => this.confirmDeleteItems(),
+          visible: !this.saving() && Boolean(this.activeForm()?.selectedItems().length),
+        },
       }),
     });
+  }
+
+  private confirmDeleteItems(): void {
+    const form = this.activeForm();
+    const orderId = form?.order()?.id;
+    if (!form || !orderId) {
+      return;
+    }
+    const itemIds = form.selectedItems().map((item) => item.id);
+    this.confirmationService.confirm({
+      header: itemIds.length === 1 ? 'Delete item?' : `Delete ${itemIds.length} items?`,
+      message: 'This cannot be undone.',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', text: true },
+      accept: () => this.deleteItems(form.itemsKey(), orderId, itemIds),
+    });
+  }
+
+  private async deleteItems(itemsKey: string, orderId: string, itemIds: string[]): Promise<void> {
+    this.saving.set(true);
+    try {
+      const updated = await saveWithStatus(this.formStatuses, [itemsKey], () =>
+        this.ordersService.deleteItems(orderId, itemIds),
+      );
+      this.replaceOrder(updated);
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   protected async save(): Promise<void> {

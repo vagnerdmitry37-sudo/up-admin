@@ -7,6 +7,7 @@ import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Order, Product } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { FormField } from '@shared/form-fields/form-field';
 import { MIN_SAVING_MS } from '@shared/save-zone/save-zone';
 import { EditOrderPage } from './edit-order-page';
@@ -113,6 +114,25 @@ const fillItem = async (
   await fixture.whenStable();
 };
 
+const twoItemOrder: Order = {
+  ...order,
+  totalPrice: 75,
+  items: [order.items[0], { ...order.items[0], id: 'i2', passengers: 2, totalPrice: 50 }],
+};
+
+const selectRow = async (fixture: ComponentFixture<EditOrderPage>, index: number) => {
+  (fixture.nativeElement.querySelectorAll('tbody tr')[index] as HTMLElement).click();
+  await fixture.whenStable();
+};
+
+const answerConfirmation = (answer: 'accept' | 'reject') => {
+  const confirmationService = TestBed.inject(ConfirmationService);
+  return vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
+    confirmation[answer]?.();
+    return confirmationService;
+  });
+};
+
 const tabLabels = (element: HTMLElement) =>
   [...element.querySelectorAll('p-tab')].map((tab) => tab.textContent?.trim());
 
@@ -160,6 +180,7 @@ describe('EditOrderPage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        ConfirmationService,
         { provide: API_BASE_URL, useValue: '/api' },
       ],
     });
@@ -195,11 +216,6 @@ describe('EditOrderPage', () => {
   });
 
   it('shows each item price and the order total in the items table footer', async () => {
-    const twoItemOrder: Order = {
-      ...order,
-      totalPrice: 75,
-      items: [order.items[0], { ...order.items[0], id: 'i2', passengers: 2, totalPrice: 50 }],
-    };
     const { element } = await render('o1', [twoItemOrder]);
 
     const priceCells = [...element.querySelectorAll('tbody tr')].map((row) =>
@@ -326,5 +342,63 @@ describe('EditOrderPage', () => {
     await vi.advanceTimersByTimeAsync(MIN_SAVING_MS);
     await fixture.whenStable();
     expect(element.textContent).toContain("Couldn't save. Try again.");
+  });
+
+  describe('deleting items', () => {
+    it('offers Delete only for selected items, and sends nothing when cancelled', async () => {
+      const confirm = answerConfirmation('reject');
+      const { fixture } = await render('o1', [twoItemOrder]);
+      expect(editActionsService.actions().delete).toBeUndefined();
+
+      await selectRow(fixture, 1);
+      editActionsService.run('delete');
+
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ header: 'Delete item?', acceptLabel: 'Delete' }),
+      );
+      httpTestingController.expectNone((req) => req.method === 'DELETE');
+      expect(editActionsService.actions().delete).toBeDefined();
+    });
+
+    it('deletes the selected items after confirming, then shows the rest and the new total', async () => {
+      const threeItemOrder: Order = {
+        ...twoItemOrder,
+        totalPrice: 100,
+        items: [...twoItemOrder.items, { ...order.items[0], id: 'i3' }],
+      };
+      const confirm = answerConfirmation('accept');
+      const { fixture, element } = await render('o1', [threeItemOrder]);
+      await selectRow(fixture, 2);
+      await selectRow(fixture, 0);
+
+      editActionsService.run('delete');
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete 2 items?' }));
+      const deletion = httpTestingController.expectOne('/api/orders/o1/items?ids=i3&ids=i1');
+      expect(deletion.request.method).toBe('DELETE');
+      deletion.flush({ ...order, totalPrice: 50, items: [twoItemOrder.items[1]] });
+      await settle();
+      await fixture.whenStable();
+
+      expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
+      expect(element.querySelector('tfoot td:last-child')?.textContent?.trim()).toBe('50.00');
+      expect(editActionsService.actions().delete).toBeUndefined();
+    });
+
+    it('shows the empty state when the last item is deleted', async () => {
+      answerConfirmation('accept');
+      const { fixture, element } = await render('o1', [order]);
+      await selectRow(fixture, 0);
+
+      editActionsService.run('delete');
+      httpTestingController
+        .expectOne('/api/orders/o1/items?ids=i1')
+        .flush({ ...order, totalPrice: 0, items: [] });
+      await settle();
+      await fixture.whenStable();
+
+      expect(element.querySelector('app-data-table')).toBeNull();
+      expect(element.textContent).toContain('No items yet');
+      expect(element.textContent).toContain('tap Add, then tap Save');
+    });
   });
 });
