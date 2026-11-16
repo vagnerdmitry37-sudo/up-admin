@@ -1,4 +1,4 @@
-import { formatDate } from '@angular/common';
+import { formatDate, formatNumber } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -54,6 +54,7 @@ export class OrderForm {
   private readonly isNew = computed(() => !this.order());
   private readonly orderKey = computed(() => this.order()?.id ?? NEW_ORDER_KEY);
   private nextItemFormId = 0;
+  private readonly formatPrice = (price: number) => formatNumber(price, this.locale, '1.2-2');
 
   protected readonly itemFormIds = linkedSignal<number[]>(() =>
     this.isNew() ? [this.nextItemFormId++] : [],
@@ -70,8 +71,13 @@ export class OrderForm {
     { header: 'Start', value: (item) => formatDate(item.startsAt, 'short', this.locale) },
     { header: 'Passengers', value: (item) => item.passengers, align: 'end' },
     { header: 'Pickup address', value: (item) => item.pickupAddress },
-    { header: 'Total', value: (item) => item.totalPrice, align: 'end' },
+    {
+      header: 'Price',
+      value: (item) => this.formatPrice(item.totalPrice),
+      align: 'end',
+    },
   ];
+  protected readonly totalPrice = computed(() => this.formatPrice(this.order()?.totalPrice ?? 0));
 
   readonly hasUnsavedChanges = computed(
     () =>

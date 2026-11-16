@@ -12,7 +12,14 @@
 <section class="section">
   <h2 class="section-title">Items</h2>
   @if (items().length) {
-    <app-data-table [rows]="items()" [columns]="columns" />
+    <app-data-table [rows]="items()" [columns]="columns">
+      <ng-template #footer>
+        <tr class="total-row">
+          <td [attr.colspan]="columns.length - 1">Total</td>
+          <td class="price">{{ totalPrice() }}</td>
+        </tr>
+      </ng-template>
+    </app-data-table>
   } @else {
     <app-empty-state
       heading="No items yet"

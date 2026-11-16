@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  contentChild,
+  input,
+  model,
+  output,
+} from '@angular/core';
 import { TableModule } from '@openng/optimus-ui/table';
 import { TableLazyLoadEvent } from '@openng/optimus-ui/types/table';
 
@@ -17,7 +26,7 @@ export interface TableRange {
 
 @Component({
   selector: 'app-data-table',
-  imports: [TableModule],
+  imports: [NgTemplateOutlet, TableModule],
   templateUrl: './data-table.html',
   styleUrl: './data-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +42,7 @@ export class DataTable<T extends object> {
   readonly lazyLoad = output<TableRange>();
 
   protected readonly rowHeight = ROW_HEIGHT;
+  protected readonly footerTemplate = contentChild<TemplateRef<unknown>>('footer');
   protected readonly trackRow = (index: number, row: T | undefined) => row ?? index;
 
   protected loadRange({ first, rows }: TableLazyLoadEvent) {

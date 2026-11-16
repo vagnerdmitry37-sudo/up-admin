@@ -194,6 +194,25 @@ describe('EditOrderPage', () => {
     expect(editActionsService.actions().save).toBeDefined();
   });
 
+  it('shows each item price and the order total in the items table footer', async () => {
+    const twoItemOrder: Order = {
+      ...order,
+      totalPrice: 75,
+      items: [order.items[0], { ...order.items[0], id: 'i2', passengers: 2, totalPrice: 50 }],
+    };
+    const { element } = await render('o1', [twoItemOrder]);
+
+    const priceCells = [...element.querySelectorAll('tbody tr')].map((row) =>
+      row.querySelector('td:last-child')?.textContent?.trim(),
+    );
+    const totalCells = [...element.querySelectorAll('tfoot tr td')].map((cell) =>
+      cell.textContent?.trim(),
+    );
+
+    expect(priceCells).toEqual(['25.00', '50.00']);
+    expect(totalCells).toEqual(['Total', '75.00']);
+  });
+
   it('saves only the customer when only the customer changed', async () => {
     const { fixture, element } = await render('o1', [order]);
     typeInto(element, 'Phone', '+420 700 000 000');

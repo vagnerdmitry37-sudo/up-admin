@@ -29,6 +29,11 @@
       }
     </tr>
   </ng-template>
+  @if (footerTemplate(); as footerContent) {
+    <ng-template #footer>
+      <ng-container [ngTemplateOutlet]="footerContent" />
+    </ng-template>
+  }
   <ng-template #loadingbody>
     <tr [style.height.px]="rowHeight">
       @for (column of columns(); track column.header) {
