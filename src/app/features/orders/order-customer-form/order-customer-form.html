@@ -1,0 +1,29 @@
+<app-form-shell [form]="form" (submitted)="submitted.emit()">
+  <app-save-zone [status]="formStatus()">
+    <app-text-field
+      label="Customer name"
+      [control]="form.controls.customerName"
+      [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
+    />
+
+    <app-form-row>
+      <app-text-field
+        label="Email"
+        [control]="form.controls.customerEmail"
+        [messages]="{
+          required: 'Enter an email.',
+          email: 'Enter a valid email.',
+          maxlength: 'Use 256 characters or fewer.',
+        }"
+      />
+      <app-text-field
+        label="Phone"
+        [control]="form.controls.customerPhone"
+        [messages]="{
+          required: 'Enter a phone number.',
+          maxlength: 'Use 50 characters or fewer.',
+        }"
+      />
+    </app-form-row>
+  </app-save-zone>
+</app-form-shell>

@@ -1,0 +1,31 @@
+<app-page-title [heading]="heading()" />
+
+<section class="section">
+  <h2 class="section-title">Customer</h2>
+  <app-order-customer-form
+    [customer]="customer()"
+    [formStatus]="formStatuses()[customerFormKey] ?? 'idle'"
+    (submitted)="submitForms()"
+  />
+</section>
+
+<section class="section">
+  <h2 class="section-title">Items</h2>
+  @if (items().length) {
+    <app-data-table [rows]="items()" [columns]="columns" [loading]="order.isLoading()" />
+  } @else if (!order.isLoading()) {
+    <app-empty-state
+      heading="No items yet"
+      message="Fill in the customer and item forms and tap Save to create the order."
+    />
+  }
+</section>
+
+<section class="section">
+  <h2 class="section-title">New item</h2>
+  <app-order-item-form
+    [products]="productList()"
+    [formStatus]="formStatuses()[itemFormKey] ?? 'idle'"
+    (submitted)="submitForms()"
+  />
+</section>

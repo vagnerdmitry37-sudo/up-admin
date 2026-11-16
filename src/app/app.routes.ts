@@ -29,7 +29,13 @@ export const routes: Routes = [
         path: 'orders/new',
         title: 'New order · UP',
         loadComponent: () =>
-          import('@features/orders/new-order-page/new-order-page').then((m) => m.NewOrderPage),
+          import('@features/orders/order-page/order-page').then((m) => m.OrderPage),
+      },
+      {
+        path: 'orders/:id',
+        title: 'Order · UP',
+        loadComponent: () =>
+          import('@features/orders/order-page/order-page').then((m) => m.OrderPage),
       },
       {
         path: 'products',

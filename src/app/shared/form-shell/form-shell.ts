@@ -10,7 +10,7 @@ import { PageTitle } from '@shared/page-title/page-title';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormShell {
-  readonly heading = input.required<string>();
+  readonly heading = input<string>();
   readonly form = input.required<FormGroup>();
   readonly submitted = output();
 

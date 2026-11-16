@@ -2,11 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
+  CreateOrderItemRequest,
   CreateOrderRequest,
   Order,
   OrdersPageResponse,
   ProductSortField,
   ProductsPageResponse,
+  UpdateOrderCustomerRequest,
 } from '@core/api/models';
 import { firstValueFrom, map } from 'rxjs';
 
@@ -21,8 +23,16 @@ export class OrdersService {
   list = (first: number, rows: number) =>
     this.httpClient.get<OrdersPageResponse>(this.url, { params: { first, rows } });
 
+  get = (id: string) => this.httpClient.get<Order>(`${this.url}/${id}`);
+
   create = (request: CreateOrderRequest) =>
     firstValueFrom(this.httpClient.post<Order>(this.url, request));
+
+  createItem = (orderId: string, request: CreateOrderItemRequest) =>
+    firstValueFrom(this.httpClient.post<Order>(`${this.url}/${orderId}/items`, request));
+
+  updateCustomer = (orderId: string, request: UpdateOrderCustomerRequest) =>
+    firstValueFrom(this.httpClient.put<Order>(`${this.url}/${orderId}/customer`, request));
 
   getProducts = () =>
     this.httpClient
