@@ -14,7 +14,7 @@ import { ConfirmationService } from '@openng/optimus-ui/api';
 import { EditActionsService } from '@core/edit-actions.service';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
-import { SaveStatuses, saveWithStatus } from '@shared/save-zone/save-statuses';
+import { afterResultsShown, SaveStatuses, saveWithStatus } from '@shared/save-zone/save-statuses';
 import { OrderForm, OrderFormValue } from '../order-form/order-form';
 import { OrdersService } from '../orders.service';
 
@@ -151,7 +151,8 @@ export class EditOrderPage {
         this.ordersService.createItem(orderId, item),
       );
       this.replaceOrder(updated);
-      form.removeItemForm(formId);
+      form.lockItemFormAsSaved(formId);
+      afterResultsShown(() => form.removeItemForm(formId));
     }
   }
 

@@ -3,7 +3,7 @@ import { SaveStatus } from './save-zone';
 
 export type SaveStatuses = Record<string, SaveStatus>;
 
-const STATUS_DISPLAY_MS = 2000;
+export const STATUS_DISPLAY_MS = 2000;
 
 export const markSaving = (statuses: WritableSignal<SaveStatuses>, keys: string[]): void =>
   statuses.update((current) => ({

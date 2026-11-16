@@ -9,6 +9,7 @@ import { Order, Product } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
 import { FormField } from '@shared/form-fields/form-field';
+import { STATUS_DISPLAY_MS } from '@shared/save-zone/save-statuses';
 import { MIN_SAVING_MS } from '@shared/save-zone/save-zone';
 import { EditOrderPage } from './edit-order-page';
 
@@ -298,9 +299,35 @@ describe('EditOrderPage', () => {
     creation.flush({ ...order, items: [...order.items, { ...order.items[0], id: 'i2' }] });
     await settle();
     await fixture.whenStable();
+    await vi.advanceTimersByTimeAsync(STATUS_DISPLAY_MS);
+    await fixture.whenStable();
 
     expect(itemForms(fixture)).toHaveLength(0);
     expect(inputFor(element, 'Customer name').value).toBe('Anna Novak');
+  });
+
+  it('keeps a saved item form on screen, locked and showing Saved, until the result has been shown', async () => {
+    const { fixture } = await render('o1', [order]);
+    await addItemForm(fixture);
+    await fillItem(fixture, itemForms(fixture)[0]);
+
+    await save();
+    httpTestingController
+      .expectOne('/api/orders/o1/items')
+      .flush({ ...order, items: [...order.items, { ...order.items[0], id: 'i2' }] });
+    await settle();
+    await vi.advanceTimersByTimeAsync(MIN_SAVING_MS);
+    await fixture.whenStable();
+
+    const [savedForm] = itemForms(fixture);
+    expect(savedForm.nativeElement.textContent).toContain('Saved');
+    expect(inputFor(savedForm.nativeElement, 'Pickup address').disabled).toBe(true);
+    expect(editActionsService.actions().save).toBeUndefined();
+
+    await vi.advanceTimersByTimeAsync(STATUS_DISPLAY_MS - MIN_SAVING_MS);
+    await fixture.whenStable();
+
+    expect(itemForms(fixture)).toHaveLength(0);
   });
 
   it('adds no items while one item form is invalid', async () => {
@@ -336,12 +363,18 @@ describe('EditOrderPage', () => {
     failed.flush(null, { status: 500, statusText: 'Server Error' });
 
     await expect(saving).rejects.toBeTruthy();
-    await fixture.whenStable();
-    expect(itemForms(fixture)).toHaveLength(1);
-    expect(inputFor(itemForms(fixture)[0].nativeElement, 'Pickup address').value).toBe('Airport');
     await vi.advanceTimersByTimeAsync(MIN_SAVING_MS);
     await fixture.whenStable();
     expect(element.textContent).toContain("Couldn't save. Try again.");
+
+    await save();
+    const retry = httpTestingController.expectOne('/api/orders/o1/items');
+    expect(retry.request.body).toEqual({ ...expectedItem, pickupAddress: 'Airport' });
+    retry.flush(order);
+    await settle();
+    await vi.advanceTimersByTimeAsync(STATUS_DISPLAY_MS);
+    await fixture.whenStable();
+    expect(itemForms(fixture)).toHaveLength(0);
   });
 
   describe('deleting items', () => {

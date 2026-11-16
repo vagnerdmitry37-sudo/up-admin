@@ -97,6 +97,11 @@ export class OrderForm {
   removeItemForm = (formId: number) =>
     this.itemFormIds.update((formIds) => formIds.filter((candidate) => candidate !== formId));
 
+  lockItemFormAsSaved = (formId: number) =>
+    this.itemForms()
+      .find((form) => form.formId() === formId)
+      ?.lockAsSaved();
+
   resetCustomer = (customer: OrderCustomer) => this.customerForm().reset(customer);
 
   validValue(): OrderFormValue | undefined {

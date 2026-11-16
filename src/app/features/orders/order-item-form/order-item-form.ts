@@ -65,4 +65,9 @@ export class OrderItemForm {
   };
 
   reset = () => this.form.reset();
+
+  lockAsSaved = () => {
+    this.form.markAsPristine();
+    this.form.disable();
+  };
 }
