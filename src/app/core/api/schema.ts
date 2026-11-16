@@ -403,6 +403,117 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/orders': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: {
+          first?: number;
+          rows?: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['OrdersPageResponse'];
+            'application/json': components['schemas']['OrdersPageResponse'];
+            'text/json': components['schemas']['OrdersPageResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails'];
+            'application/json': components['schemas']['ValidationProblemDetails'];
+            'text/json': components['schemas']['ValidationProblemDetails'];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateOrderRequest'];
+          'text/json': components['schemas']['CreateOrderRequest'];
+          'application/*+json': components['schemas']['CreateOrderRequest'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['OrderResponse'];
+            'application/json': components['schemas']['OrderResponse'];
+            'text/json': components['schemas']['OrderResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails'];
+            'application/json': components['schemas']['ValidationProblemDetails'];
+            'text/json': components['schemas']['ValidationProblemDetails'];
+          };
+        };
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/images': {
     parameters: {
       query?: never;
@@ -1005,6 +1116,23 @@ export interface components {
     };
     /** @enum {unknown} */
     AttributeKind: 'Text' | 'WholeNumber';
+    CreateOrderItemRequest: {
+      /** Format: uuid */
+      productId: string;
+      /** Format: date-time */
+      startsAt: string;
+      /** Format: int32 */
+      passengers: number;
+      pickupAddress: string;
+      /** @default  */
+      notes: string;
+    };
+    CreateOrderRequest: {
+      customerName: string;
+      customerEmail: string;
+      customerPhone: string;
+      items: components['schemas']['CreateOrderItemRequest'][];
+    };
     CreateProductRequest: {
       type: components['schemas']['ProductType'];
       name: string;
@@ -1059,6 +1187,47 @@ export interface components {
       id: string;
       email: string;
     };
+    OrderItemResponse: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      productId: string;
+      productType: components['schemas']['ProductType'];
+      productTypeLabel: string;
+      productName: string;
+      productAttributes: components['schemas']['JsonElement'];
+      /** Format: double */
+      unitPrice: number;
+      /** Format: date-time */
+      startsAt: string;
+      /** Format: int32 */
+      passengers: number;
+      pickupAddress: string;
+      notes: string;
+      /** Format: double */
+      totalPrice: number;
+    };
+    OrderResponse: {
+      /** Format: uuid */
+      id: string;
+      number: string;
+      status: components['schemas']['OrderStatus'];
+      customerName: string;
+      customerEmail: string;
+      customerPhone: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: double */
+      totalPrice: number;
+      items: components['schemas']['OrderItemResponse'][];
+    };
+    OrdersPageResponse: {
+      items: components['schemas']['OrderResponse'][];
+      /** Format: int32 */
+      totalRecords: number;
+    };
+    /** @enum {unknown} */
+    OrderStatus: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
     ProblemDetails: {
       type?: null | string;
       title?: null | string;

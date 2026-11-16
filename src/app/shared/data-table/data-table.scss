@@ -5,6 +5,9 @@
 :host(.lazy) {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 
   p-table {
     flex: 1;

@@ -1,0 +1,13 @@
+<app-page-title heading="Orders" />
+
+@if (lazyRows.empty()) {
+  <app-empty-state heading="No orders yet" message="Orders placed on the website appear here." />
+} @else {
+  <app-data-table
+    [rows]="lazyRows.rows() ?? []"
+    [columns]="columns"
+    [loading]="lazyRows.loading()"
+    [lazy]="true"
+    (lazyLoad)="lazyRows.load($event)"
+  />
+}

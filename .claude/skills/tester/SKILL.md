@@ -5,11 +5,24 @@ description: Write, update and run tests for recent work in this Angular repo - 
 
 Testing is on demand. Outside this skill, never write, rewrite or run tests, and never run browser checks. When the user asks to test, follow these steps in order.
 
+## 0. Review first
+
+Run the `reviewer` skill on the same scope before writing tests. Its findings decide what is worth testing, and a test written against a bug only freezes the bug. Report the findings; do not fix product code without asking.
+
 ## 1. Decide the scope
 
 - If the user names something ("test the uploader", "test the delete action"), test exactly that.
 - Otherwise test the previous work: the uncommitted changes (`git status --short` and `git diff HEAD`). If the tree is clean, use the last commit (`git show --stat HEAD`).
 - List the behaviours to cover in two to five short lines in the chat before writing anything. Each behaviour is something a user or caller can observe.
+
+## 1a. Test only what is essential
+
+A test earns its place only when it would catch a regression that matters. Before writing one, name that regression in one sentence; if you cannot, skip the test.
+
+- **Test:** logic with branches or state (lazy loading, selection, edit-menu actions), what the user sees in main flows and empty states, requests sent (URL, params, body), and every bug that was fixed.
+- **Skip:** presentational components with no logic (a heading and a message), services that only forward to `HttpClient`, Angular or Optimus behaviour, and logic already covered through another spec (a shared class tested through the page that uses it needs no separate spec).
+- One test per behaviour. Several asserts in one test are fine when they describe one outcome.
+- Fewer, stronger tests beat many shallow ones. Say in the report what you deliberately left untested.
 
 ## 2. Write or update the specs
 

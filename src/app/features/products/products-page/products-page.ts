@@ -4,7 +4,6 @@ import {
   Component,
   LOCALE_ID,
   OnInit,
-  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -12,16 +11,15 @@ import { Router } from '@angular/router';
 import { Product } from '@core/api/models';
 import { EditActionConfig, EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
-import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
+import { DataTable, TableColumn } from '@shared/data-table/data-table';
+import { LazyRows } from '@shared/data-table/lazy-rows';
+import { EmptyState } from '@shared/empty-state/empty-state';
 import { PageTitle } from '@shared/page-title/page-title';
-import { finalize } from 'rxjs';
 import { ProductsService } from '../products.service';
-
-const PAGE_SIZE = 50;
 
 @Component({
   selector: 'app-products-page',
-  imports: [DataTable, PageTitle],
+  imports: [DataTable, EmptyState, PageTitle],
   templateUrl: './products-page.html',
   styleUrl: './products-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,11 +30,8 @@ export class ProductsPage implements OnInit {
   private readonly locale = inject(LOCALE_ID);
   private readonly confirmationService = inject(ConfirmationService);
 
-  protected readonly rows = signal<(Product | undefined)[] | undefined>(undefined);
+  protected readonly lazyRows = new LazyRows<Product>(this.productsService.list);
   protected readonly selected = signal<Product[]>([]);
-  private readonly pendingRequests = signal(0);
-  private readonly pendingRows = new Set<number>();
-  protected readonly loading = computed(() => this.pendingRequests() > 0);
   protected readonly columns: TableColumn<Product>[] = [
     { header: 'Name', value: (product) => product.name },
     { header: 'Type', value: (product) => product.typeLabel },
@@ -61,47 +56,7 @@ export class ProductsPage implements OnInit {
   }
 
   ngOnInit() {
-    this.load({ first: 0, rows: PAGE_SIZE });
-  }
-
-  protected load(range: TableRange) {
-    const missing = this.missingRange(range);
-    if (!missing) {
-      return;
-    }
-    const indexes = Array.from({ length: missing.rows }, (_, offset) => missing.first + offset);
-    indexes.forEach((index) => this.pendingRows.add(index));
-    this.pendingRequests.update((count) => count + 1);
-    this.productsService
-      .list(missing.first, missing.rows)
-      .pipe(
-        finalize(() => {
-          indexes.forEach((index) => this.pendingRows.delete(index));
-          this.pendingRequests.update((count) => count - 1);
-        }),
-      )
-      .subscribe((page) =>
-        this.rows.update((current = []) => {
-          const next = Array.from({ length: page.totalRecords }, (_, index) => current[index]);
-          next.splice(missing.first, page.items.length, ...page.items);
-          return next;
-        }),
-      );
-  }
-
-  private missingRange(range: TableRange): TableRange | undefined {
-    const rows = this.rows();
-    if (!rows) {
-      return range;
-    }
-    const isAvailable = rows
-      .slice(range.first, range.first + range.rows)
-      .map((row, offset) => Boolean(row) || this.pendingRows.has(range.first + offset));
-    const start = isAvailable.indexOf(false);
-    if (start === -1) {
-      return undefined;
-    }
-    return { first: range.first + start, rows: isAvailable.lastIndexOf(false) - start + 1 };
+    this.lazyRows.reload();
   }
 
   private createAction(ids: string[]): EditActionConfig {
@@ -109,7 +64,7 @@ export class ProductsPage implements OnInit {
 
     return {
       click: () => this.router.navigate(['/products/new'], { queryParams }),
-      suggested: this.rows()?.length === 0,
+      suggested: this.lazyRows.empty(),
     };
   }
 
@@ -139,7 +94,6 @@ export class ProductsPage implements OnInit {
   private async delete(ids: string[]): Promise<void> {
     await this.productsService.delete(ids);
     this.selected.set([]);
-    this.rows.set(undefined);
-    this.load({ first: 0, rows: PAGE_SIZE });
+    this.lazyRows.reload();
   }
 }

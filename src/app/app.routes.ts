@@ -22,7 +22,8 @@ export const routes: Routes = [
       {
         path: 'orders',
         title: 'Orders · UP',
-        loadComponent: () => import('@features/orders/orders-page').then((m) => m.OrdersPage),
+        loadComponent: () =>
+          import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
       {
         path: 'products',

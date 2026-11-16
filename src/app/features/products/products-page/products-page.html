@@ -1,18 +1,14 @@
 <app-page-title heading="Products" />
 
-@let loaded = rows();
-@if (!loaded || loaded.length > 0) {
+@if (lazyRows.empty()) {
+  <app-empty-state heading="No products yet" message="Tap + to add your first product." />
+} @else {
   <app-data-table
-    [rows]="loaded ?? []"
+    [rows]="lazyRows.rows() ?? []"
     [columns]="columns"
-    [loading]="loading()"
+    [loading]="lazyRows.loading()"
     [lazy]="true"
-    (lazyLoad)="load($event)"
+    (lazyLoad)="lazyRows.load($event)"
     [(selection)]="selected"
   />
-} @else {
-  <section class="empty">
-    <p class="empty-title">No products yet</p>
-    <p>Tap + to add your first product.</p>
-  </section>
 }
