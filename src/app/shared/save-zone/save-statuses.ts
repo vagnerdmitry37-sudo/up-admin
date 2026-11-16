@@ -1,5 +1,5 @@
 import { WritableSignal } from '@angular/core';
-import { SaveStatus } from '@shared/save-zone/save-zone';
+import { SaveStatus } from './save-zone';
 
 export type SaveStatuses = Record<string, SaveStatus>;
 
@@ -30,4 +30,24 @@ export const showResult = (
 
 export const afterResultsShown = (action: VoidFunction): void => {
   setTimeout(action, STATUS_DISPLAY_MS);
+};
+
+export const saveWithStatus = async <T>(
+  statuses: WritableSignal<SaveStatuses>,
+  keys: string[],
+  save: () => Promise<T>,
+): Promise<T> => {
+  markSaving(statuses, keys);
+  try {
+    const result = await save();
+    for (const key of keys) {
+      showResult(statuses, key, 'saved');
+    }
+    return result;
+  } catch (error) {
+    for (const key of keys) {
+      showResult(statuses, key, 'failed');
+    }
+    throw error;
+  }
 };

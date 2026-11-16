@@ -1,6 +1,8 @@
 import { formatDate } from '@angular/common';
 import { ChangeDetectionStrategy, Component, LOCALE_ID, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Order } from '@core/api/models';
+import { EditActionsService } from '@core/edit-actions.service';
 import { DataTable, TableColumn } from '@shared/data-table/data-table';
 import { LazyRows } from '@shared/data-table/lazy-rows';
 import { EmptyState } from '@shared/empty-state/empty-state';
@@ -26,6 +28,18 @@ export class OrdersPage implements OnInit {
     { header: 'Status', value: (order) => order.status },
     { header: 'Total', value: (order) => order.totalPrice, align: 'end' },
   ];
+
+  constructor() {
+    const router = inject(Router);
+    inject(EditActionsService).register({
+      actions: () => ({
+        create: {
+          click: () => router.navigate(['/orders/new']),
+          suggested: this.lazyRows.empty(),
+        },
+      }),
+    });
+  }
 
   ngOnInit() {
     this.lazyRows.reload();

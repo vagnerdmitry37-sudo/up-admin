@@ -13,8 +13,14 @@ import { CreateProductRequest, Product } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
 import { ProductTabs } from '../product-tabs/product-tabs';
+import {
+  SaveStatuses,
+  afterResultsShown,
+  markSaving,
+  saveWithStatus,
+  showResult,
+} from '@shared/save-zone/save-statuses';
 import { ProductsService } from '../products.service';
-import { SaveStatuses, afterResultsShown, markSaving, showResult } from '../save-statuses';
 
 const NEW_PRODUCT_KEY = 'new';
 
@@ -103,10 +109,6 @@ export class NewProductPage {
     const withImages = products.filter(({ images }) => images.length);
     this.saving.set(true);
     markSaving(
-      this.productFormStatuses,
-      products.map(({ key }) => key),
-    );
-    markSaving(
       this.productImageStatuses,
       withImages.map(({ key }) => key),
     );
@@ -138,15 +140,12 @@ export class NewProductPage {
     withImages: NewProduct[],
   ): Promise<Product[]> {
     try {
-      const created = await this.productsService.create(products.map(({ request }) => request));
-      for (const { key } of products) {
-        showResult(this.productFormStatuses, key, 'saved');
-      }
-      return created;
+      return await saveWithStatus(
+        this.productFormStatuses,
+        products.map(({ key }) => key),
+        () => this.productsService.create(products.map(({ request }) => request)),
+      );
     } catch (error) {
-      for (const { key } of products) {
-        showResult(this.productFormStatuses, key, 'failed');
-      }
       for (const { key } of withImages) {
         showResult(this.productImageStatuses, key, 'failed');
       }
@@ -154,13 +153,8 @@ export class NewProductPage {
     }
   }
 
-  private async uploadImages({ key, images }: NewProduct, productId: string): Promise<void> {
-    try {
-      await this.productsService.uploadImages(productId, images);
-      showResult(this.productImageStatuses, key, 'saved');
-    } catch (error) {
-      showResult(this.productImageStatuses, key, 'failed');
-      throw error;
-    }
-  }
+  private uploadImages = ({ key, images }: NewProduct, productId: string) =>
+    saveWithStatus(this.productImageStatuses, [key], () =>
+      this.productsService.uploadImages(productId, images),
+    );
 }

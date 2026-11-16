@@ -26,6 +26,12 @@ export const routes: Routes = [
           import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
       {
+        path: 'orders/new',
+        title: 'New order · UP',
+        loadComponent: () =>
+          import('@features/orders/new-order-page/new-order-page').then((m) => m.NewOrderPage),
+      },
+      {
         path: 'products',
         title: 'Products · UP',
         loadComponent: () =>

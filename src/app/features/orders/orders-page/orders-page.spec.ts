@@ -1,8 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Order } from '@core/api/models';
+import { EditActionsService } from '@core/edit-actions.service';
 import { OrdersPage } from './orders-page';
 
 const order: Order = {
@@ -40,6 +42,7 @@ describe('OrdersPage', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
       ],
     });
@@ -68,5 +71,24 @@ describe('OrdersPage', () => {
 
     expect(element.textContent).toContain('No orders yet');
     expect(element.querySelector('app-data-table')).toBeNull();
+  });
+
+  it('suggests Create while there are no orders, and Create opens the new order page', async () => {
+    const editActionsService = TestBed.inject(EditActionsService);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    await render([]);
+    expect(editActionsService.suggested()).toEqual(['create']);
+
+    editActionsService.run('create');
+
+    expect(navigate).toHaveBeenCalledWith(['/orders/new']);
+  });
+
+  it('offers Create without suggesting it once orders exist', async () => {
+    const editActionsService = TestBed.inject(EditActionsService);
+    await render([order]);
+
+    expect(editActionsService.actions().create).toBeDefined();
+    expect(editActionsService.suggested()).toEqual([]);
   });
 });

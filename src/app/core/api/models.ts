@@ -10,6 +10,7 @@ export type CreateProductRequest = Schema<'CreateProductRequest'>;
 export type UpdateProductRequest = Schema<'UpdateProductRequest'>;
 export type Order = Schema<'OrderResponse'>;
 export type OrdersPageResponse = Schema<'OrdersPageResponse'>;
+export type CreateOrderRequest = Schema<'CreateOrderRequest'>;
 export type Image = Schema<'ImageResponse'>;
 export type UpdateImageOrderRequest = Schema<'UpdateImageOrderRequest'>;
 export type AccessToken = Schema<'AccessTokenResponse'>;

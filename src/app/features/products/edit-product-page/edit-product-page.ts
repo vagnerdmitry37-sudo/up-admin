@@ -9,9 +9,9 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
+import { SaveStatuses, saveWithStatus } from '@shared/save-zone/save-statuses';
 import { ProductTabs, ProductTabValue } from '../product-tabs/product-tabs';
 import { ProductsService } from '../products.service';
-import { SaveStatuses, markSaving, showResult } from '../save-statuses';
 
 @Component({
   selector: 'app-edit-product-page',
@@ -84,15 +84,12 @@ export class EditProductPage {
 
   private async deleteSavedImages(productId: string, imageIds: string[]): Promise<void> {
     this.saving.set(true);
-    markSaving(this.productImageStatuses, [productId]);
     try {
-      await this.productsService.deleteImages(imageIds);
-      this.tabs()?.clearSavedImageSelection(productId);
-      showResult(this.productImageStatuses, productId, 'saved');
+      await saveWithStatus(this.productImageStatuses, [productId], async () => {
+        await this.productsService.deleteImages(imageIds);
+        this.tabs()?.clearSavedImageSelection(productId);
+      });
       this.images.reload();
-    } catch (error) {
-      showResult(this.productImageStatuses, productId, 'failed');
-      throw error;
     } finally {
       this.saving.set(false);
     }
@@ -109,14 +106,6 @@ export class EditProductPage {
       return;
     }
     this.saving.set(true);
-    markSaving(
-      this.productFormStatuses,
-      changed.map(({ product }) => product.id),
-    );
-    markSaving(
-      this.productImageStatuses,
-      withImages.map(({ product }) => product.id),
-    );
     const results = await Promise.allSettled([
       this.updateProducts(changed),
       ...withImages.map((value) => this.saveImages(value)),
@@ -135,24 +124,19 @@ export class EditProductPage {
     if (!changed.length) {
       return;
     }
-    try {
+    const ids = changed.map(({ product }) => product.id);
+    await saveWithStatus(this.productFormStatuses, ids, async () => {
       await this.productsService.update(
         changed.map(({ product, value }) => ({ ...value, id: product.id })),
       );
-      for (const { product } of changed) {
-        this.tabs()?.markSaved(product.id);
-        showResult(this.productFormStatuses, product.id, 'saved');
+      for (const id of ids) {
+        this.tabs()?.markSaved(id);
       }
-    } catch (error) {
-      for (const { product } of changed) {
-        showResult(this.productFormStatuses, product.id, 'failed');
-      }
-      throw error;
-    }
+    });
   }
 
-  private async saveImages({ product, images, imageOrder }: ProductTabValue): Promise<void> {
-    try {
+  private saveImages = ({ product, images, imageOrder }: ProductTabValue) =>
+    saveWithStatus(this.productImageStatuses, [product.id], async () => {
       if (imageOrder) {
         await this.productsService.updateImageOrder(product.id, imageOrder);
       }
@@ -160,10 +144,5 @@ export class EditProductPage {
         await this.productsService.uploadImages(product.id, images);
         this.tabs()?.clearPendingImages(product.id);
       }
-      showResult(this.productImageStatuses, product.id, 'saved');
-    } catch (error) {
-      showResult(this.productImageStatuses, product.id, 'failed');
-      throw error;
-    }
-  }
+    });
 }

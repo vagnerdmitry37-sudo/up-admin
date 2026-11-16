@@ -4,6 +4,12 @@
   min-width: 0;
 }
 
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .overlay {
   position: absolute;
   inset: 0;

@@ -1,0 +1,61 @@
+<app-form-shell heading="New order" [form]="form" (submitted)="submit()">
+  <app-save-zone [status]="formStatus()">
+    <app-text-field
+      label="Customer name"
+      [control]="form.controls.customerName"
+      [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
+    />
+
+    <app-form-row>
+      <app-text-field
+        label="Email"
+        [control]="form.controls.customerEmail"
+        [messages]="{
+          required: 'Enter an email.',
+          email: 'Enter a valid email.',
+          maxlength: 'Use 256 characters or fewer.',
+        }"
+      />
+      <app-text-field
+        label="Phone"
+        [control]="form.controls.customerPhone"
+        [messages]="{ required: 'Enter a phone number.', maxlength: 'Use 50 characters or fewer.' }"
+      />
+    </app-form-row>
+
+    <app-form-row>
+      <app-select-field
+        label="Product"
+        [control]="form.controls.productId"
+        [options]="productOptions()"
+        [messages]="{ required: 'Select a product.' }"
+      />
+      <app-date-time-field
+        label="Start"
+        [control]="form.controls.startsAt"
+        [minDate]="earliestStart"
+        [messages]="{ required: 'Pick a start time.' }"
+      />
+    </app-form-row>
+
+    <app-form-row>
+      <app-number-field
+        label="Passengers"
+        [control]="form.controls.passengers"
+        [min]="1"
+        [messages]="{ required: 'Enter 1 to 100.', min: 'Enter 1 to 100.', max: 'Enter 1 to 100.' }"
+      />
+      <app-text-field
+        label="Pickup address"
+        [control]="form.controls.pickupAddress"
+        [messages]="{ required: 'Enter an address.', maxlength: 'Use 300 characters or fewer.' }"
+      />
+    </app-form-row>
+
+    <app-textarea-field
+      label="Notes"
+      [control]="form.controls.notes"
+      [messages]="{ maxlength: 'Use 1000 characters or fewer.' }"
+    />
+  </app-save-zone>
+</app-form-shell>

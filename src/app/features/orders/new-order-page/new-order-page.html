@@ -1,0 +1,5 @@
+<app-order-form
+  [products]="products.hasValue() ? products.value() : []"
+  [formStatus]="orderFormStatuses()[newOrderKey] ?? 'idle'"
+  (submitted)="create($event)"
+/>

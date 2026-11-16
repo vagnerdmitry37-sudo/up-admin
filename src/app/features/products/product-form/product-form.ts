@@ -19,6 +19,8 @@ import {
   ProductType,
   ProductTypeDefinition,
 } from '@core/api/models';
+import { FormRow } from '@shared/form-row/form-row';
+import { formDirty } from '@shared/form-shell/form-dirty';
 import { FormShell } from '@shared/form-shell/form-shell';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
@@ -27,7 +29,7 @@ import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
 import { ImageUpload } from '@shared/image-upload/image-upload';
 import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
-import { map, startWith } from 'rxjs';
+import { startWith } from 'rxjs';
 import {
   AttributeField,
   AttributeValue,
@@ -41,6 +43,7 @@ export type ProductFormValue = CreateProductRequest;
 @Component({
   selector: 'app-product-form',
   imports: [
+    FormRow,
     FormShell,
     ImageUpload,
     NumberField,
@@ -51,7 +54,6 @@ export type ProductFormValue = CreateProductRequest;
     TextareaField,
   ],
   templateUrl: './product-form.html',
-  styleUrl: './product-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductForm {
@@ -95,9 +97,7 @@ export class ProductForm {
   );
   protected readonly attributeFields = signal<AttributeField[]>([]);
 
-  private readonly fieldsChanged = toSignal(this.form.events.pipe(map(() => this.form.dirty)), {
-    initialValue: false,
-  });
+  private readonly fieldsChanged = formDirty(this.form);
 
   readonly hasUnsavedChanges = computed(
     () =>
