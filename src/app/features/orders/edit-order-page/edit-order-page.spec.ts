@@ -408,10 +408,15 @@ describe('EditOrderPage', () => {
       expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete 2 items?' }));
       const deletion = httpTestingController.expectOne('/api/orders/o1/items?ids=i3&ids=i1');
       expect(deletion.request.method).toBe('DELETE');
+      await fixture.whenStable();
+      expect(element.querySelector('.p-datatable-mask')).not.toBeNull();
+      expect(element.querySelector('app-save-zone .overlay')).toBeNull();
+
       deletion.flush({ ...order, totalPrice: 50, items: [twoItemOrder.items[1]] });
       await settle();
       await fixture.whenStable();
 
+      expect(element.querySelector('.p-datatable-mask')).toBeNull();
       expect(element.querySelectorAll('tbody tr')).toHaveLength(1);
       expect(element.querySelector('tfoot td:last-child')?.textContent?.trim()).toBe('50.00');
       expect(editActionsService.actions().delete).toBeUndefined();

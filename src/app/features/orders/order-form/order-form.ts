@@ -15,7 +15,6 @@ import { CreateOrderItemRequest, Order, Product } from '@core/api/models';
 import { DataTable, TableColumn } from '@shared/data-table/data-table';
 import { EmptyState } from '@shared/empty-state/empty-state';
 import { PageTitle } from '@shared/page-title/page-title';
-import { SaveZone } from '@shared/save-zone/save-zone';
 import { SaveStatuses } from '@shared/save-zone/save-statuses';
 import { OrderCustomer, OrderCustomerForm } from '../order-customer-form/order-customer-form';
 import { OrderItemForm } from '../order-item-form/order-item-form';
@@ -38,7 +37,7 @@ const NEW_ORDER_KEY = 'new';
 
 @Component({
   selector: 'app-order-form',
-  imports: [DataTable, EmptyState, OrderCustomerForm, OrderItemForm, PageTitle, SaveZone],
+  imports: [DataTable, EmptyState, OrderCustomerForm, OrderItemForm, PageTitle],
   templateUrl: './order-form.html',
   styleUrl: './order-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,6 +46,7 @@ export class OrderForm {
   readonly order = input<Order>();
   readonly products = input<Product[]>([]);
   readonly formStatuses = input<SaveStatuses>({});
+  readonly itemsLoading = input(false);
   readonly submitted = output();
 
   private readonly locale = inject(LOCALE_ID);
@@ -80,7 +80,6 @@ export class OrderForm {
   ];
   protected readonly totalPrice = computed(() => this.formatPrice(this.order()?.totalPrice ?? 0));
 
-  readonly itemsKey = computed(() => `${this.orderKey()}/items`);
   readonly selectedItems = linkedSignal<Order | undefined, OrderItem[]>({
     source: this.order,
     computation: () => [],

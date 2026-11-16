@@ -11,26 +11,26 @@
 
 <section class="section">
   <h2 class="section-title">Items</h2>
-  <app-save-zone
-    [status]="formStatuses()[itemsKey()] ?? 'idle'"
-    failedMessage="Couldn't delete items. Try again."
-  >
-    @if (items().length) {
-      <app-data-table [rows]="items()" [columns]="columns" [(selection)]="selectedItems">
-        <ng-template #footer>
-          <tr class="total-row">
-            <td [attr.colspan]="columns.length - 1">Total</td>
-            <td class="price">{{ totalPrice() }}</td>
-          </tr>
-        </ng-template>
-      </app-data-table>
-    } @else {
-      <app-empty-state
-        heading="No items yet"
-        message="Fill in the customer and item forms and tap Add, then tap Save to create the order."
-      />
-    }
-  </app-save-zone>
+  @if (items().length) {
+    <app-data-table
+      [rows]="items()"
+      [columns]="columns"
+      [loading]="itemsLoading()"
+      [(selection)]="selectedItems"
+    >
+      <ng-template #footer>
+        <tr class="total-row">
+          <td [attr.colspan]="columns.length - 1">Total</td>
+          <td class="price">{{ totalPrice() }}</td>
+        </tr>
+      </ng-template>
+    </app-data-table>
+  } @else {
+    <app-empty-state
+      heading="No items yet"
+      message="Fill in the customer and item forms and tap Add, then tap Save to create the order."
+    />
+  }
 </section>
 
 @for (formId of itemFormIds(); track formId) {

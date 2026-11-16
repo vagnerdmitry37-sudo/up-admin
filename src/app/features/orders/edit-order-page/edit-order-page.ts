@@ -45,6 +45,7 @@ export class EditOrderPage {
   );
 
   protected readonly formStatuses = signal<SaveStatuses>({});
+  protected readonly deletingItemsOfOrderId = signal<string | undefined>(undefined);
   protected readonly orders = rxResource({
     params: () => parseRouteIds(this.ids()),
     stream: ({ params }) => this.ordersService.get(params),
@@ -89,18 +90,17 @@ export class EditOrderPage {
       rejectLabel: 'Cancel',
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => this.deleteItems(form.itemsKey(), orderId, itemIds),
+      accept: () => this.deleteItems(orderId, itemIds),
     });
   }
 
-  private async deleteItems(itemsKey: string, orderId: string, itemIds: string[]): Promise<void> {
+  private async deleteItems(orderId: string, itemIds: string[]): Promise<void> {
     this.saving.set(true);
+    this.deletingItemsOfOrderId.set(orderId);
     try {
-      const updated = await saveWithStatus(this.formStatuses, [itemsKey], () =>
-        this.ordersService.deleteItems(orderId, itemIds),
-      );
-      this.replaceOrder(updated);
+      this.replaceOrder(await this.ordersService.deleteItems(orderId, itemIds));
     } finally {
+      this.deletingItemsOfOrderId.set(undefined);
       this.saving.set(false);
     }
   }

@@ -5,6 +5,7 @@
         [order]="order"
         [products]="productList()"
         [formStatuses]="formStatuses()"
+        [itemsLoading]="deletingItemsOfOrderId() === order.id"
         (submitted)="save()"
       />
     </ng-template>
