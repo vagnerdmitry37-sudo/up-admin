@@ -6,8 +6,10 @@ import {
   computed,
   inject,
   input,
+  linkedSignal,
   signal,
   viewChild,
+  viewChildren,
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
@@ -24,7 +26,7 @@ import { OrdersService } from '../orders.service';
 type OrderItem = Order['items'][number];
 
 const CUSTOMER_FORM_KEY = 'customer';
-const ITEM_FORM_KEY = 'item';
+const itemFormKey = (formId: number) => `item-${formId}`;
 
 @Component({
   selector: 'app-order-page',
@@ -40,11 +42,15 @@ export class OrderPage {
   private readonly ordersService = inject(OrdersService);
   private readonly locale = inject(LOCALE_ID);
   private readonly customerForm = viewChild.required(OrderCustomerForm);
-  private readonly itemForm = viewChild.required(OrderItemForm);
+  private readonly itemForms = viewChildren(OrderItemForm);
   private readonly saving = signal(false);
+  private nextItemFormId = 0;
 
   protected readonly customerFormKey = CUSTOMER_FORM_KEY;
-  protected readonly itemFormKey = ITEM_FORM_KEY;
+  protected readonly itemFormKey = itemFormKey;
+  protected readonly itemFormIds = linkedSignal<number[]>(() =>
+    this.id() ? [] : [this.nextItemFormId++],
+  );
   protected readonly formStatuses = signal<SaveStatuses>({});
   protected readonly products = rxResource({ stream: () => this.ordersService.getProducts() });
   protected readonly productList = computed(() =>
@@ -74,11 +80,16 @@ export class OrderPage {
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
+        create: {
+          click: () => this.addItemForm(),
+          visible: !this.saving(),
+        },
         save: {
           click: () => this.submitForms(),
           visible:
             !this.saving() &&
-            (this.customerForm().hasUnsavedChanges() || this.itemForm().hasUnsavedChanges()),
+            (this.customerForm().hasUnsavedChanges() ||
+              this.itemForms().some((form) => form.hasUnsavedChanges())),
         },
       }),
     });
@@ -101,16 +112,24 @@ export class OrderPage {
     }
   }
 
+  private addItemForm = () =>
+    this.itemFormIds.update((formIds) => [...formIds, this.nextItemFormId++]);
+
+  private touchedItemForms = () => this.itemForms().filter((form) => form.hasUnsavedChanges());
+
   private async createOrder(): Promise<void> {
+    const touchedForms = this.touchedItemForms();
+    const itemForms = touchedForms.length ? touchedForms : this.itemForms().slice(0, 1);
     const customer = this.customerForm().validate();
-    const item = this.itemForm().validate();
-    if (!customer || !item) {
+    const items = itemForms.map((form) => form.validate());
+    const validItems = items.filter((item) => item !== undefined);
+    if (!customer || validItems.length === 0 || validItems.length < items.length) {
       return;
     }
     const created = await saveWithStatus(
       this.formStatuses,
-      [CUSTOMER_FORM_KEY, ITEM_FORM_KEY],
-      () => this.ordersService.create({ ...customer, items: [item] }),
+      [CUSTOMER_FORM_KEY, ...itemForms.map((form) => itemFormKey(form.formId()))],
+      () => this.ordersService.create({ ...customer, items: validItems }),
     );
     await this.router.navigate(['/orders', created.id], { replaceUrl: true });
   }
@@ -119,9 +138,7 @@ export class OrderPage {
     if (this.customerForm().hasUnsavedChanges()) {
       await this.updateCustomer(orderId);
     }
-    if (this.itemForm().hasUnsavedChanges()) {
-      await this.addItem(orderId);
-    }
+    await this.addItems(orderId);
   }
 
   private async updateCustomer(orderId: string): Promise<void> {
@@ -136,15 +153,26 @@ export class OrderPage {
     this.customerForm().reset(updated);
   }
 
-  private async addItem(orderId: string): Promise<void> {
-    const item = this.itemForm().validate();
-    if (!item) {
+  private async addItems(orderId: string): Promise<void> {
+    const itemsToAdd = this.touchedItemForms().map((form) => ({
+      formId: form.formId(),
+      item: form.validate(),
+    }));
+    if (itemsToAdd.some(({ item }) => !item)) {
       return;
     }
-    const updated = await saveWithStatus(this.formStatuses, [ITEM_FORM_KEY], () =>
-      this.ordersService.createItem(orderId, item),
-    );
-    this.order.set(updated);
-    this.itemForm().reset();
+    for (const { formId, item } of itemsToAdd) {
+      if (!item) {
+        continue;
+      }
+      const updated = await saveWithStatus(this.formStatuses, [itemFormKey(formId)], () =>
+        this.ordersService.createItem(orderId, item),
+      );
+      this.order.set(updated);
+      this.itemFormIds.update((formIds) => formIds.filter((candidate) => candidate !== formId));
+    }
+    if (itemsToAdd.length) {
+      this.itemFormIds.set([]);
+    }
   }
 }

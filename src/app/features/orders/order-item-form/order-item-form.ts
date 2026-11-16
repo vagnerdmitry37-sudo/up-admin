@@ -27,6 +27,7 @@ import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderItemForm {
+  readonly formId = input.required<number>();
   readonly products = input<Product[]>([]);
   readonly formStatus = input<SaveStatus>('idle');
   readonly submitted = output();

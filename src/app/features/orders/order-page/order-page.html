@@ -21,11 +21,14 @@
   }
 </section>
 
-<section class="section">
-  <h2 class="section-title">New item</h2>
-  <app-order-item-form
-    [products]="productList()"
-    [formStatus]="formStatuses()[itemFormKey] ?? 'idle'"
-    (submitted)="submitForms()"
-  />
-</section>
+@for (formId of itemFormIds(); track formId) {
+  <section class="section">
+    <h2 class="section-title">New item</h2>
+    <app-order-item-form
+      [formId]="formId"
+      [products]="productList()"
+      [formStatus]="formStatuses()[itemFormKey(formId)] ?? 'idle'"
+      (submitted)="submitForms()"
+    />
+  </section>
+}

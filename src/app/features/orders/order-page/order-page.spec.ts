@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
@@ -75,8 +76,11 @@ const typeInto = (element: HTMLElement, label: string, value: string) => {
   input.dispatchEvent(new Event('input'));
 };
 
-const choose = (fixture: ComponentFixture<OrderPage>, label: string, value: unknown) => {
-  const control = fixture.debugElement
+const itemForms = (fixture: ComponentFixture<OrderPage>) =>
+  fixture.debugElement.queryAll(By.css('app-order-item-form'));
+
+const choose = (root: DebugElement, label: string, value: unknown) => {
+  const control = root
     .queryAll(By.directive(FormField))
     .map((debugElement) => debugElement.injector.get(FormField))
     .find((field) => field.label() === label)!
@@ -91,10 +95,14 @@ const fillCustomer = (element: HTMLElement) => {
   typeInto(element, 'Phone', '+420 600 000 000');
 };
 
-const fillItem = async (fixture: ComponentFixture<OrderPage>, element: HTMLElement) => {
-  typeInto(element, 'Pickup address', 'Hotel Central');
-  choose(fixture, 'Product', 'p1');
-  choose(fixture, 'Start', startsAt);
+const fillItem = async (
+  fixture: ComponentFixture<OrderPage>,
+  form: DebugElement,
+  pickupAddress = 'Hotel Central',
+) => {
+  typeInto(form.nativeElement, 'Pickup address', pickupAddress);
+  choose(form, 'Product', 'p1');
+  choose(form, 'Start', startsAt);
   await fixture.whenStable();
 };
 
@@ -124,6 +132,11 @@ describe('OrderPage', () => {
     await settle();
   };
 
+  const addItemForm = async (fixture: ComponentFixture<OrderPage>) => {
+    editActionsService.run('create');
+    await fixture.whenStable();
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
@@ -145,7 +158,7 @@ describe('OrderPage', () => {
   it('sends nothing for a new order while the customer is incomplete', async () => {
     const { fixture, element } = await render();
     typeInto(element, 'Customer name', 'Anna Novak');
-    await fillItem(fixture, element);
+    await fillItem(fixture, itemForms(fixture)[0]);
 
     await save();
 
@@ -158,7 +171,7 @@ describe('OrderPage', () => {
     const { fixture, element } = await render();
     expect(element.querySelector('h1')?.textContent).toBe('New order');
     fillCustomer(element);
-    await fillItem(fixture, element);
+    await fillItem(fixture, itemForms(fixture)[0]);
 
     await save();
     const creation = httpTestingController.expectOne('/api/orders');
@@ -211,9 +224,31 @@ describe('OrderPage', () => {
     expect(editActionsService.actions().save).toBeUndefined();
   });
 
-  it('adds only the item to an existing order and clears the item form', async () => {
+  it('creates a new order with every filled item form and skips a blank one', async () => {
+    const { fixture, element } = await render();
+    fillCustomer(element);
+    await fillItem(fixture, itemForms(fixture)[0]);
+    await addItemForm(fixture);
+    await addItemForm(fixture);
+    await fillItem(fixture, itemForms(fixture)[1], 'Airport');
+
+    await save();
+    const creation = httpTestingController.expectOne('/api/orders');
+    expect(creation.request.body.items).toEqual([
+      expectedItem,
+      { ...expectedItem, pickupAddress: 'Airport' },
+    ]);
+    creation.flush(order);
+    await settle();
+  });
+
+  it('shows no item form on an existing order until Create, then adds the item and removes its form', async () => {
     const { fixture, element } = await render('o1');
-    await fillItem(fixture, element);
+    expect(itemForms(fixture)).toHaveLength(0);
+
+    await addItemForm(fixture);
+    expect(itemForms(fixture)).toHaveLength(1);
+    await fillItem(fixture, itemForms(fixture)[0]);
 
     await save();
     const creation = httpTestingController.expectOne('/api/orders/o1/items');
@@ -223,7 +258,46 @@ describe('OrderPage', () => {
     await settle();
     await fixture.whenStable();
 
-    expect(inputFor(element, 'Pickup address').value).toBe('');
+    expect(itemForms(fixture)).toHaveLength(0);
     expect(inputFor(element, 'Customer name').value).toBe('Anna Novak');
+  });
+
+  it('adds no items to an existing order while one item form is invalid', async () => {
+    const { fixture, element } = await render('o1');
+    await addItemForm(fixture);
+    await addItemForm(fixture);
+    await fillItem(fixture, itemForms(fixture)[0]);
+    typeInto(itemForms(fixture)[1].nativeElement, 'Pickup address', 'Airport');
+    await fixture.whenStable();
+
+    await save();
+
+    httpTestingController.expectNone((req) => req.method === 'POST');
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Select a product.');
+  });
+
+  it('keeps a saved item out of the forms when the next item fails to save', async () => {
+    const { fixture, element } = await render('o1');
+    await addItemForm(fixture);
+    await addItemForm(fixture);
+    await fillItem(fixture, itemForms(fixture)[0]);
+    await fillItem(fixture, itemForms(fixture)[1], 'Airport');
+
+    const saving = editActionsService.run('save') as unknown as Promise<void>;
+    await settle();
+    httpTestingController
+      .expectOne('/api/orders/o1/items')
+      .flush({ ...order, items: [...order.items, { ...order.items[0], id: 'i2' }] });
+    await settle();
+    const failed = httpTestingController.expectOne('/api/orders/o1/items');
+    expect(failed.request.body).toEqual({ ...expectedItem, pickupAddress: 'Airport' });
+    failed.flush(null, { status: 500, statusText: 'Server Error' });
+
+    await expect(saving).rejects.toBeTruthy();
+    await fixture.whenStable();
+    expect(itemForms(fixture)).toHaveLength(1);
+    expect(inputFor(itemForms(fixture)[0].nativeElement, 'Pickup address').value).toBe('Airport');
+    expect(element.textContent).toContain("Couldn't save. Try again.");
   });
 });
