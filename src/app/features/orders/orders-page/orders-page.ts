@@ -46,10 +46,7 @@ export class OrdersPage implements OnInit {
       actions: () => {
         const ids = this.selected().map((order) => order.id);
         return {
-          create: {
-            click: () => this.router.navigate(['/orders/new']),
-            suggested: this.lazyRows.empty(),
-          },
+          create: this.createAction(ids),
           edit: {
             click: () => this.router.navigate(['/orders', joinRouteIds(ids), 'edit']),
             visible: ids.length > 0,
@@ -62,6 +59,15 @@ export class OrdersPage implements OnInit {
 
   ngOnInit() {
     this.lazyRows.reload();
+  }
+
+  private createAction(ids: string[]): EditActionConfig {
+    const queryParams = ids.length > 0 ? { from: joinRouteIds(ids) } : undefined;
+
+    return {
+      click: () => this.router.navigate(['/orders/new'], { queryParams }),
+      suggested: this.lazyRows.empty(),
+    };
   }
 
   private deleteAction(ids: string[]): EditActionConfig {

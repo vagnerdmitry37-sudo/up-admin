@@ -1,1 +1,14 @@
-<app-order-form [products]="productList()" [formStatuses]="formStatuses()" (submitted)="save()" />
+@if (!from()) {
+  <app-order-form [products]="productList()" [formStatuses]="formStatuses()" (submitted)="save()" />
+} @else if (sources.hasValue()) {
+  <app-entity-tabs [entities]="sources.value()" [label]="orderNumber" [(active)]="active">
+    <ng-template let-order>
+      <app-order-form
+        [source]="order"
+        [products]="productList()"
+        [formStatuses]="formStatuses()"
+        (submitted)="save()"
+      />
+    </ng-template>
+  </app-entity-tabs>
+}

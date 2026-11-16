@@ -3,7 +3,7 @@
 <section class="section">
   <h2 class="section-title">Customer</h2>
   <app-order-customer-form
-    [customer]="order()"
+    [customer]="order() ?? source()"
     [formStatus]="formStatuses()[customerKey()] ?? 'idle'"
     (submitted)="submitted.emit()"
   />
@@ -33,13 +33,14 @@
   }
 </section>
 
-@for (formId of itemFormIds(); track formId) {
+@for (entry of itemFormEntries(); track entry.formId) {
   <section class="section">
     <h2 class="section-title">New item</h2>
     <app-order-item-form
-      [formId]="formId"
+      [formId]="entry.formId"
+      [item]="entry.seed"
       [products]="products()"
-      [formStatus]="formStatuses()[itemKey(formId)] ?? 'idle'"
+      [formStatus]="formStatuses()[itemKey(entry.formId)] ?? 'idle'"
       (submitted)="submitted.emit()"
     />
   </section>

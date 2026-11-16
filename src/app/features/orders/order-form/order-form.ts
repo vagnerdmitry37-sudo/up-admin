@@ -17,7 +17,7 @@ import { EmptyState } from '@shared/empty-state/empty-state';
 import { PageTitle } from '@shared/page-title/page-title';
 import { SaveStatuses } from '@shared/save-zone/save-statuses';
 import { OrderCustomer, OrderCustomerForm } from '../order-customer-form/order-customer-form';
-import { OrderItemForm } from '../order-item-form/order-item-form';
+import { OrderItemForm, OrderItemSeed } from '../order-item-form/order-item-form';
 
 type OrderItem = Order['items'][number];
 
@@ -33,6 +33,18 @@ export interface OrderFormValue {
   items: OrderItemDraft[];
 }
 
+interface ItemFormEntry {
+  formId: number;
+  seed?: OrderItemSeed;
+}
+
+const toItemSeed = ({ productId, passengers, pickupAddress, notes }: OrderItem): OrderItemSeed => ({
+  productId,
+  passengers,
+  pickupAddress,
+  notes,
+});
+
 const NEW_ORDER_KEY = 'new';
 
 @Component({
@@ -44,6 +56,7 @@ const NEW_ORDER_KEY = 'new';
 })
 export class OrderForm {
   readonly order = input<Order>();
+  readonly source = input<Order>();
   readonly products = input<Product[]>([]);
   readonly formStatuses = input<SaveStatuses>({});
   readonly itemsLoading = input(false);
@@ -53,17 +66,27 @@ export class OrderForm {
   private readonly customerForm = viewChild.required(OrderCustomerForm);
   private readonly itemForms = viewChildren(OrderItemForm);
   private readonly isNew = computed(() => !this.order());
-  private readonly orderKey = computed(() => this.order()?.id ?? NEW_ORDER_KEY);
+  private readonly orderKey = computed(
+    () => this.order()?.id ?? this.source()?.id ?? NEW_ORDER_KEY,
+  );
   private nextItemFormId = 0;
   private readonly formatPrice = (price: number) => formatNumber(price, this.locale, '1.2-2');
 
-  protected readonly itemFormIds = linkedSignal<number[]>(() =>
-    this.isNew() ? [this.nextItemFormId++] : [],
-  );
+  protected readonly itemFormEntries = linkedSignal<ItemFormEntry[]>(() => {
+    const sourceItems = this.source()?.items ?? [];
+    if (sourceItems.length) {
+      return sourceItems.map((item) => ({ formId: this.nextItemFormId++, seed: toItemSeed(item) }));
+    }
+    return this.isNew() ? [{ formId: this.nextItemFormId++ }] : [];
+  });
   protected readonly items = computed(() => this.order()?.items ?? []);
   protected readonly heading = computed(() => {
     const order = this.order();
-    return order ? `Order ${order.number}` : 'New order';
+    const source = this.source();
+    if (order) {
+      return `Order ${order.number}`;
+    }
+    return source ? `Copy of order ${source.number}` : 'New order';
   });
   protected readonly customerKey = computed(() => `${this.orderKey()}/customer`);
   protected readonly itemKey = (formId: number) => `${this.orderKey()}/item-${formId}`;
@@ -91,10 +114,13 @@ export class OrderForm {
       this.itemForms().some((form) => form.hasUnsavedChanges()),
   );
 
-  addItemForm = () => this.itemFormIds.update((formIds) => [...formIds, this.nextItemFormId++]);
+  addItemForm = () =>
+    this.itemFormEntries.update((entries) => [...entries, { formId: this.nextItemFormId++ }]);
 
   removeItemForm = (formId: number) =>
-    this.itemFormIds.update((formIds) => formIds.filter((candidate) => candidate !== formId));
+    this.itemFormEntries.update((entries) =>
+      entries.filter((candidate) => candidate.formId !== formId),
+    );
 
   lockItemFormAsSaved = (formId: number) =>
     this.itemForms()

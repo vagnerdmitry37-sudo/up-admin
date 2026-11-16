@@ -101,7 +101,19 @@ describe('OrdersPage', () => {
 
     editActionsService.run('create');
 
-    expect(navigate).toHaveBeenCalledWith(['/orders/new']);
+    expect(navigate).toHaveBeenCalledWith(['/orders/new'], { queryParams: undefined });
+  });
+
+  it('opens copies of every selected order when Create is pressed with a selection', async () => {
+    const editActionsService = TestBed.inject(EditActionsService);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const element = await render([order, secondOrder]);
+
+    await selectRow(element, 1);
+    await selectRow(element, 0);
+    editActionsService.run('create');
+
+    expect(navigate).toHaveBeenCalledWith(['/orders/new'], { queryParams: { from: 'o2,o1' } });
   });
 
   it('offers Create without suggesting it once orders exist', async () => {

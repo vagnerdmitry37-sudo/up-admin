@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { CreateOrderItemRequest, Product } from '@core/api/models';
 import { DateTimeField } from '@shared/form-fields/date-time-field/date-time-field';
@@ -10,6 +18,11 @@ import { FormRow } from '@shared/form-row/form-row';
 import { formDirty } from '@shared/form-shell/form-dirty';
 import { FormShell } from '@shared/form-shell/form-shell';
 import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
+
+export type OrderItemSeed = Pick<
+  CreateOrderItemRequest,
+  'productId' | 'passengers' | 'pickupAddress' | 'notes'
+>;
 
 @Component({
   selector: 'app-order-item-form',
@@ -28,6 +41,7 @@ import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
 })
 export class OrderItemForm {
   readonly formId = input.required<number>();
+  readonly item = input<OrderItemSeed>();
   readonly products = input<Product[]>([]);
   readonly formStatus = input<SaveStatus>('idle');
   readonly submitted = output();
@@ -54,6 +68,16 @@ export class OrderItemForm {
   });
 
   readonly hasUnsavedChanges = formDirty(this.form);
+
+  constructor() {
+    effect(() => {
+      const item = this.item();
+      if (item && !this.form.dirty) {
+        this.form.patchValue(item);
+        this.form.markAsDirty();
+      }
+    });
+  }
 
   validate = (): CreateOrderItemRequest | undefined => {
     const { productId, startsAt, ...item } = this.form.getRawValue();
