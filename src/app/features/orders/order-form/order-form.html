@@ -33,15 +33,26 @@
   }
 </section>
 
-@for (entry of itemFormEntries(); track entry.formId) {
+@if (itemFormEntries().length) {
   <section class="section">
-    <h2 class="section-title">New item</h2>
-    <app-order-item-form
-      [formId]="entry.formId"
-      [item]="entry.seed"
-      [products]="products()"
-      [formStatus]="formStatuses()[itemKey(entry.formId)] ?? 'idle'"
-      (submitted)="submitted.emit()"
-    />
+    @if (itemFormEntries().length === 1) {
+      <h2 class="section-title">New item</h2>
+    }
+    <app-entity-tabs
+      [entities]="itemFormEntries()"
+      [label]="itemTabLabel"
+      [lazy]="false"
+      [(active)]="activeItemTab"
+    >
+      <ng-template let-entry>
+        <app-order-item-form
+          [formId]="entry.formId"
+          [item]="entry.seed"
+          [products]="products()"
+          [formStatus]="formStatuses()[itemKey(entry.formId)] ?? 'idle'"
+          (submitted)="submitted.emit()"
+        />
+      </ng-template>
+    </app-entity-tabs>
   </section>
 }

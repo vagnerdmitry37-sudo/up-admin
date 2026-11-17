@@ -63,6 +63,11 @@ const expectedItem = {
 
 const settle = () => new Promise((resolve) => setTimeout(resolve));
 
+const visibleOrderPanel = (element: HTMLElement) =>
+  [...element.querySelectorAll<HTMLElement>('p-tabpanel:not([hidden])')].find((panel) =>
+    panel.querySelector('app-order-form'),
+  )!;
+
 const inputFor = (element: HTMLElement, label: string) => {
   const labelElement = [...element.querySelectorAll('label')].find(
     (candidate) => candidate.textContent?.trim() === label,
@@ -215,7 +220,7 @@ describe('OrderPage', () => {
 
     let navigateByUrl: ReturnType<typeof vi.spyOn>;
 
-    const renderCopies = async () => {
+    const renderCopies = async (sources: Order[] = [order, secondOrder]) => {
       const fixture = TestBed.createComponent(OrderPage);
       fixture.componentRef.setInput('from', 'o1,o2');
       TestBed.tick();
@@ -223,7 +228,7 @@ describe('OrderPage', () => {
         .expectOne((req) => req.url === '/api/products')
         .flush({ items: products, totalRecords: products.length });
       const load = httpTestingController.expectOne((req) => req.url === '/api/orders/by-ids');
-      load.flush([order, secondOrder]);
+      load.flush(sources);
       await fixture.whenStable();
       return { fixture, element: fixture.nativeElement as HTMLElement, load };
     };
@@ -296,10 +301,36 @@ describe('OrderPage', () => {
 
       httpTestingController.expectNone((req) => req.method === 'POST');
       expect(activeTabIndex(element)).toBe(1);
-      expect(
-        inputFor(element.querySelector<HTMLElement>('p-tabpanel:not([hidden])')!, 'Pickup address')
-          .value,
-      ).toBe('Airport');
+      expect(inputFor(visibleOrderPanel(element), 'Pickup address').value).toBe('Airport');
+    });
+
+    it('shows the items of a copy as tabs and copies every item, even one whose tab was never opened', async () => {
+      const twoItemOrder: Order = {
+        ...order,
+        items: [order.items[0], { ...order.items[0], id: 'i3', pickupAddress: 'Airport' }],
+      };
+      const { fixture, element } = await renderCopies([twoItemOrder, secondOrder]);
+      expect(tabLabels(element)).toEqual([
+        'ORD-2026-000001',
+        'ORD-2026-000002',
+        'New item 1',
+        'New item 2',
+      ]);
+      choose(itemForms(fixture)[0], 'Start', startsAt);
+      choose(itemForms(fixture)[1], 'Start', startsAt);
+      await openTab(fixture, element, 1);
+      choose(itemForms(fixture)[2], 'Start', startsAt);
+      await fixture.whenStable();
+
+      await save();
+      const [first, second] = creations();
+      expect(first.request.body.items).toEqual([
+        expectedItem,
+        { ...expectedItem, pickupAddress: 'Airport' },
+      ]);
+      first.flush({ ...twoItemOrder, id: 'n1' });
+      second.flush({ ...secondOrder, id: 'n2' });
+      await settle();
     });
 
     it('creates one new order per copy with the copied data, then opens all of them', async () => {

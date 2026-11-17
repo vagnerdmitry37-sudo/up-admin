@@ -153,7 +153,7 @@ describe('EditProductPage', () => {
   it('shows a single product without tabs', async () => {
     const { element } = await render('p1', [products[0]]);
 
-    expect(element.querySelector('p-tabs')).toBeNull();
+    expect(element.querySelector('p-tab')).toBeNull();
     expect(element.querySelector('h1')?.textContent).toBe('Edit product');
   });
 

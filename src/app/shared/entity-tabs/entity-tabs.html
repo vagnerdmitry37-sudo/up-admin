@@ -1,28 +1,27 @@
-@if (inTabs()) {
-  <p-tabs [(value)]="active" scrollable lazy>
+<p-tabs
+  [value]="shownId()"
+  (valueChange)="show($event)"
+  [lazy]="lazy()"
+  [dt]="panelTokens()"
+  scrollable
+>
+  @if (inTabs()) {
     <p-tablist>
       @for (entity of entities(); track entity.id) {
         <p-tab [value]="entity.id">{{ label()(entity) }}</p-tab>
       }
     </p-tablist>
-    <p-tabpanels>
-      @for (entity of entities(); track entity.id) {
-        <p-tabpanel [value]="entity.id">
-          <ng-template #content>
-            <ng-container
-              [ngTemplateOutlet]="entityTemplate()"
-              [ngTemplateOutletContext]="{ $implicit: entity }"
-            />
-          </ng-template>
-        </p-tabpanel>
-      }
-    </p-tabpanels>
-  </p-tabs>
-} @else {
-  @for (entity of entities(); track entity.id) {
-    <ng-container
-      [ngTemplateOutlet]="entityTemplate()"
-      [ngTemplateOutletContext]="{ $implicit: entity }"
-    />
   }
-}
+  <p-tabpanels>
+    @for (entity of entities(); track entity.id) {
+      <p-tabpanel [value]="entity.id">
+        <ng-template #content>
+          <ng-container
+            [ngTemplateOutlet]="entityTemplate()"
+            [ngTemplateOutletContext]="{ $implicit: entity }"
+          />
+        </ng-template>
+      </p-tabpanel>
+    }
+  </p-tabpanels>
+</p-tabs>

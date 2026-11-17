@@ -52,7 +52,7 @@ describe('ProductTabs', () => {
   it('shows a single product without tabs', async () => {
     const { element } = await render([walk]);
 
-    expect(element.querySelector('p-tabs')).toBeNull();
+    expect(element.querySelector('p-tab')).toBeNull();
     expect(element.querySelectorAll('app-product-form')).toHaveLength(1);
   });
 

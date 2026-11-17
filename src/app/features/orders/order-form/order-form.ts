@@ -8,12 +8,14 @@ import {
   input,
   linkedSignal,
   output,
+  signal,
   viewChild,
   viewChildren,
 } from '@angular/core';
 import { CreateOrderItemRequest, Order, Product } from '@core/api/models';
 import { DataTable, TableColumn } from '@shared/data-table/data-table';
 import { EmptyState } from '@shared/empty-state/empty-state';
+import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { PageTitle } from '@shared/page-title/page-title';
 import { SaveStatuses } from '@shared/save-zone/save-statuses';
 import { OrderCustomer, OrderCustomerForm } from '../order-customer-form/order-customer-form';
@@ -34,9 +36,16 @@ export interface OrderFormValue {
 }
 
 interface ItemFormEntry {
+  id: string;
   formId: number;
   seed?: OrderItemSeed;
 }
+
+const toItemFormEntry = (formId: number, seed?: OrderItemSeed): ItemFormEntry => ({
+  id: String(formId),
+  formId,
+  seed,
+});
 
 const toItemSeed = ({ productId, passengers, pickupAddress, notes }: OrderItem): OrderItemSeed => ({
   productId,
@@ -49,7 +58,7 @@ const NEW_ORDER_KEY = 'new';
 
 @Component({
   selector: 'app-order-form',
-  imports: [DataTable, EmptyState, OrderCustomerForm, OrderItemForm, PageTitle],
+  imports: [DataTable, EmptyState, EntityTabs, OrderCustomerForm, OrderItemForm, PageTitle],
   templateUrl: './order-form.html',
   styleUrl: './order-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,10 +84,13 @@ export class OrderForm {
   protected readonly itemFormEntries = linkedSignal<ItemFormEntry[]>(() => {
     const sourceItems = this.source()?.items ?? [];
     if (sourceItems.length) {
-      return sourceItems.map((item) => ({ formId: this.nextItemFormId++, seed: toItemSeed(item) }));
+      return sourceItems.map((item) => toItemFormEntry(this.nextItemFormId++, toItemSeed(item)));
     }
-    return this.isNew() ? [{ formId: this.nextItemFormId++ }] : [];
+    return this.isNew() ? [toItemFormEntry(this.nextItemFormId++)] : [];
   });
+  protected readonly activeItemTab = signal<string | undefined>(undefined);
+  protected readonly itemTabLabel = (entry: ItemFormEntry) =>
+    `New item ${this.itemFormEntries().indexOf(entry) + 1}`;
   protected readonly items = computed(() => this.order()?.items ?? []);
   protected readonly heading = computed(() => {
     const order = this.order();
@@ -114,8 +126,11 @@ export class OrderForm {
       this.itemForms().some((form) => form.hasUnsavedChanges()),
   );
 
-  addItemForm = () =>
-    this.itemFormEntries.update((entries) => [...entries, { formId: this.nextItemFormId++ }]);
+  addItemForm(): void {
+    const entry = toItemFormEntry(this.nextItemFormId++);
+    this.itemFormEntries.update((entries) => [...entries, entry]);
+    this.activeItemTab.set(entry.id);
+  }
 
   removeItemForm = (formId: number) =>
     this.itemFormEntries.update((entries) =>
@@ -141,6 +156,10 @@ export class OrderForm {
       item: form.validate(),
     }));
     const validItems = items.filter((draft): draft is OrderItemDraft => draft.item !== undefined);
+    const firstInvalidItem = items.find((draft) => draft.item === undefined);
+    if (firstInvalidItem) {
+      this.activeItemTab.set(String(firstInvalidItem.formId));
+    }
     if (
       (customerChanged && !customer) ||
       validItems.length < items.length ||

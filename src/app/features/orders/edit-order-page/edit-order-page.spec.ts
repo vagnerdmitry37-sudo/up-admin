@@ -75,7 +75,12 @@ const expectedItem = {
 const settle = () => new Promise((resolve) => setTimeout(resolve));
 
 const visiblePanel = (element: HTMLElement) =>
-  element.querySelector<HTMLElement>('p-tabpanel:not([hidden])') ?? element;
+  [...element.querySelectorAll<HTMLElement>('p-tabpanel:not([hidden])')].find((panel) =>
+    panel.querySelector('app-order-form'),
+  ) ?? element;
+
+const sectionTitles = (element: HTMLElement) =>
+  [...element.querySelectorAll('.section-title')].map((title) => title.textContent?.trim());
 
 const inputFor = (element: HTMLElement, label: string) => {
   const root = visiblePanel(element);
@@ -204,7 +209,7 @@ describe('EditOrderPage', () => {
   it('shows a single order without tabs, its customer editable, and offers Save only after a change', async () => {
     const { fixture, element } = await render('o1', [order]);
 
-    expect(element.querySelector('p-tabs')).toBeNull();
+    expect(element.querySelector('p-tab')).toBeNull();
     expect(element.querySelector('h1')?.textContent).toBe('Order ORD-2026-000001');
     expect(inputFor(element, 'Customer name').value).toBe('Anna Novak');
     expect(element.textContent).toContain('Old Town Walk');
@@ -328,6 +333,59 @@ describe('EditOrderPage', () => {
     await fixture.whenStable();
 
     expect(itemForms(fixture)).toHaveLength(0);
+  });
+
+  it('shows one new item as a plain form, and further ones as numbered tabs with the newest open', async () => {
+    const { fixture, element } = await render('o1', [order]);
+    await addItemForm(fixture);
+    expect(element.querySelector('p-tab')).toBeNull();
+    expect(sectionTitles(element)).toContain('New item');
+    typeInto(itemForms(fixture)[0].nativeElement, 'Pickup address', 'Hotel Central');
+
+    await addItemForm(fixture);
+    await addItemForm(fixture);
+
+    expect(tabLabels(element)).toEqual(['New item 1', 'New item 2', 'New item 3']);
+    expect(activeTab(element)).toBe(2);
+    expect(sectionTitles(element)).not.toContain('New item');
+    expect(itemForms(fixture)).toHaveLength(3);
+    expect(inputFor(itemForms(fixture)[0].nativeElement, 'Pickup address').value).toBe(
+      'Hotel Central',
+    );
+  });
+
+  it('sends nothing and opens the tab of the first invalid new item', async () => {
+    const { fixture, element, openTab } = await render('o1', [order]);
+    await addItemForm(fixture);
+    await addItemForm(fixture);
+    await fillItem(fixture, itemForms(fixture)[0]);
+    typeInto(itemForms(fixture)[1].nativeElement, 'Pickup address', 'Airport');
+    await openTab(0);
+
+    await save();
+    await fixture.whenStable();
+
+    httpTestingController.expectNone((req) => req.method === 'POST');
+    expect(activeTab(element)).toBe(1);
+  });
+
+  it('goes back to a plain form when only one new item is left after saving', async () => {
+    const { fixture, element } = await render('o1', [order]);
+    await addItemForm(fixture);
+    await addItemForm(fixture);
+    await fillItem(fixture, itemForms(fixture)[0]);
+
+    await save();
+    httpTestingController
+      .expectOne('/api/orders/o1/items')
+      .flush({ ...order, items: [...order.items, { ...order.items[0], id: 'i2' }] });
+    await settle();
+    await vi.advanceTimersByTimeAsync(STATUS_DISPLAY_MS);
+    await fixture.whenStable();
+
+    expect(itemForms(fixture)).toHaveLength(1);
+    expect(element.querySelector('p-tab')).toBeNull();
+    expect(sectionTitles(element)).toContain('New item');
   });
 
   it('adds no items while one item form is invalid', async () => {
