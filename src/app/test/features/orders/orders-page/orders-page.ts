@@ -8,7 +8,7 @@ import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { EntityTable } from '@tests/shared/entity-table/entity-table';
 
 @Component({
-  selector: 'app-test-orders-page',
+  selector: 'app-orders-page',
   imports: [EntityTable],
   templateUrl: './orders-page.html',
   styleUrl: './orders-page.scss',

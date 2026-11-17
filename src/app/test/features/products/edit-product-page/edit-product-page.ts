@@ -6,12 +6,12 @@ import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { EntityTabs } from '@tests/shared/entity-tabs/entity-tabs';
 
 @Component({
-  selector: 'app-test-product-page',
+  selector: 'app-edit-product-page',
   imports: [EntityTabs],
-  templateUrl: './product-page.html',
+  templateUrl: './edit-product-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductPage {
+export class EditProductPage {
   readonly ids = input<string>();
 
   private readonly productsService = inject(ProductsService);

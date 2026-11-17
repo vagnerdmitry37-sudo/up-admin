@@ -36,7 +36,7 @@ export const routes: Routes = [
         path: 'product-test',
         title: 'Product · UP',
         loadComponent: () =>
-          import('@tests/features/products/product-page/product-page').then((m) => m.ProductPage),
+          import('@tests/features/products/edit-product-page/edit-product-page').then((m) => m.EditProductPage),
       },
       {
         path: 'orders-test',
@@ -48,7 +48,7 @@ export const routes: Routes = [
         path: 'order-test',
         title: 'Order Items · UP',
         loadComponent: () =>
-          import('@tests/features/orders/order-page/order-page').then((m) => m.OrderPage),
+          import('@tests/features/orders/edit-order-page/edit-order-page').then((m) => m.EditOrderPage),
       },
       // test
       {

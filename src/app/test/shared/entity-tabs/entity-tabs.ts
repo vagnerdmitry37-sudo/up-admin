@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, model } from '@ang
 import { Tab, TabList, Tabs } from '@openng/optimus-ui/tabs';
 
 @Component({
-  selector: 'app-test-entity-tabs',
+  selector: 'app-entity-tabs',
   imports: [Tabs, TabList, Tab],
   templateUrl: './entity-tabs.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
