@@ -4,4 +4,14 @@
       <p-tab [value]="entity.id">{{ label()(entity) }}</p-tab>
     }
   </p-tablist>
+  <p-tabpanels>
+    @for (entity of entities(); track entity.id) {
+      <p-tabpanel [value]="entity.id">
+        <ng-container
+          [ngTemplateOutlet]="entityTemplate()"
+          [ngTemplateOutletContext]="{ $implicit: entity }"
+        />
+      </p-tabpanel>
+    }
+  </p-tabpanels>
 </p-tabs>
