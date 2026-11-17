@@ -36,7 +36,7 @@
 @if (itemFormEntries().length) {
   <section class="section">
     @if (itemFormEntries().length === 1) {
-      <h2 class="section-title">New item</h2>
+      <h2 class="section-title">{{ singleItemFormHeading() }}</h2>
     }
     <app-entity-tabs
       [entities]="itemFormEntries()"
@@ -48,6 +48,7 @@
         <app-order-item-form
           [formId]="entry.formId"
           [item]="entry.seed"
+          [seedIsUnsavedChange]="!entry.itemId"
           [products]="products()"
           [formStatus]="formStatuses()[itemKey(entry.formId)] ?? 'idle'"
           (submitted)="submitted.emit()"

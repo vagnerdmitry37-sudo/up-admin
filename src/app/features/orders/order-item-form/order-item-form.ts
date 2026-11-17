@@ -22,7 +22,7 @@ import { SaveStatus, SaveZone } from '@shared/save-zone/save-zone';
 export type OrderItemSeed = Pick<
   CreateOrderItemRequest,
   'productId' | 'passengers' | 'pickupAddress' | 'notes'
->;
+> & { startsAt?: Date };
 
 @Component({
   selector: 'app-order-item-form',
@@ -42,6 +42,7 @@ export type OrderItemSeed = Pick<
 export class OrderItemForm {
   readonly formId = input.required<number>();
   readonly item = input<OrderItemSeed>();
+  readonly seedIsUnsavedChange = input(true);
   readonly products = input<Product[]>([]);
   readonly formStatus = input<SaveStatus>('idle');
   readonly submitted = output();
@@ -74,7 +75,9 @@ export class OrderItemForm {
       const item = this.item();
       if (item && !this.form.dirty) {
         this.form.patchValue(item);
-        this.form.markAsDirty();
+        if (this.seedIsUnsavedChange()) {
+          this.form.markAsDirty();
+        }
       }
     });
   }

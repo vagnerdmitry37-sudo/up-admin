@@ -9,6 +9,7 @@ import {
   ProductSortField,
   ProductsPageResponse,
   UpdateOrderCustomerRequest,
+  UpdateOrderItemRequest,
 } from '@core/api/models';
 import { firstValueFrom, map } from 'rxjs';
 
@@ -30,6 +31,9 @@ export class OrdersService {
 
   createItem = (orderId: string, request: CreateOrderItemRequest) =>
     firstValueFrom(this.httpClient.post<Order>(`${this.url}/${orderId}/items`, request));
+
+  updateItem = (orderId: string, itemId: string, request: UpdateOrderItemRequest) =>
+    firstValueFrom(this.httpClient.put<Order>(`${this.url}/${orderId}/items/${itemId}`, request));
 
   deleteItems = (orderId: string, ids: string[]) =>
     firstValueFrom(

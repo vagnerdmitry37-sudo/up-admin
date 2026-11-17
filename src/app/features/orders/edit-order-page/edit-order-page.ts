@@ -43,6 +43,9 @@ export class EditOrderPage {
   private readonly activeForm = computed(() =>
     this.forms().find((form) => form.order()?.id === this.active()),
   );
+  private readonly hasSelectedItems = computed(() =>
+    Boolean(this.activeForm()?.selectedItems().length),
+  );
 
   protected readonly formStatuses = signal<SaveStatuses>({});
   protected readonly deletingItemsOfOrderId = signal<string | undefined>(undefined);
@@ -61,8 +64,12 @@ export class EditOrderPage {
     inject(EditActionsService).register({
       actions: () => ({
         create: {
-          click: () => this.activeForm()?.addItemForm(),
+          click: () => this.addOrCopyItems(),
           visible: !this.saving() && Boolean(this.activeForm()),
+        },
+        edit: {
+          click: () => this.activeForm()?.editSelectedItems(),
+          visible: !this.saving() && this.hasSelectedItems(),
         },
         save: {
           click: () => this.save(),
@@ -70,10 +77,19 @@ export class EditOrderPage {
         },
         delete: {
           click: () => this.confirmDeleteItems(),
-          visible: !this.saving() && Boolean(this.activeForm()?.selectedItems().length),
+          visible: !this.saving() && this.hasSelectedItems(),
         },
       }),
     });
+  }
+
+  private addOrCopyItems(): void {
+    const form = this.activeForm();
+    if (this.hasSelectedItems()) {
+      form?.copySelectedItems();
+    } else {
+      form?.addItemForm();
+    }
   }
 
   private confirmDeleteItems(): void {
@@ -90,15 +106,16 @@ export class EditOrderPage {
       rejectLabel: 'Cancel',
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => this.deleteItems(orderId, itemIds),
+      accept: () => this.deleteItems(form, orderId, itemIds),
     });
   }
 
-  private async deleteItems(orderId: string, itemIds: string[]): Promise<void> {
+  private async deleteItems(form: OrderForm, orderId: string, itemIds: string[]): Promise<void> {
     this.saving.set(true);
     this.deletingItemsOfOrderId.set(orderId);
     try {
       this.replaceOrder(await this.ordersService.deleteItems(orderId, itemIds));
+      form.removeItemFormsEditing(itemIds);
     } finally {
       this.deletingItemsOfOrderId.set(undefined);
       this.saving.set(false);
@@ -146,9 +163,11 @@ export class EditOrderPage {
       this.replaceOrder(updated);
       form.resetCustomer(updated);
     }
-    for (const { key, formId, item } of items) {
+    for (const { key, formId, itemId, item } of items) {
       const updated = await saveWithStatus(this.formStatuses, [key], () =>
-        this.ordersService.createItem(orderId, item),
+        itemId
+          ? this.ordersService.updateItem(orderId, itemId, item)
+          : this.ordersService.createItem(orderId, item),
       );
       this.replaceOrder(updated);
       form.lockItemFormAsSaved(formId);

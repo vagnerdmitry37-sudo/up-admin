@@ -12,6 +12,7 @@ export type Order = Schema<'OrderResponse'>;
 export type OrdersPageResponse = Schema<'OrdersPageResponse'>;
 export type CreateOrderRequest = Schema<'CreateOrderRequest'>;
 export type CreateOrderItemRequest = Schema<'CreateOrderItemRequest'>;
+export type UpdateOrderItemRequest = Schema<'UpdateOrderItemRequest'>;
 export type UpdateOrderCustomerRequest = Schema<'UpdateOrderCustomerRequest'>;
 export type Image = Schema<'ImageResponse'>;
 export type UpdateImageOrderRequest = Schema<'UpdateImageOrderRequest'>;

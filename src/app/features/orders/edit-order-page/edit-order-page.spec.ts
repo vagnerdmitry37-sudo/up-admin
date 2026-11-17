@@ -435,6 +435,104 @@ describe('EditOrderPage', () => {
     expect(itemForms(fixture)).toHaveLength(0);
   });
 
+  describe('copying and editing items', () => {
+    it('opens a copy form per selected item on Create, without a start time, and adds the copies', async () => {
+      const { fixture, element } = await render('o1', [twoItemOrder]);
+      await selectRow(fixture, 0);
+      await selectRow(fixture, 1);
+
+      await addItemForm(fixture);
+
+      expect(tabLabels(element)).toEqual(['Copy of Old Town Walk', 'Copy of Old Town Walk']);
+      const [firstCopy, secondCopy] = itemForms(fixture);
+      expect(inputFor(firstCopy.nativeElement, 'Pickup address').value).toBe('Hotel Central');
+      choose(firstCopy, 'Start', startsAt);
+      choose(secondCopy, 'Start', startsAt);
+      await fixture.whenStable();
+
+      await save();
+      const firstCreation = httpTestingController.expectOne('/api/orders/o1/items');
+      expect(firstCreation.request.method).toBe('POST');
+      expect(firstCreation.request.body).toEqual(expectedItem);
+      firstCreation.flush(twoItemOrder);
+      await settle();
+      const secondCreation = httpTestingController.expectOne('/api/orders/o1/items');
+      expect(secondCreation.request.body).toEqual({ ...expectedItem, passengers: 2 });
+      secondCreation.flush(twoItemOrder);
+      await settle();
+    });
+
+    it('offers Edit only for selected items and opens a filled form that offers Save only after a change', async () => {
+      const { fixture, element } = await render('o1', [order]);
+      expect(editActionsService.actions().edit).toBeUndefined();
+
+      await selectRow(fixture, 0);
+      editActionsService.run('edit');
+      await fixture.whenStable();
+
+      expect(sectionTitles(element)).toContain('Edit Old Town Walk');
+      expect(inputFor(itemForms(fixture)[0].nativeElement, 'Pickup address').value).toBe(
+        'Hotel Central',
+      );
+      expect(editActionsService.actions().save).toBeUndefined();
+
+      typeInto(itemForms(fixture)[0].nativeElement, 'Pickup address', 'Airport');
+      await fixture.whenStable();
+
+      expect(editActionsService.actions().save).toBeDefined();
+    });
+
+    it('saves an edited item to that item and removes its form', async () => {
+      const { fixture, element } = await render('o1', [order]);
+      await selectRow(fixture, 0);
+      editActionsService.run('edit');
+      await fixture.whenStable();
+      typeInto(itemForms(fixture)[0].nativeElement, 'Pickup address', 'Airport');
+      await fixture.whenStable();
+
+      await save();
+      const update = httpTestingController.expectOne('/api/orders/o1/items/i1');
+      expect(update.request.method).toBe('PUT');
+      expect(update.request.body).toEqual({ ...expectedItem, pickupAddress: 'Airport' });
+      update.flush({ ...order, items: [{ ...order.items[0], pickupAddress: 'Airport' }] });
+      await settle();
+      await vi.advanceTimersByTimeAsync(STATUS_DISPLAY_MS);
+      await fixture.whenStable();
+
+      expect(itemForms(fixture)).toHaveLength(0);
+      expect(element.querySelector('tbody')?.textContent).toContain('Airport');
+    });
+
+    it('opens one edit form per item however often Edit is pressed', async () => {
+      const { fixture } = await render('o1', [order]);
+      await selectRow(fixture, 0);
+
+      editActionsService.run('edit');
+      await fixture.whenStable();
+      editActionsService.run('edit');
+      await fixture.whenStable();
+
+      expect(itemForms(fixture)).toHaveLength(1);
+    });
+
+    it('closes the edit form of an item that gets deleted', async () => {
+      answerConfirmation('accept');
+      const { fixture } = await render('o1', [twoItemOrder]);
+      await selectRow(fixture, 0);
+      editActionsService.run('edit');
+      await fixture.whenStable();
+
+      editActionsService.run('delete');
+      httpTestingController
+        .expectOne('/api/orders/o1/items?ids=i1')
+        .flush({ ...order, totalPrice: 50, items: [twoItemOrder.items[1]] });
+      await settle();
+      await fixture.whenStable();
+
+      expect(itemForms(fixture)).toHaveLength(0);
+    });
+  });
+
   describe('deleting items', () => {
     it('offers Delete only for selected items, and sends nothing when cancelled', async () => {
       const confirm = answerConfirmation('reject');

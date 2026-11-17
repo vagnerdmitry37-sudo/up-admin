@@ -26,8 +26,13 @@ type OrderItem = Order['items'][number];
 export interface OrderItemDraft {
   key: string;
   formId: number;
+  itemId?: string | undefined;
   item: CreateOrderItemRequest;
 }
+
+type OrderItemDraftCandidate = Omit<OrderItemDraft, 'item'> & {
+  item: CreateOrderItemRequest | undefined;
+};
 
 export interface OrderFormValue {
   customerKey: string;
@@ -39,12 +44,19 @@ interface ItemFormEntry {
   id: string;
   formId: number;
   seed?: OrderItemSeed;
+  itemId?: string;
+  label?: string;
 }
 
-const toItemFormEntry = (formId: number, seed?: OrderItemSeed): ItemFormEntry => ({
+const toItemFormEntry = (
+  formId: number,
+  seed?: OrderItemSeed,
+  details: Pick<ItemFormEntry, 'itemId' | 'label'> = {},
+): ItemFormEntry => ({
   id: String(formId),
   formId,
   seed,
+  ...details,
 });
 
 const toItemSeed = ({ productId, passengers, pickupAddress, notes }: OrderItem): OrderItemSeed => ({
@@ -90,7 +102,10 @@ export class OrderForm {
   });
   protected readonly activeItemTab = signal<string | undefined>(undefined);
   protected readonly itemTabLabel = (entry: ItemFormEntry) =>
-    `New item ${this.itemFormEntries().indexOf(entry) + 1}`;
+    entry.label ?? `New item ${this.itemFormEntries().indexOf(entry) + 1}`;
+  protected readonly singleItemFormHeading = computed(
+    () => this.itemFormEntries()[0]?.label ?? 'New item',
+  );
   protected readonly items = computed(() => this.order()?.items ?? []);
   protected readonly heading = computed(() => {
     const order = this.order();
@@ -126,16 +141,52 @@ export class OrderForm {
       this.itemForms().some((form) => form.hasUnsavedChanges()),
   );
 
-  addItemForm(): void {
-    const entry = toItemFormEntry(this.nextItemFormId++);
-    this.itemFormEntries.update((entries) => [...entries, entry]);
-    this.activeItemTab.set(entry.id);
+  addItemForm = () => this.appendItemForms([toItemFormEntry(this.nextItemFormId++)]);
+
+  copySelectedItems = () =>
+    this.appendItemForms(
+      this.selectedItems().map((item) =>
+        toItemFormEntry(this.nextItemFormId++, toItemSeed(item), {
+          label: `Copy of ${item.productName}`,
+        }),
+      ),
+    );
+
+  editSelectedItems(): void {
+    const editedItemIds = new Set(this.itemFormEntries().map((entry) => entry.itemId));
+    const firstAlreadyEdited = this.itemFormEntries().find((entry) =>
+      this.selectedItems().some((item) => item.id === entry.itemId),
+    );
+    const entries = this.selectedItems()
+      .filter((item) => !editedItemIds.has(item.id))
+      .map((item) =>
+        toItemFormEntry(
+          this.nextItemFormId++,
+          { ...toItemSeed(item), startsAt: new Date(item.startsAt) },
+          { itemId: item.id, label: `Edit ${item.productName}` },
+        ),
+      );
+    if (entries.length) {
+      this.appendItemForms(entries);
+    } else if (firstAlreadyEdited) {
+      this.activeItemTab.set(firstAlreadyEdited.id);
+    }
   }
 
   removeItemForm = (formId: number) =>
     this.itemFormEntries.update((entries) =>
       entries.filter((candidate) => candidate.formId !== formId),
     );
+
+  removeItemFormsEditing = (itemIds: string[]) =>
+    this.itemFormEntries.update((entries) =>
+      entries.filter((candidate) => !candidate.itemId || !itemIds.includes(candidate.itemId)),
+    );
+
+  private appendItemForms(entries: ItemFormEntry[]): void {
+    this.itemFormEntries.update((existing) => [...existing, ...entries]);
+    this.activeItemTab.set(entries[0]?.id);
+  }
 
   lockItemFormAsSaved = (formId: number) =>
     this.itemForms()
@@ -150,9 +201,10 @@ export class OrderForm {
       touchedForms.length || !this.isNew() ? touchedForms : this.itemForms().slice(0, 1);
     const customerChanged = this.isNew() || this.customerForm().hasUnsavedChanges();
     const customer = customerChanged ? this.customerForm().validate() : undefined;
-    const items = itemForms.map((form) => ({
+    const items = itemForms.map((form): OrderItemDraftCandidate => ({
       key: this.itemKey(form.formId()),
       formId: form.formId(),
+      itemId: this.itemFormEntries().find((entry) => entry.formId === form.formId())?.itemId,
       item: form.validate(),
     }));
     const validItems = items.filter((draft): draft is OrderItemDraft => draft.item !== undefined);
