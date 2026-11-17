@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
+import { EditActionsService } from '@core/edit-actions.service';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
 
 @Component({
@@ -8,10 +9,29 @@ import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-tabl
   styleUrl: './entity-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityTable<T extends object> {
+export class EntityTable<T extends { id: string }> {
   readonly rows = input.required<(T | undefined)[]>();
   readonly columns = input.required<TableColumn<T>[]>();
   readonly loading = input(false);
   readonly lazy = input(false);
+  readonly selection = model<T[]>([]);
   readonly lazyLoad = output<TableRange>();
+  readonly create = output<string[]>();
+  readonly edit = output<string[]>();
+  readonly delete = output<string[]>();
+
+  private readonly selectedIds = () => this.selection().map((row) => row.id);
+
+  constructor() {
+    inject(EditActionsService).register({
+      actions: () => {
+        const hasSelection = this.selection().length > 0;
+        return {
+          create: { click: () => this.create.emit(this.selectedIds()) },
+          edit: { click: () => this.edit.emit(this.selectedIds()), visible: hasSelection },
+          delete: { click: () => this.delete.emit(this.selectedIds()), visible: hasSelection },
+        };
+      },
+    });
+  }
 }

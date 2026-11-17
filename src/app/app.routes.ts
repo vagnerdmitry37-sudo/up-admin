@@ -33,13 +33,19 @@ export const routes: Routes = [
           import('@tests/features/products/products-page/products-page').then((m) => m.ProductsPage),
       },
       {
+        path: 'product-test',
+        title: 'Product · UP',
+        loadComponent: () =>
+          import('@tests/features/products/product-page/product-page').then((m) => m.ProductPage),
+      },
+      {
         path: 'orders-test',
         title: 'Orders · UP',
         loadComponent: () =>
           import('@tests/features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
       {
-        path: 'order-items-test',
+        path: 'order-test',
         title: 'Order Items · UP',
         loadComponent: () =>
           import('@tests/features/orders/order-page/order-page').then((m) => m.OrderPage),
