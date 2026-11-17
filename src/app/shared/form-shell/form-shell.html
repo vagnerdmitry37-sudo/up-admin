@@ -1,7 +1,3 @@
-@if (heading(); as heading) {
-  <app-page-title [heading]="heading" />
-}
-
 <form class="form" [formGroup]="form()" (ngSubmit)="submit()" novalidate>
   <ng-content />
 </form>

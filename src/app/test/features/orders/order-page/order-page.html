@@ -1,1 +1,3 @@
-<app-entity-table [rows]="items()" [columns]="columns" [loading]="orders.isLoading()" />
+@if (orders.hasValue()) {
+  <app-test-entity-tabs [entities]="orders.value()" [label]="orderNumber" />
+}

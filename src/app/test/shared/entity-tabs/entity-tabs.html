@@ -1,0 +1,7 @@
+<p-tabs [value]="shownId()" (valueChange)="show($event)" scrollable>
+  <p-tablist>
+    @for (entity of entities(); track entity.id) {
+      <p-tab [value]="entity.id">{{ label()(entity) }}</p-tab>
+    }
+  </p-tablist>
+</p-tabs>
