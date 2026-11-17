@@ -1,0 +1,7 @@
+<app-data-table
+  [rows]="lazyRows.rows() ?? []"
+  [columns]="columns"
+  [loading]="lazyRows.loading()"
+  [lazy]="true"
+  (lazyLoad)="lazyRows.load($event)"
+/>

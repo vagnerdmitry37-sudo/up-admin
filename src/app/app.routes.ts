@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@features/auth/auth.guard';
 import { guestGuard } from '@features/auth/guest.guard';
+
 export const routes: Routes = [
   {
     path: 'login',
@@ -24,6 +25,26 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
+      // test
+      {
+        path: 'products-test',
+        title: 'Order Items · UP',
+        loadComponent: () =>
+          import('@tests/features/products/products-page/products-page').then((m) => m.ProductsPage),
+      },
+      {
+        path: 'orders-test',
+        title: 'Orders · UP',
+        loadComponent: () =>
+          import('@tests/features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
+      },
+      {
+        path: 'order-items-test',
+        title: 'Order Items · UP',
+        loadComponent: () =>
+          import('@tests/features/orders/order-page/order-page').then((m) => m.OrderItems),
+      },
+      // test
       {
         path: 'orders/new',
         title: 'New order · UP',
