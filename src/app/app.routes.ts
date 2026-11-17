@@ -42,7 +42,7 @@ export const routes: Routes = [
         path: 'order-items-test',
         title: 'Order Items · UP',
         loadComponent: () =>
-          import('@tests/features/orders/order-page/order-page').then((m) => m.OrderItems),
+          import('@tests/features/orders/order-page/order-page').then((m) => m.OrderPage),
       },
       // test
       {

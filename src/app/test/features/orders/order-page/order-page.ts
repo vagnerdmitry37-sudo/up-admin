@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Order } from '@core/api/models';
 import { OrdersService } from '@features/orders/orders.service';
-import { DataTable, TableColumn } from '@shared/data-table/data-table';
+import { TableColumn } from '@shared/data-table/data-table';
+import { EntityTable } from '@tests/shared/entity-table/entity-table';
 import { map } from 'rxjs';
 
 type OrderItem = Order['items'][number];
@@ -11,11 +12,11 @@ const ORDERS_TO_LOAD = 50;
 
 @Component({
   selector: 'app-test-order-page',
-  imports: [DataTable],
+  imports: [EntityTable],
   templateUrl: './order-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OrderItems {
+export class OrderPage {
   protected readonly items = toSignal(
     inject(OrdersService)
       .list(0, ORDERS_TO_LOAD)

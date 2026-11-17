@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { Product } from '@core/api/models';
 import { ProductsService } from '@features/products/products.service';
-import { DataTable, TableColumn } from '@shared/data-table/data-table';
+import { TableColumn } from '@shared/data-table/data-table';
+import { EntityTable } from '@tests/shared/entity-table/entity-table';
 import { LazyRows } from '@shared/data-table/lazy-rows';
 
 @Component({
   selector: 'app-test-products-page',
-  imports: [DataTable],
+  imports: [EntityTable],
   templateUrl: './products-page.html',
   styleUrl: './products-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
