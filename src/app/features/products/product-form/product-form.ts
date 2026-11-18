@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  untracked,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import {
   CreateProductRequest,
@@ -46,13 +38,4 @@ export class ProductForm {
     seoDescription: ['', [Validators.required, Validators.maxLength(160)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
   });
-
-  constructor() {
-    effect(() => {
-      const product = this.product();
-      if (product) {
-        untracked(() => this.form.reset(product));
-      }
-    });
-  }
 }

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  input,
+  output,
+  untracked,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -10,7 +17,17 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 })
 export class EntityForm {
   readonly form = input.required<FormGroup>();
+  readonly value = input<object>();
   readonly submitted = output();
+
+  constructor() {
+    effect(() => {
+      const value = this.value();
+      if (value) {
+        untracked(() => this.form().reset(value));
+      }
+    });
+  }
 
   submit = () => {
     const form = this.form();

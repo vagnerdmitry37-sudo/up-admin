@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-  untracked,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { EntityForm } from '@shared/entity-form/entity-form';
@@ -28,13 +21,4 @@ export class OrderForm {
   protected readonly form = this.formBuilder.group({
     customer: ['', [Validators.required, Validators.maxLength(200)]],
   });
-
-  constructor() {
-    effect(() => {
-      const order = this.order();
-      if (order) {
-        untracked(() => this.form.reset(order));
-      }
-    });
-  }
 }
