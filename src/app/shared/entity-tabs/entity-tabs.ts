@@ -18,6 +18,7 @@ export interface EntityTabContext<T> {
   selector: 'app-entity-tabs',
   imports: [NgTemplateOutlet, Tabs, TabList, Tab, TabPanels, TabPanel],
   templateUrl: './entity-tabs.html',
+  styleUrl: './entity-tabs.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityTabs<T extends { id: string }> {
