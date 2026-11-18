@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import { TableColumn } from '@shared/data-table/data-table';
 import { LazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -15,13 +24,16 @@ import { joinRouteIds } from '@shared/route-ids/route-ids';
 })
 export class EntityListPage<T extends { id: string }> implements OnInit {
   private readonly router = inject(Router);
+  private readonly confirmationService = inject(ConfirmationService);
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
+  readonly deleteEntities = input.required<(ids: string[]) => Promise<unknown>>();
   readonly columns = input.required<TableColumn<T>[]>();
   readonly editPath = input.required<string>();
   readonly entityName = input.required<string>();
 
   protected readonly lazyRows = computed(() => new LazyRows<T>(this.loadPage()));
+  protected readonly selection = signal<T[]>([]);
 
   constructor() {
     inject(EditActionsService).register({
@@ -39,4 +51,21 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
     this.router.navigate([this.editPath()], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });
+
+  protected readonly confirmDelete = (ids: string[]) =>
+    this.confirmationService.confirm({
+      header: `Delete ${this.entityName()}s`,
+      message: `Delete ${ids.length === 1 ? `this ${this.entityName()}` : `${ids.length} ${this.entityName()}s`}? This cannot be undone.`,
+      icon: OpenngIcons.EXCLAMATION_TRIANGLE,
+      defaultFocus: 'reject',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      accept: () => this.delete(ids),
+    });
+
+  private async delete(ids: string[]): Promise<void> {
+    await this.deleteEntities()(ids);
+    this.selection.set([]);
+    this.lazyRows().reload();
+  }
 }

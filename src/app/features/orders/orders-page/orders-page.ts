@@ -11,7 +11,10 @@ import { OrdersService } from '../orders.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersPage {
-  protected readonly loadPage = inject(OrdersService).list;
+  private readonly ordersService = inject(OrdersService);
+
+  protected readonly loadPage = this.ordersService.list;
+  protected readonly deleteEntities = this.ordersService.delete;
   protected readonly columns: TableColumn<Order>[] = [
     { header: 'Number', value: (order) => order.number },
     { header: 'Created', value: (order) => order.createdAt },

@@ -25,4 +25,7 @@ export class CustomersService {
 
   update = (requests: UpdateCustomerRequest[]) =>
     firstValueFrom(this.httpClient.put<Customer[]>(this.url, requests));
+
+  delete = (ids: string[]) =>
+    firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
 }

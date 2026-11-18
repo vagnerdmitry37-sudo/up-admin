@@ -11,7 +11,10 @@ import { ProductsService } from '../products.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsPage {
-  protected readonly loadPage = inject(ProductsService).list;
+  private readonly productsService = inject(ProductsService);
+
+  protected readonly loadPage = this.productsService.list;
+  protected readonly deleteEntities = this.productsService.delete;
   protected readonly columns: TableColumn<Product>[] = [
     { header: 'Name', value: (product) => product.name },
     { header: 'Type', value: (product) => product.typeLabel },

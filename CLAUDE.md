@@ -10,14 +10,14 @@ Create, edit, save, delete and any other operation on an entity are done only th
 
 ### Shared shape (`<entity>` = order | product | customer)
 
-| Piece      | Location               | Convention                                                                                                                                                                                                                                               |
-| ---------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| List route | `app.routes.ts`        | `path: '<entity>s'`, title `<Entity>s · UP`                                                                                                                                                                                                              |
-| Edit route | `app.routes.ts`        | `path: 'edit-<entity>s-page'`, no path params                                                                                                                                                                                                            |
-| List page  | `<entity>s-page/`      | `loadPage = inject(<Entity>sService).list` and `columns`; template is only `<app-entity-list-page [loadPage]="loadPage" [columns]="columns" editPath="/edit-<entity>s-page" entityName="<entity>" />`                                                    |
-| Edit page  | `edit-<entity>s-page/` | `readonly ids = input<string>()`, `load<Entity>s = <Entity>sService.get`, `<entity>Name`, `<entity>Writer` (`EntityWriter` with `create` and `update`); template is only `<app-entity-edit-page>` with one `<ng-template let-<entity>>` holding the form |
-| Service    | `<entity>s.service.ts` | same method names across entities                                                                                                                                                                                                                        |
-| Form       | `<entity>-form/`       | used by the edit page                                                                                                                                                                                                                                    |
+| Piece      | Location               | Convention                                                                                                                                                                                                                                                                  |
+| ---------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| List route | `app.routes.ts`        | `path: '<entity>s'`, title `<Entity>s · UP`                                                                                                                                                                                                                                 |
+| Edit route | `app.routes.ts`        | `path: 'edit-<entity>s-page'`, no path params                                                                                                                                                                                                                               |
+| List page  | `<entity>s-page/`      | `loadPage = <Entity>sService.list`, `deleteEntities = <Entity>sService.delete` and `columns`; template is only `<app-entity-list-page [loadPage]="loadPage" [deleteEntities]="deleteEntities" [columns]="columns" editPath="/edit-<entity>s-page" entityName="<entity>" />` |
+| Edit page  | `edit-<entity>s-page/` | `readonly ids = input<string>()`, `load<Entity>s = <Entity>sService.get`, `<entity>Name`, `<entity>Writer` (`EntityWriter` with `create` and `update`); template is only `<app-entity-edit-page>` with one `<ng-template let-<entity>>` holding the form                    |
+| Service    | `<entity>s.service.ts` | same method names across entities                                                                                                                                                                                                                                           |
+| Form       | `<entity>-form/`       | used by the edit page                                                                                                                                                                                                                                                       |
 
 Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bound to the edit page's `ids` input by `withComponentInputBinding()`. Do not add `:id` path params: the edit pages open several records as tabs, and a required path segment would break `/edit-products-page` without IDs.
 
@@ -33,9 +33,13 @@ Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bo
 
 - None open.
 
+### Deleting lives in `EntityListPage`
+
+Entities are deleted only from the list table: select one or more rows, run Delete from the action menu (registered by `EntityTable`), confirm in the shared `p-confirmdialog` (in `Shell`, driven by `ConfirmationService`). On accept the list page calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table. Customers that still have orders are refused by the API with 409.
+
 ### Edit page logic lives in `EntityEditPage`
 
-`shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `writer` (`create` and `update`, both required) and the form template. Shared behaviour (creating, updating, and deleting later) goes there, not into the entity pages.
+`shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `writer` (`create` and `update`, both required) and the form template. Shared behaviour (creating and updating) goes there, not into the entity pages. Deleting is not done here: it lives in `EntityListPage`.
 
 - With `ids`: loads the records and shows one tab per record (no tab bar for a single record), rendering the template with the record.
 - Without `ids`: renders the template with `undefined`, so the form is empty.
