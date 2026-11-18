@@ -7,12 +7,12 @@ import { CustomerForm } from '../customer-form/customer-form';
 import { CustomersService } from '../customers.service';
 
 @Component({
-  selector: 'app-edit-customer-page',
+  selector: 'app-edit-customers-page',
   imports: [EntityTabs, CustomerForm],
-  templateUrl: './edit-customer-page.html',
+  templateUrl: './edit-customers-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditCustomerPage {
+export class EditCustomersPage {
   readonly ids = input<string>();
 
   private readonly customersService = inject(CustomersService);

@@ -30,7 +30,7 @@ export class CustomersPage implements OnInit {
   }
 
   protected openCustomers = (ids: string[]) =>
-    this.router.navigate(['/customer'], {
+    this.router.navigate(['/edit-customers-page'], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });
 }

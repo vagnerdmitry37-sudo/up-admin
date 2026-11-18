@@ -29,7 +29,7 @@ export class ProductsPage implements OnInit {
   }
 
   protected openProducts = (ids: string[]) =>
-    this.router.navigate(['/product'], {
+    this.router.navigate(['/edit-products-page'], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });
 }

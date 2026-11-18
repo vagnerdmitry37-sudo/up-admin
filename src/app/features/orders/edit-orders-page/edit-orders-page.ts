@@ -6,12 +6,12 @@ import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { OrdersService } from '../orders.service';
 
 @Component({
-  selector: 'app-edit-order-page',
+  selector: 'app-edit-orders-page',
   imports: [EntityTabs],
-  templateUrl: './edit-order-page.html',
+  templateUrl: './edit-orders-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditOrderPage {
+export class EditOrdersPage {
   readonly ids = input<string>();
 
   private readonly ordersService = inject(OrdersService);

@@ -8,12 +8,12 @@ import { ProductForm } from '../product-form/product-form';
 import { ProductsService } from '../products.service';
 
 @Component({
-  selector: 'app-edit-product-page',
+  selector: 'app-edit-products-page',
   imports: [EntityTabs, ImageUpload, ProductForm],
-  templateUrl: './edit-product-page.html',
+  templateUrl: './edit-products-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditProductPage {
+export class EditProductsPage {
   readonly ids = input<string>();
 
   private readonly productsService = inject(ProductsService);

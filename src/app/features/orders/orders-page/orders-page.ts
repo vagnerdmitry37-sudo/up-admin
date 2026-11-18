@@ -30,7 +30,7 @@ export class OrdersPage implements OnInit {
   }
 
   protected openOrders = (ids: string[]) =>
-    this.router.navigate(['/order'], {
+    this.router.navigate(['/edit-orders-page'], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });
 }

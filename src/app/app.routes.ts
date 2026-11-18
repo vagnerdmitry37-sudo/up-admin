@@ -26,11 +26,11 @@ export const routes: Routes = [
           import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
       {
-        path: 'order',
+        path: 'edit-orders-page',
         title: 'Edit orders · UP',
         loadComponent: () =>
-          import('@features/orders/edit-order-page/edit-order-page').then(
-            (m) => m.EditOrderPage,
+          import('@features/orders/edit-orders-page/edit-orders-page').then(
+            (m) => m.EditOrdersPage,
           ),
       },
       {
@@ -42,11 +42,11 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'customer',
+        path: 'edit-customers-page',
         title: 'Edit customers · UP',
         loadComponent: () =>
-          import('@features/customers/edit-customer-page/edit-customer-page').then(
-            (m) => m.EditCustomerPage,
+          import('@features/customers/edit-customers-page/edit-customers-page').then(
+            (m) => m.EditCustomersPage,
           ),
       },
       {
@@ -56,11 +56,11 @@ export const routes: Routes = [
           import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
       },
       {
-        path: 'product/:id',
+        path: 'edit-products-page',
         title: 'Edit products · UP',
         loadComponent: () =>
-          import('@features/products/edit-product-page/edit-product-page').then(
-            (m) => m.EditProductPage,
+          import('@features/products/edit-products-page/edit-products-page').then(
+            (m) => m.EditProductsPage,
           ),
       },
       {
