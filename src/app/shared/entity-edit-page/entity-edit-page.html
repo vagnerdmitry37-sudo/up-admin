@@ -7,7 +7,7 @@
       />
     </ng-template>
   </app-entity-tabs>
-} @else if (!ids() && create()) {
+} @else if (!ids()) {
   <ng-container
     [ngTemplateOutlet]="entityTemplate()"
     [ngTemplateOutletContext]="{ $implicit: undefined }"

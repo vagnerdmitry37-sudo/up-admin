@@ -2,8 +2,7 @@
   [ids]="ids()"
   [load]="loadOrders"
   [label]="orderNumber"
-  [create]="createOrder"
-  [update]="updateOrders"
+  [writer]="orderWriter"
 >
   <ng-template let-order>
     <app-order-form [order]="order" />

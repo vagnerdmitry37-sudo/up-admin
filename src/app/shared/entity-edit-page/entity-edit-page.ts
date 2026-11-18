@@ -26,6 +26,11 @@ export interface EntityChange<T, V> {
   value: V;
 }
 
+export interface EntityWriter<T, V> {
+  create: (value: V) => Promise<{ id: string }>;
+  update: (changes: EntityChange<T, V>[]) => Promise<unknown>;
+}
+
 @Component({
   selector: 'app-entity-edit-page',
   imports: [NgTemplateOutlet, EntityTabs],
@@ -36,17 +41,13 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
   readonly label = input.required<(entity: T) => string>();
-  readonly create = input<(value: V) => Promise<{ id: string }>>();
-  readonly update = input<(changes: EntityChange<T, V>[]) => Promise<unknown>>();
+  readonly writer = input.required<EntityWriter<T, V>>();
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly forms = signal<readonly EntityForm[]>([]);
   private readonly changedForms = computed(() => this.forms().filter((form) => form.dirty()));
   private readonly saving = signal(false);
-  private readonly canSave = computed(
-    () => (this.ids() ? this.update() : this.create()) !== undefined,
-  );
 
   protected readonly activeId = signal<string | undefined>(undefined);
   protected readonly entityTemplate =
@@ -64,7 +65,7 @@ export class EntityEditPage<T extends { id: string }, V> {
       actions: () => ({
         save: {
           click: () => this.save(),
-          visible: this.canSave() && this.changedForms().length > 0 && !this.saving(),
+          visible: this.changedForms().length > 0 && !this.saving(),
         },
       }),
     });
@@ -78,7 +79,7 @@ export class EntityEditPage<T extends { id: string }, V> {
 
   readonly save = async () => {
     const changedForms = this.changedForms();
-    if (this.saving() || changedForms.length === 0 || !this.canSave()) {
+    if (this.saving() || changedForms.length === 0) {
       return;
     }
     const values = changedForms.map((form) => form.validValue());
@@ -100,11 +101,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   };
 
   private readonly createEntity = async (entityForm: EntityForm, value: V) => {
-    const create = this.create();
-    if (!create) {
-      return;
-    }
-    const { id } = await create(value);
+    const { id } = await this.writer().create(value);
     entityForm.form().markAsPristine();
     await this.router.navigate([], {
       relativeTo: this.route,
@@ -113,8 +110,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   };
 
   private readonly updateEntities = async (changedForms: readonly EntityForm[], values: V[]) => {
-    const update = this.update();
-    if (!update || !this.entities.hasValue()) {
+    if (!this.entities.hasValue()) {
       return;
     }
     const entities = this.entities.value();
@@ -122,7 +118,7 @@ export class EntityEditPage<T extends { id: string }, V> {
       const entity = entities.find((candidate) => candidate.id === form.value()?.id);
       return entity ? [{ entity, value: values[index] }] : [];
     });
-    await update(changes);
+    await this.writer().update(changes);
     changedForms.forEach((form) => form.form().markAsPristine());
     this.entities.reload();
   };

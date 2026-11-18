@@ -2,8 +2,7 @@
   [ids]="ids()"
   [load]="loadCustomers"
   [label]="customerName"
-  [create]="createCustomer"
-  [update]="updateCustomers"
+  [writer]="customerWriter"
 >
   <ng-template let-customer>
     <app-customer-form [customer]="customer" />

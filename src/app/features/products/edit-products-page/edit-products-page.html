@@ -2,8 +2,7 @@
   [ids]="ids()"
   [load]="loadProducts"
   [label]="productName"
-  [create]="createProduct"
-  [update]="updateProducts"
+  [writer]="productWriter"
 >
   <ng-template let-product>
     <app-product-form [product]="product" [productTypes]="productTypes()" />

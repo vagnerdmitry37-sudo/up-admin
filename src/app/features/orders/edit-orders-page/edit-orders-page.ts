@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Order } from '@core/api/models';
-import { EntityChange, EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
+import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
 import { OrderForm, OrderFormValue } from '../order-form/order-form';
 import { OrdersService } from '../orders.service';
 
@@ -17,10 +17,11 @@ export class EditOrdersPage {
 
   protected readonly loadOrders = this.ordersService.get;
   protected readonly orderNumber = (order: Order) => order.number;
-  protected readonly createOrder = (order: OrderFormValue) =>
-    this.ordersService.create({ customerId: order.customer.id, items: [] });
-  protected readonly updateOrders = (changes: EntityChange<Order, OrderFormValue>[]) =>
-    this.ordersService.update(
-      changes.map(({ entity, value }) => ({ id: entity.id, customerId: value.customer.id })),
-    );
+  protected readonly orderWriter: EntityWriter<Order, OrderFormValue> = {
+    create: (order) => this.ordersService.create({ customerId: order.customer.id, items: [] }),
+    update: (changes) =>
+      this.ordersService.update(
+        changes.map(({ entity, value }) => ({ id: entity.id, customerId: value.customer.id })),
+      ),
+  };
 }

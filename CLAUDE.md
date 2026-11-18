@@ -10,14 +10,14 @@ Create, edit, save, delete and any other operation on an entity are done only th
 
 ### Shared shape (`<entity>` = order | product | customer)
 
-| Piece      | Location               | Convention                                                                                                                                                                                                                      |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| List route | `app.routes.ts`        | `path: '<entity>s'`, title `<Entity>s · UP`                                                                                                                                                                                     |
-| Edit route | `app.routes.ts`        | `path: 'edit-<entity>s-page'`, no path params                                                                                                                                                                                   |
-| List page  | `<entity>s-page/`      | `loadPage = inject(<Entity>sService).list` and `columns`; template is only `<app-entity-list-page [loadPage]="loadPage" [columns]="columns" editPath="/edit-<entity>s-page" entityName="<entity>" />`                           |
-| Edit page  | `edit-<entity>s-page/` | `readonly ids = input<string>()`, `load<Entity>s = <Entity>sService.get`, `<entity>Name`, `create<Entity>`, `update<Entity>s`; template is only `<app-entity-edit-page>` with one `<ng-template let-<entity>>` holding the form |
-| Service    | `<entity>s.service.ts` | same method names across entities                                                                                                                                                                                               |
-| Form       | `<entity>-form/`       | used by the edit page                                                                                                                                                                                                           |
+| Piece      | Location               | Convention                                                                                                                                                                                                                                               |
+| ---------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| List route | `app.routes.ts`        | `path: '<entity>s'`, title `<Entity>s · UP`                                                                                                                                                                                                              |
+| Edit route | `app.routes.ts`        | `path: 'edit-<entity>s-page'`, no path params                                                                                                                                                                                                            |
+| List page  | `<entity>s-page/`      | `loadPage = inject(<Entity>sService).list` and `columns`; template is only `<app-entity-list-page [loadPage]="loadPage" [columns]="columns" editPath="/edit-<entity>s-page" entityName="<entity>" />`                                                    |
+| Edit page  | `edit-<entity>s-page/` | `readonly ids = input<string>()`, `load<Entity>s = <Entity>sService.get`, `<entity>Name`, `<entity>Writer` (`EntityWriter` with `create` and `update`); template is only `<app-entity-edit-page>` with one `<ng-template let-<entity>>` holding the form |
+| Service    | `<entity>s.service.ts` | same method names across entities                                                                                                                                                                                                                        |
+| Form       | `<entity>-form/`       | used by the edit page                                                                                                                                                                                                                                    |
 
 Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bound to the edit page's `ids` input by `withComponentInputBinding()`. Do not add `:id` path params: the edit pages open several records as tabs, and a required path segment would break `/edit-products-page` without IDs.
 
@@ -35,11 +35,11 @@ Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bo
 
 ### Edit page logic lives in `EntityEditPage`
 
-`shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `create`, `update` and the form template. Shared behaviour (creating, updating, and deleting later) goes there, not into the entity pages.
+`shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `writer` (`create` and `update`, both required) and the form template. Shared behaviour (creating, updating, and deleting later) goes there, not into the entity pages.
 
 - With `ids`: loads the records and shows one tab per record (no tab bar for a single record), rendering the template with the record.
 - Without `ids`: renders the template with `undefined`, so the form is empty.
 - Save appears while any open form is dirty. It validates only the dirty forms (`EntityForm.validValue`); if one is invalid, nothing is sent and its tab is shown.
-- Creating calls `create(value)` and reopens the same route with `?ids=<new id>`. Updating calls `update(changes)` once with every changed record (`EntityChange`: the loaded entity and the form value), which maps them to one bulk PUT (all or nothing), then reloads the records.
+- Creating calls `writer.create(value)` and reopens the same route with `?ids=<new id>`. Updating calls `writer.update(changes)` once with every changed record (`EntityChange`: the loaded entity and the form value), which maps them to one bulk PUT (all or nothing), then reloads the records.
 - `EntityForm` connects itself to the enclosing `EntityEditPage` through DI (`connect` / `disconnect`) and reports `dirty`, so entity forms need no create- or update-specific code.
 - Product attribute fields live in `products/product-attributes-fields` (`app-product-attributes-fields`). `ProductForm` owns the `attributes` `FormRecord` and passes it in with the selected type; the component builds the fields from the selected type's definitions (`GET /api/product-types`): whole numbers use `app-number-field`, text uses `app-text-field`, with `required` / `min` / `maxLength` from the definition. Switching type keeps values of attributes both types share.
