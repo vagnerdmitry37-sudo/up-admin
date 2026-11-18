@@ -8,7 +8,6 @@ import { CustomersService } from '../customers.service';
   selector: 'app-customers-page',
   imports: [EntityListPage],
   templateUrl: './customers-page.html',
-  styleUrl: './customers-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomersPage {

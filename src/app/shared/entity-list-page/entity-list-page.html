@@ -1,9 +1,18 @@
-<app-entity-table
-  [rows]="lazyRows().rows() ?? []"
-  [columns]="columns()"
-  [loading]="lazyRows().loading()"
-  [lazy]="true"
-  (lazyLoad)="lazyRows().load($event)"
-  (create)="open($event)"
-  (edit)="open($event)"
-/>
+@if (lazyRows().empty()) {
+  <section class="empty-state">
+    <h2 class="empty-heading">No {{ entityName() }}s yet</h2>
+    <p class="empty-message">
+      Use the Create action in the menu below to add your first {{ entityName() }}.
+    </p>
+  </section>
+} @else if (lazyRows().rows(); as rows) {
+  <app-entity-table
+    [rows]="rows"
+    [columns]="columns()"
+    [loading]="lazyRows().loading()"
+    [lazy]="true"
+    (lazyLoad)="lazyRows().load($event)"
+    (create)="open($event)"
+    (edit)="open($event)"
+  />
+}

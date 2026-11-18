@@ -8,7 +8,6 @@ import { ProductsService } from '../products.service';
   selector: 'app-products-page',
   imports: [EntityListPage],
   templateUrl: './products-page.html',
-  styleUrl: './products-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsPage {

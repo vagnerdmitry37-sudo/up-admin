@@ -1,0 +1,7 @@
+<app-entity-form [form]="form">
+  <app-text-field
+    label="Customer"
+    [control]="form.controls.customer"
+    [messages]="{ required: 'Enter a customer.', maxlength: 'Use 200 characters or fewer.' }"
+  />
+</app-entity-form>

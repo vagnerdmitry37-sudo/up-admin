@@ -39,8 +39,9 @@
 }
 
 .content {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -48,4 +49,8 @@
   max-width: var(--app-page-max-width);
   margin: 0 auto;
   padding: var(--app-page-gutter-y) var(--app-page-gutter-x);
+}
+
+router-outlet {
+  display: none;
 }

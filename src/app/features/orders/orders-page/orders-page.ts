@@ -8,7 +8,6 @@ import { OrdersService } from '../orders.service';
   selector: 'app-orders-page',
   imports: [EntityListPage],
   templateUrl: './orders-page.html',
-  styleUrl: './orders-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrdersPage {
