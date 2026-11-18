@@ -1,14 +1,9 @@
-<app-page-title heading="Products" />
-
-@if (lazyRows.empty()) {
-  <app-empty-state heading="No products yet" message="Tap + to add your first product." />
-} @else {
-  <app-data-table
-    [rows]="lazyRows.rows() ?? []"
-    [columns]="columns"
-    [loading]="lazyRows.loading()"
-    [lazy]="true"
-    (lazyLoad)="lazyRows.load($event)"
-    [(selection)]="selected"
-  />
-}
+<app-entity-table
+  [rows]="lazyRows.rows() ?? []"
+  [columns]="columns"
+  [loading]="lazyRows.loading()"
+  [lazy]="true"
+  (lazyLoad)="lazyRows.load($event)"
+  (create)="openProducts($event)"
+  (edit)="openProducts($event)"
+/>

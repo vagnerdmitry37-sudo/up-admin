@@ -1,17 +1,9 @@
-<app-page-title heading="Orders" />
-
-@if (lazyRows.empty()) {
-  <app-empty-state
-    heading="No orders yet"
-    message="Orders placed on the website appear here. Tap + to add one."
-  />
-} @else {
-  <app-data-table
-    [rows]="lazyRows.rows() ?? []"
-    [columns]="columns"
-    [loading]="lazyRows.loading()"
-    [lazy]="true"
-    (lazyLoad)="lazyRows.load($event)"
-    [(selection)]="selected"
-  />
-}
+<app-entity-table
+  [rows]="lazyRows.rows() ?? []"
+  [columns]="columns"
+  [loading]="lazyRows.loading()"
+  [lazy]="true"
+  (lazyLoad)="lazyRows.load($event)"
+  (create)="openOrders($event)"
+  (edit)="openOrders($event)"
+/>

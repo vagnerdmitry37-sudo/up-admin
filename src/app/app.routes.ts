@@ -25,70 +25,29 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
-      // test
       {
-        path: 'products-test',
-        title: 'Order Items · UP',
+        path: 'order',
+        title: 'Edit orders · UP',
         loadComponent: () =>
-          import('@tests/features/products/products-page/products-page').then(
-            (m) => m.ProductsPage,
-          ),
-      },
-      {
-        path: 'product-test',
-        title: 'Product · UP',
-        loadComponent: () =>
-          import('@tests/features/products/edit-product-page/edit-product-page').then(
-            (m) => m.EditProductPage,
-          ),
-      },
-      {
-        path: 'orders-test',
-        title: 'Orders · UP',
-        loadComponent: () =>
-          import('@tests/features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
-      },
-      {
-        path: 'order-test',
-        title: 'Order Items · UP',
-        loadComponent: () =>
-          import('@tests/features/orders/edit-order-page/edit-order-page').then(
+          import('@features/orders/edit-order-page/edit-order-page').then(
             (m) => m.EditOrderPage,
           ),
       },
       {
-        path: 'customers-test',
+        path: 'customers',
         title: 'Customers · UP',
         loadComponent: () =>
-          import('@tests/features/customers/customers-page/customers-page').then(
+          import('@features/customers/customers-page/customers-page').then(
             (m) => m.CustomersPage,
           ),
       },
       {
-        path: 'customer-test',
+        path: 'customer',
         title: 'Edit customers · UP',
         loadComponent: () =>
-          import('@tests/features/customers/edit-customer-page/edit-customer-page').then(
+          import('@features/customers/edit-customer-page/edit-customer-page').then(
             (m) => m.EditCustomerPage,
           ),
-      },
-      // test
-      {
-        path: 'orders/new',
-        title: 'New order · UP',
-        loadComponent: () =>
-          import('@features/orders/order-page/order-page').then((m) => m.OrderPage),
-      },
-      {
-        path: 'orders/:ids/edit',
-        title: 'Edit orders · UP',
-        loadComponent: () =>
-          import('@features/orders/edit-order-page/edit-order-page').then((m) => m.EditOrderPage),
-      },
-      {
-        path: 'orders/:id',
-        pathMatch: 'full',
-        redirectTo: 'orders/:id/edit',
       },
       {
         path: 'products',
@@ -97,26 +56,12 @@ export const routes: Routes = [
           import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
       },
       {
-        path: 'products/new',
-        title: 'New product · UP',
-        loadComponent: () =>
-          import('@features/products/new-product-page/new-product-page').then(
-            (m) => m.NewProductPage,
-          ),
-      },
-      {
-        path: 'products/:ids/edit',
+        path: 'product/:id',
         title: 'Edit products · UP',
         loadComponent: () =>
           import('@features/products/edit-product-page/edit-product-page').then(
             (m) => m.EditProductPage,
           ),
-      },
-      {
-        path: 'profile',
-        title: 'Profile · UP',
-        loadComponent: () =>
-          import('@features/profile/profile-page/profile-page').then((m) => m.ProfilePage),
       },
       {
         path: '**',

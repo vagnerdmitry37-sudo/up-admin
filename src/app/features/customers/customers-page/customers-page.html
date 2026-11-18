@@ -4,6 +4,6 @@
   [loading]="lazyRows.loading()"
   [lazy]="true"
   (lazyLoad)="lazyRows.load($event)"
-  (create)="createCustomer()"
-  (edit)="editCustomers($event)"
+  (create)="openCustomers($event)"
+  (edit)="openCustomers($event)"
 />

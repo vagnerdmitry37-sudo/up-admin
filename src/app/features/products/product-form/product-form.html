@@ -1,74 +1,43 @@
-<app-form-shell [form]="form" (submitted)="submit()">
-  <app-save-zone [status]="formStatus()">
-    <app-form-row>
-      <app-select-field
-        label="Type"
-        [control]="form.controls.type"
-        [options]="typeOptions()"
-        [messages]="{ required: 'Select a type.' }"
-      />
-      <app-number-field
-        [label]="definition()?.priceLabel ?? 'Price'"
-        [control]="form.controls.price"
-        [min]="0"
-        [fractionDigits]="2"
-        [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
-      />
-    </app-form-row>
+<app-entity-form [form]="form">
+  <app-select-field
+    label="Type"
+    [control]="form.controls.type"
+    [options]="typeOptions()"
+    [messages]="{ required: 'Select a type.' }"
+  />
 
-    @if (attributeFields().length) {
-      <app-form-row>
-        @for (field of attributeFields(); track field.definition.key) {
-          @switch (field.definition.kind) {
-            @case ('Text') {
-              <app-text-field
-                [label]="field.definition.label"
-                [control]="field.control"
-                [messages]="field.messages"
-              />
-            }
-            @case ('WholeNumber') {
-              <app-number-field
-                [label]="field.definition.label"
-                [control]="field.control"
-                [min]="field.definition.min ?? undefined"
-                [messages]="field.messages"
-              />
-            }
-          }
-        }
-      </app-form-row>
-    }
+  <app-number-field
+    [label]="'Price'"
+    [control]="form.controls.price"
+    [min]="0"
+    [fractionDigits]="2"
+    [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
+  />
 
-    <app-text-field
-      label="Name"
-      [control]="form.controls.name"
-      [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
-    />
+  <app-text-field
+    label="Name"
+    [control]="form.controls.name"
+    [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
+  />
 
-    <app-textarea-field
-      label="Short description"
-      [control]="form.controls.shortDescription"
-      [messages]="{ maxlength: 'Use 200 characters or fewer.' }"
-    />
+  <app-textarea-field
+    label="Short description"
+    [control]="form.controls.shortDescription"
+    [messages]="{ maxlength: 'Use 200 characters or fewer.' }"
+  />
 
-    <app-rich-text-field
-      label="Description"
-      [control]="form.controls.description"
-      [messages]="{ maxlength: 'Description is too long.' }"
-    />
+  <app-rich-text-field
+    label="Description"
+    [control]="form.controls.description"
+    [messages]="{ maxlength: 'Description is too long.' }"
+  />
 
-    <app-textarea-field
-      label="SEO description"
-      [control]="form.controls.seoDescription"
-      [messages]="{
-        required: 'Enter an SEO description.',
-        maxlength: 'Use 160 characters or fewer.',
-      }"
-    />
-  </app-save-zone>
-
-  <app-save-zone [status]="imagesStatus()" failedMessage="Couldn't save images. Try again.">
-    <app-image-upload [images]="images()" />
-  </app-save-zone>
-</app-form-shell>
+  <app-textarea-field
+    label="SEO description"
+    [control]="form.controls.seoDescription"
+    [messages]="{
+      required: 'Enter an SEO description.',
+      maxlength: 'Use 160 characters or fewer.',
+    }"
+  />
+</app-entity-form>

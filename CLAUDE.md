@@ -1,0 +1,31 @@
+# UPAdmin
+
+## Entity features are mirrors: orders, products, customers
+
+`src/app/features/orders`, `src/app/features/products` and `src/app/features/customers` are the same feature built for three entities. They must stay structurally identical. Any change to one of them is applied to all three in the same change, unless the entity truly cannot support it; in that case say so explicitly to the user instead of silently diverging.
+
+### Shared shape (`<entity>` = order | product | customer)
+
+| Piece | Location | Convention |
+| --- | --- | --- |
+| List route | `app.routes.ts` | `path: '<entity>s'`, title `<Entity>s · UP` |
+| Edit route | `app.routes.ts` | `path: '<entity>'`, no path params |
+| List page | `<entity>s-page/` | navigates with `router.navigate(['/<entity>'], { queryParams: { ids: joinRouteIds(ids) } })` |
+| Edit page | `edit-<entity>-page/` | `readonly ids = input<string>()`, `parseRouteIds`, `rxResource` over `<Entity>sService.get`, `EntityTabs` |
+| Service | `<entity>s.service.ts` | same method names across entities |
+| Form | `<entity>-form/` | used by the edit page |
+
+Selected IDs travel as the `ids` query param (`/product?ids=1,2`), bound to the edit page's `ids` input by `withComponentInputBinding()`. Do not add `:id` path params: the edit pages open several records as tabs, and a required path segment would break `/product` without IDs.
+
+### Developer steps for any change touching one entity feature
+
+1. Make the change in the entity you were asked about.
+2. Apply the equivalent change to the other two entities: routes, list page, edit page, service, form, templates, styles.
+3. Keep names parallel (`ProductsPage` / `OrdersPage` / `CustomersPage`, `productName` / `orderNumber` / `customerName`, and so on).
+4. Search all three features for the old name, path or pattern to confirm nothing was left behind.
+5. Report which entity could not follow and why, if any.
+
+### Known gaps between the three (close them, do not copy them)
+
+- Orders has no `order-form/`.
+- Customers has a create button that navigates to `/customer-new-test`, which has no route or page; products and orders have no create flow.

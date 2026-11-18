@@ -1,9 +1,0 @@
-<app-entity-table
-  [rows]="lazyRows.rows() ?? []"
-  [columns]="columns"
-  [loading]="lazyRows.loading()"
-  [lazy]="true"
-  (lazyLoad)="lazyRows.load($event)"
-  (create)="openOrders($event)"
-  (edit)="openOrders($event)"
-/>

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Customer } from '@core/api/models';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
-import { EntityTabs } from '@tests/shared/entity-tabs/entity-tabs';
+import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { CustomerForm } from '../customer-form/customer-form';
 import { CustomersService } from '../customers.service';
 

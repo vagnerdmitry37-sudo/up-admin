@@ -4,7 +4,7 @@ import { Customer } from '@core/api/models';
 import { TableColumn } from '@shared/data-table/data-table';
 import { LazyRows } from '@shared/data-table/lazy-rows';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
-import { EntityTable } from '@tests/shared/entity-table/entity-table';
+import { EntityTable } from '@shared/entity-table/entity-table';
 import { CustomersService } from '../customers.service';
 
 @Component({
@@ -29,8 +29,8 @@ export class CustomersPage implements OnInit {
     this.lazyRows.reload();
   }
 
-  protected createCustomer = () => this.router.navigate(['/customer-new-test']);
-
-  protected editCustomers = (ids: string[]) =>
-    this.router.navigate(['/customer-test'], { queryParams: { ids: joinRouteIds(ids) } });
+  protected openCustomers = (ids: string[]) =>
+    this.router.navigate(['/customer'], {
+      queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
+    });
 }

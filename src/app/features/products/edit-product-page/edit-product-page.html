@@ -1,10 +1,8 @@
 @if (products.hasValue()) {
-  <app-product-tabs
-    heading="Edit product"
-    [products]="products.value()"
-    [productTypes]="productTypes()"
-    [images]="images.hasValue() ? images.value() : []"
-    [productFormStatuses]="productFormStatuses()"
-    [productImageStatuses]="productImageStatuses()"
-  />
+  <app-entity-tabs [entities]="products.value()" [label]="productName">
+    <ng-template let-product>
+      <app-product-form [product]="product" [productTypes]="productTypes()" />
+      <app-image-upload [images]="product.images" />
+    </ng-template>
+  </app-entity-tabs>
 }

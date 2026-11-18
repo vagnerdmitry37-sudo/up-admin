@@ -14,11 +14,8 @@ export class NavMenu {
   protected readonly open = signal(false);
   protected readonly items: MenuItem[] = [
     { label: 'Orders', icon: OpenngIcons.RECEIPT, routerLink: '/orders' },
+    { label: 'Customers', icon: OpenngIcons.USERS, routerLink: '/customers' },
     { label: 'Products', icon: OpenngIcons.BOX, routerLink: '/products' },
-    { label: 'Profile', icon: OpenngIcons.USER, routerLink: '/profile' },
-    { label: 'Products Test', icon: OpenngIcons.BOX, routerLink: '/products-test' },
-    { label: 'Orders Test', icon: OpenngIcons.RECEIPT, routerLink: '/orders-test' },
-    { label: 'Customers Test', icon: OpenngIcons.USERS, routerLink: '/customers-test' },
   ].map((item) => ({ ...item, command: () => this.open.set(false) }));
 
   protected toggle(menu: Menu, event: MouseEvent): void {

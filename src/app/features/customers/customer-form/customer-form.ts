@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { TextField } from '@shared/form-fields/text-field/text-field';
-import { EntityForm } from '@tests/shared/entity-form/entity-form';
+import { EntityForm } from '@shared/entity-form/entity-form';
 
 export interface CustomerFormValue {
   name: string;
