@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Product } from '@core/api/models';
+import { ProductDetails } from '@core/api/models';
 import { ProductsService } from '@features/products/products.service';
+import { ImageUpload } from '@shared/image-upload/image-upload';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
-import { EntityForm } from '@tests/shared/entity-form/entity-form';
 import { EntityTabs } from '@tests/shared/entity-tabs/entity-tabs';
+import { ProductForm } from '../product-form/product-form';
 
 @Component({
   selector: 'app-edit-product-page',
-  imports: [EntityTabs, EntityForm],
+  imports: [EntityTabs, ImageUpload, ProductForm],
   templateUrl: './edit-product-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -24,5 +25,6 @@ export class EditProductPage {
     },
     stream: ({ params }) => this.productsService.get(params),
   });
-  protected readonly productName = (product: Product) => product.name;
+  protected readonly productTypes = this.productsService.productTypes;
+  protected readonly productName = (product: ProductDetails) => product.name;
 }

@@ -1,9 +1,8 @@
 @if (products.hasValue()) {
   <app-entity-tabs [entities]="products.value()" [label]="productName">
     <ng-template let-product>
-      <app-entity-form>
-        <p>Product ID: {{ product.id }}</p>
-      </app-entity-form>
+      <app-product-form [product]="product" [productTypes]="productTypes()" />
+      <app-image-upload [images]="product.images" />
     </ng-template>
   </app-entity-tabs>
 }

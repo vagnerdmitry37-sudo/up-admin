@@ -5,6 +5,7 @@ import {
   CreateProductRequest,
   Image,
   Product,
+  ProductDetails,
   ProductsPageResponse,
   ProductTypeDefinition,
   UpdateImageOrderRequest,
@@ -30,7 +31,7 @@ export class ProductsService {
     this.httpClient.get<ProductsPageResponse>(this.url, { params: { first, rows } });
 
   get = (ids: string[]) =>
-    this.httpClient.get<Product[]>(`${this.url}/by-ids`, { params: { ids } });
+    this.httpClient.get<ProductDetails[]>(`${this.url}/by-ids`, { params: { ids } });
 
   create = (requests: CreateProductRequest[]) =>
     firstValueFrom(this.httpClient.post<Product[]>(this.url, requests));

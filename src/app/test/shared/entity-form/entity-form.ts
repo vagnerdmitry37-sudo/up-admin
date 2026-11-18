@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -9,9 +9,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityForm {
-  readonly form = input<FormGroup>(new FormGroup({}));
-  readonly submitLabel = input('Save');
-  readonly saving = input(false, { transform: booleanAttribute });
+  readonly form = input.required<FormGroup>();
   readonly submitted = output();
 
   submit = () => {

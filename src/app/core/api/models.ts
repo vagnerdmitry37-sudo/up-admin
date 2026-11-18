@@ -3,6 +3,7 @@ import { components } from './schema';
 type Schema<Name extends keyof components['schemas']> = components['schemas'][Name];
 
 export type Product = Schema<'ProductResponse'>;
+export type ProductDetails = Schema<'ProductDetailsResponse'>;
 export type ProductType = Schema<'ProductType'>;
 export type ProductSortField = Schema<'ProductSortField'>;
 export type ProductsPageResponse = Schema<'ProductsPageResponse'>;

@@ -3,12 +3,11 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { Order } from '@core/api/models';
 import { OrdersService } from '@features/orders/orders.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
-import { EntityForm } from '@tests/shared/entity-form/entity-form';
 import { EntityTabs } from '@tests/shared/entity-tabs/entity-tabs';
 
 @Component({
   selector: 'app-edit-order-page',
-  imports: [EntityTabs, EntityForm],
+  imports: [EntityTabs],
   templateUrl: './edit-order-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

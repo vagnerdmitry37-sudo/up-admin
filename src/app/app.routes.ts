@@ -30,13 +30,17 @@ export const routes: Routes = [
         path: 'products-test',
         title: 'Order Items · UP',
         loadComponent: () =>
-          import('@tests/features/products/products-page/products-page').then((m) => m.ProductsPage),
+          import('@tests/features/products/products-page/products-page').then(
+            (m) => m.ProductsPage,
+          ),
       },
       {
         path: 'product-test',
         title: 'Product · UP',
         loadComponent: () =>
-          import('@tests/features/products/edit-product-page/edit-product-page').then((m) => m.EditProductPage),
+          import('@tests/features/products/edit-product-page/edit-product-page').then(
+            (m) => m.EditProductPage,
+          ),
       },
       {
         path: 'orders-test',
@@ -48,7 +52,9 @@ export const routes: Routes = [
         path: 'order-test',
         title: 'Order Items · UP',
         loadComponent: () =>
-          import('@tests/features/orders/edit-order-page/edit-order-page').then((m) => m.EditOrderPage),
+          import('@tests/features/orders/edit-order-page/edit-order-page').then(
+            (m) => m.EditOrderPage,
+          ),
       },
       // test
       {

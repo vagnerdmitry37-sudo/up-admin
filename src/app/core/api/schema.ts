@@ -366,9 +366,9 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            'text/plain': components['schemas']['ProductResponse'][];
-            'application/json': components['schemas']['ProductResponse'][];
-            'text/json': components['schemas']['ProductResponse'][];
+            'text/plain': components['schemas']['ProductDetailsResponse'][];
+            'application/json': components['schemas']['ProductDetailsResponse'][];
+            'text/json': components['schemas']['ProductDetailsResponse'][];
           };
         };
         /** @description Bad Request */
@@ -1713,6 +1713,20 @@ export interface components {
       status?: null | number;
       detail?: null | string;
       instance?: null | string;
+    };
+    ProductDetailsResponse: {
+      /** Format: uuid */
+      id: string;
+      type: components['schemas']['ProductType'];
+      typeLabel: string;
+      name: string;
+      seoDescription: string;
+      shortDescription: string;
+      description: string;
+      /** Format: double */
+      price: number;
+      attributes: components['schemas']['JsonElement'];
+      images: components['schemas']['ImageResponse'][];
     };
     ProductResponse: {
       /** Format: uuid */
