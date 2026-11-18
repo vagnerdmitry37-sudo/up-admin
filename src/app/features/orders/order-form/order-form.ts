@@ -9,7 +9,6 @@ import {
   linkedSignal,
   output,
   signal,
-  viewChild,
   viewChildren,
 } from '@angular/core';
 import { CreateOrderItemRequest, Order, Product } from '@core/api/models';
@@ -18,7 +17,6 @@ import { EmptyState } from '@shared/empty-state/empty-state';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { PageTitle } from '@shared/page-title/page-title';
 import { SaveStatuses } from '@shared/save-zone/save-statuses';
-import { OrderCustomer, OrderCustomerForm } from '../order-customer-form/order-customer-form';
 import { OrderItemForm, OrderItemSeed } from '../order-item-form/order-item-form';
 
 type OrderItem = Order['items'][number];
@@ -35,8 +33,6 @@ type OrderItemDraftCandidate = Omit<OrderItemDraft, 'item'> & {
 };
 
 export interface OrderFormValue {
-  customerKey: string;
-  customer?: OrderCustomer;
   items: OrderItemDraft[];
 }
 
@@ -70,7 +66,7 @@ const NEW_ORDER_KEY = 'new';
 
 @Component({
   selector: 'app-order-form',
-  imports: [DataTable, EmptyState, EntityTabs, OrderCustomerForm, OrderItemForm, PageTitle],
+  imports: [DataTable, EmptyState, EntityTabs, OrderItemForm, PageTitle],
   templateUrl: './order-form.html',
   styleUrl: './order-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,7 +80,6 @@ export class OrderForm {
   readonly submitted = output();
 
   private readonly locale = inject(LOCALE_ID);
-  private readonly customerForm = viewChild.required(OrderCustomerForm);
   private readonly itemForms = viewChildren(OrderItemForm);
   private readonly isNew = computed(() => !this.order());
   private readonly orderKey = computed(
@@ -115,7 +110,6 @@ export class OrderForm {
     }
     return source ? `Copy of order ${source.number}` : 'New order';
   });
-  protected readonly customerKey = computed(() => `${this.orderKey()}/customer`);
   protected readonly itemKey = (formId: number) => `${this.orderKey()}/item-${formId}`;
   protected readonly columns: TableColumn<OrderItem>[] = [
     { header: 'Product', value: (item) => item.productName },
@@ -135,10 +129,8 @@ export class OrderForm {
     computation: () => [],
   });
 
-  readonly hasUnsavedChanges = computed(
-    () =>
-      this.customerForm().hasUnsavedChanges() ||
-      this.itemForms().some((form) => form.hasUnsavedChanges()),
+  readonly hasUnsavedChanges = computed(() =>
+    this.itemForms().some((form) => form.hasUnsavedChanges()),
   );
 
   addItemForm = () => this.appendItemForms([toItemFormEntry(this.nextItemFormId++)]);
@@ -193,14 +185,10 @@ export class OrderForm {
       .find((form) => form.formId() === formId)
       ?.lockAsSaved();
 
-  resetCustomer = (customer: OrderCustomer) => this.customerForm().reset(customer);
-
   validValue(): OrderFormValue | undefined {
     const touchedForms = this.itemForms().filter((form) => form.hasUnsavedChanges());
     const itemForms =
       touchedForms.length || !this.isNew() ? touchedForms : this.itemForms().slice(0, 1);
-    const customerChanged = this.isNew() || this.customerForm().hasUnsavedChanges();
-    const customer = customerChanged ? this.customerForm().validate() : undefined;
     const items = itemForms.map((form): OrderItemDraftCandidate => ({
       key: this.itemKey(form.formId()),
       formId: form.formId(),
@@ -212,13 +200,9 @@ export class OrderForm {
     if (firstInvalidItem) {
       this.activeItemTab.set(String(firstInvalidItem.formId));
     }
-    if (
-      (customerChanged && !customer) ||
-      validItems.length < items.length ||
-      (this.isNew() && !validItems.length)
-    ) {
+    if (validItems.length < items.length || (this.isNew() && !validItems.length)) {
       return undefined;
     }
-    return { customerKey: this.customerKey(), customer, items: validItems };
+    return { items: validItems };
   }
 }

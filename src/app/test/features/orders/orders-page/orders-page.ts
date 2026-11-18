@@ -21,7 +21,6 @@ export class OrdersPage implements OnInit {
   protected readonly columns: TableColumn<Order>[] = [
     { header: 'Number', value: (order) => order.number },
     { header: 'Created', value: (order) => order.createdAt },
-    { header: 'Customer', value: (order) => order.customerName },
     { header: 'Status', value: (order) => order.status },
     { header: 'Total', value: (order) => order.totalPrice, align: 'end' },
   ];

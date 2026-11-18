@@ -56,6 +56,22 @@ export const routes: Routes = [
             (m) => m.EditOrderPage,
           ),
       },
+      {
+        path: 'customers-test',
+        title: 'Customers · UP',
+        loadComponent: () =>
+          import('@tests/features/customers/customers-page/customers-page').then(
+            (m) => m.CustomersPage,
+          ),
+      },
+      {
+        path: 'customer-test',
+        title: 'Edit customers · UP',
+        loadComponent: () =>
+          import('@tests/features/customers/edit-customer-page/edit-customer-page').then(
+            (m) => m.EditCustomerPage,
+          ),
+      },
       // test
       {
         path: 'orders/new',

@@ -4,11 +4,10 @@ import { Order } from '@core/api/models';
 import { OrdersService } from '@features/orders/orders.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { EntityTabs } from '@tests/shared/entity-tabs/entity-tabs';
-import { OrderCustomerForm } from '../order-customer-form/order-customer-form';
 
 @Component({
   selector: 'app-edit-order-page',
-  imports: [EntityTabs, OrderCustomerForm],
+  imports: [EntityTabs],
   templateUrl: './edit-order-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,0 +1,7 @@
+@if (customers.hasValue()) {
+  <app-entity-tabs [entities]="customers.value()" [label]="customerName">
+    <ng-template let-customer>
+      <app-customer-form [customer]="customer" />
+    </ng-template>
+  </app-entity-tabs>
+}

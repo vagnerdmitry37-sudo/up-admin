@@ -15,25 +15,19 @@ import { EditActionsService } from '@core/edit-actions.service';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
 import { joinRouteIds, parseRouteIds } from '@shared/route-ids/route-ids';
 import { SaveStatuses, afterResultsShown, saveWithStatus } from '@shared/save-zone/save-statuses';
-import { OrderCustomer } from '../order-customer-form/order-customer-form';
 import { OrderForm, OrderFormValue } from '../order-form/order-form';
 import { OrdersService } from '../orders.service';
 
 interface OrderCopy {
   sourceId: string;
   value: OrderFormValue;
-  customer: OrderCustomer;
 }
 
-const toCreateRequest = (customer: OrderCustomer, value: OrderFormValue): CreateOrderRequest => ({
-  ...customer,
+const toCreateRequest = (value: OrderFormValue): CreateOrderRequest => ({
   items: value.items.map(({ item }) => item),
 });
 
-const statusKeys = (value: OrderFormValue) => [
-  value.customerKey,
-  ...value.items.map(({ key }) => key),
-];
+const statusKeys = (value: OrderFormValue) => value.items.map(({ key }) => key);
 
 @Component({
   selector: 'app-order-page',
@@ -97,14 +91,13 @@ export class OrderPage {
 
   private async createOrder(): Promise<void> {
     const value = this.forms()[0]?.validValue();
-    const customer = value?.customer;
-    if (!value || !customer) {
+    if (!value) {
       return;
     }
     this.saving.set(true);
     try {
       const created = await saveWithStatus(this.formStatuses, statusKeys(value), () =>
-        this.ordersService.create(toCreateRequest(customer, value)),
+        this.ordersService.create(toCreateRequest(value)),
       );
       await this.router.navigate(['/orders', created.id, 'edit'], { replaceUrl: true });
     } finally {
@@ -140,19 +133,18 @@ export class OrderPage {
       const value = this.forms()
         .find((form) => form.source()?.id === sourceId)
         ?.validValue();
-      const customer = value?.customer;
-      if (!value || !customer) {
+      if (!value) {
         this.active.set(sourceId);
         return undefined;
       }
-      copies.push({ sourceId, value, customer });
+      copies.push({ sourceId, value });
     }
     return copies;
   }
 
-  private async createCopy({ sourceId, value, customer }: OrderCopy): Promise<void> {
+  private async createCopy({ sourceId, value }: OrderCopy): Promise<void> {
     const created = await saveWithStatus(this.formStatuses, statusKeys(value), () =>
-      this.ordersService.create(toCreateRequest(customer, value)),
+      this.ordersService.create(toCreateRequest(value)),
     );
     this.createdBySource.update((createdBySource) => ({
       ...createdBySource,

@@ -155,15 +155,7 @@ export class EditOrderPage {
   }
 
   private async updateOrder({ form, orderId, value }: OrderChanges): Promise<void> {
-    const { customer, customerKey, items } = value;
-    if (customer) {
-      const updated = await saveWithStatus(this.formStatuses, [customerKey], () =>
-        this.ordersService.updateCustomer(orderId, customer),
-      );
-      this.replaceOrder(updated);
-      form.resetCustomer(updated);
-    }
-    for (const { key, formId, itemId, item } of items) {
+    for (const { key, formId, itemId, item } of value.items) {
       const updated = await saveWithStatus(this.formStatuses, [key], () =>
         itemId
           ? this.ordersService.updateItem(orderId, itemId, item)

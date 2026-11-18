@@ -1,15 +1,6 @@
 <app-page-title [heading]="heading()" />
 
 <section class="section">
-  <h2 class="section-title">Customer</h2>
-  <app-order-customer-form
-    [customer]="order() ?? source()"
-    [formStatus]="formStatuses()[customerKey()] ?? 'idle'"
-    (submitted)="submitted.emit()"
-  />
-</section>
-
-<section class="section">
   <h2 class="section-title">Items</h2>
   @if (items().length) {
     <app-data-table
@@ -28,7 +19,7 @@
   } @else {
     <app-empty-state
       heading="No items yet"
-      message="Fill in the customer and item forms and tap Add, then tap Save to create the order."
+      message="Fill in the item form and tap Add, then tap Save to create the order."
     />
   }
 </section>

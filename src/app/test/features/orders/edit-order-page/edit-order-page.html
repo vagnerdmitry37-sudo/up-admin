@@ -1,7 +1,5 @@
 @if (orders.hasValue()) {
   <app-entity-tabs [entities]="orders.value()" [label]="orderNumber">
-    <ng-template let-order>
-      <app-order-customer-form [customer]="order" />
-    </ng-template>
+    <ng-template let-order>{{ order.number }}</ng-template>
   </app-entity-tabs>
 }

@@ -1,13 +1,13 @@
 <app-entity-form [form]="form">
   <app-text-field
-    label="Customer name"
-    [control]="form.controls.customerName"
+    label="Name"
+    [control]="form.controls.name"
     [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
   />
 
   <app-text-field
     label="Email"
-    [control]="form.controls.customerEmail"
+    [control]="form.controls.email"
     [messages]="{
       required: 'Enter an email.',
       email: 'Enter a valid email.',
@@ -17,7 +17,7 @@
 
   <app-text-field
     label="Phone"
-    [control]="form.controls.customerPhone"
+    [control]="form.controls.phone"
     [messages]="{
       required: 'Enter a phone number.',
       maxlength: 'Use 50 characters or fewer.',
