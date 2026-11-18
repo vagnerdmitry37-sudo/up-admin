@@ -3,11 +3,12 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { Product } from '@core/api/models';
 import { ProductsService } from '@features/products/products.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
+import { EntityForm } from '@tests/shared/entity-form/entity-form';
 import { EntityTabs } from '@tests/shared/entity-tabs/entity-tabs';
 
 @Component({
   selector: 'app-edit-product-page',
-  imports: [EntityTabs],
+  imports: [EntityTabs, EntityForm],
   templateUrl: './edit-product-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,7 +1,9 @@
 @if (products.hasValue()) {
   <app-entity-tabs [entities]="products.value()" [label]="productName">
     <ng-template let-product>
-      <p>Product ID: {{ product.id }}</p>
+      <app-entity-form>
+        <p>Product ID: {{ product.id }}</p>
+      </app-entity-form>
     </ng-template>
   </app-entity-tabs>
 }
