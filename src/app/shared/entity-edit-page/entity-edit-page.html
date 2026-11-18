@@ -1,0 +1,15 @@
+@if (entities.hasValue()) {
+  <app-entity-tabs [entities]="entities.value()" [label]="label()">
+    <ng-template let-entity>
+      <ng-container
+        [ngTemplateOutlet]="entityTemplate()"
+        [ngTemplateOutletContext]="{ $implicit: entity }"
+      />
+    </ng-template>
+  </app-entity-tabs>
+} @else if (!ids() && create()) {
+  <ng-container
+    [ngTemplateOutlet]="entityTemplate()"
+    [ngTemplateOutletContext]="{ $implicit: undefined }"
+  />
+}

@@ -1262,7 +1262,67 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CreateCustomerRequest'];
+          'text/json': components['schemas']['CreateCustomerRequest'];
+          'application/*+json': components['schemas']['CreateCustomerRequest'];
+        };
+      };
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['CustomerResponse'];
+            'application/json': components['schemas']['CustomerResponse'];
+            'text/json': components['schemas']['CustomerResponse'];
+          };
+        };
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails'];
+            'application/json': components['schemas']['ValidationProblemDetails'];
+            'text/json': components['schemas']['ValidationProblemDetails'];
+          };
+        };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -1650,6 +1710,11 @@ export interface components {
     };
     /** @enum {unknown} */
     AttributeKind: 'Text' | 'WholeNumber';
+    CreateCustomerRequest: {
+      name: string;
+      email: string;
+      phone: string;
+    };
     CreateOrderItemRequest: {
       /** Format: uuid */
       productId: string;
@@ -1757,6 +1822,7 @@ export interface components {
       id: string;
       number: string;
       status: components['schemas']['OrderStatus'];
+      customer: null | components['schemas']['CustomerResponse'];
       /** Format: date-time */
       createdAt: string;
       /** Format: double */

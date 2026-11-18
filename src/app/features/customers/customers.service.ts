@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
-import { Customer, CustomersPageResponse } from '@core/api/models';
+import { CreateCustomerRequest, Customer, CustomersPageResponse } from '@core/api/models';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CustomersService {
@@ -13,4 +14,7 @@ export class CustomersService {
 
   get = (ids: string[]) =>
     this.httpClient.get<Customer[]>(`${this.url}/by-ids`, { params: { ids } });
+
+  create = (request: CreateCustomerRequest) =>
+    firstValueFrom(this.httpClient.post<Customer>(this.url, request));
 }

@@ -16,6 +16,7 @@ export type CreateOrderItemRequest = Schema<'CreateOrderItemRequest'>;
 export type UpdateOrderItemRequest = Schema<'UpdateOrderItemRequest'>;
 export type Customer = Schema<'CustomerResponse'>;
 export type CustomersPageResponse = Schema<'CustomersPageResponse'>;
+export type CreateCustomerRequest = Schema<'CreateCustomerRequest'>;
 export type Image = Schema<'ImageResponse'>;
 export type UpdateImageOrderRequest = Schema<'UpdateImageOrderRequest'>;
 export type AccessToken = Schema<'AccessTokenResponse'>;
