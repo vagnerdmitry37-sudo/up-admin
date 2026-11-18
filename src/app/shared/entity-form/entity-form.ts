@@ -1,15 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   OnInit,
   effect,
   inject,
   input,
-  output,
   untracked,
 } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
+import { distinctUntilChanged, map, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-entity-form',
@@ -18,12 +20,24 @@ import { EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
   styleUrl: './entity-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityForm implements OnInit {
+export class EntityForm implements OnInit, OnDestroy {
   readonly form = input.required<FormGroup>();
-  readonly value = input<object>();
-  readonly submitted = output();
+  readonly value = input<{ id: string }>();
 
   private readonly entityEditPage = inject(EntityEditPage, { optional: true });
+
+  readonly dirty = toSignal(
+    toObservable(this.form).pipe(
+      switchMap((form) =>
+        form.events.pipe(
+          map(() => form.dirty),
+          startWith(form.dirty),
+        ),
+      ),
+      distinctUntilChanged(),
+    ),
+    { initialValue: false },
+  );
 
   constructor() {
     effect(() => {
@@ -38,12 +52,18 @@ export class EntityForm implements OnInit {
     this.entityEditPage?.connect(this);
   }
 
-  submit = () => {
+  ngOnDestroy() {
+    this.entityEditPage?.disconnect(this);
+  }
+
+  readonly validValue = () => {
     const form = this.form();
     if (form.invalid) {
       form.markAllAsTouched();
-      return;
+      return undefined;
     }
-    this.submitted.emit();
+    return form.getRawValue();
   };
+
+  protected readonly submit = () => this.entityEditPage?.save();
 }

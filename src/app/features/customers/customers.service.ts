@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
-import { CreateCustomerRequest, Customer, CustomersPageResponse } from '@core/api/models';
+import {
+  CreateCustomerRequest,
+  Customer,
+  CustomersPageResponse,
+  UpdateCustomerRequest,
+} from '@core/api/models';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -17,4 +22,7 @@ export class CustomersService {
 
   create = (request: CreateCustomerRequest) =>
     firstValueFrom(this.httpClient.post<Customer>(this.url, request));
+
+  update = (requests: UpdateCustomerRequest[]) =>
+    firstValueFrom(this.httpClient.put<Customer[]>(this.url, requests));
 }

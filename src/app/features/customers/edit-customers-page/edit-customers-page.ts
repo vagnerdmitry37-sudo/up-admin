@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Customer } from '@core/api/models';
-import { EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
+import { EntityChange, EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
 import { CustomerForm, CustomerFormValue } from '../customer-form/customer-form';
 import { CustomersService } from '../customers.service';
 
@@ -19,4 +19,6 @@ export class EditCustomersPage {
   protected readonly customerName = (customer: Customer) => customer.name;
   protected readonly createCustomer = (customer: CustomerFormValue) =>
     this.customersService.create(customer);
+  protected readonly updateCustomers = (changes: EntityChange<Customer, CustomerFormValue>[]) =>
+    this.customersService.update(changes.map(({ entity, value }) => ({ ...value, id: entity.id })));
 }

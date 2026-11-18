@@ -1,5 +1,5 @@
 @if (entities.hasValue()) {
-  <app-entity-tabs [entities]="entities.value()" [label]="label()">
+  <app-entity-tabs [entities]="entities.value()" [label]="label()" [(active)]="activeId">
     <ng-template let-entity>
       <ng-container
         [ngTemplateOutlet]="entityTemplate()"

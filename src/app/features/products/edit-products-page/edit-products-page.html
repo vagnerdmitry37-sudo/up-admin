@@ -3,6 +3,7 @@
   [load]="loadProducts"
   [label]="productName"
   [create]="createProduct"
+  [update]="updateProducts"
 >
   <ng-template let-product>
     <app-product-form [product]="product" [productTypes]="productTypes()" />
