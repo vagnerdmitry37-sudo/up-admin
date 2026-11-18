@@ -4,6 +4,12 @@
 
 <p-confirmdialog />
 
+<p-toast
+  position="top-right"
+  [preventOpenDuplicates]="true"
+  [breakpoints]="{ '640px': { width: 'calc(100vw - 2rem)' } }"
+/>
+
 <footer>
   <p-toolbar class="footer">
     <ng-template #start>

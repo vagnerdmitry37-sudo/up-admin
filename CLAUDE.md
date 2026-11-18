@@ -4,6 +4,10 @@
 
 Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-edit-menu`), registered with `EditActionsService.register`. Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars. To draw attention to an action, register it with `suggested: true` and, if needed, point to it in text.
 
+## Request errors are shown globally
+
+Every failed API request is turned into one Optimus toast (`p-toast` in `Shell`, fed through `MessageService`) by `core/error.interceptor.ts`, so pages never catch HTTP errors to show a message. The interceptor maps the status to a plain-language summary: 0 no connection, 400 the validation messages, 403 not allowed, 404 refresh and try again, 409 the server `detail`, 5xx try again later. It skips 401 and `auth/` requests, which `authInterceptor` and `SessionService` handle, and rethrows the error so callers still stop. Write server `detail` texts for 409 so a user can read them.
+
 ## Entity features are mirrors: orders, products, customers
 
 `src/app/features/orders`, `src/app/features/products` and `src/app/features/customers` are the same feature built for three entities. They must stay structurally identical. Any change to one of them is applied to all three in the same change, unless the entity truly cannot support it; in that case say so explicitly to the user instead of silently diverging.
