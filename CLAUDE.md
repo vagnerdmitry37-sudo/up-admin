@@ -31,7 +31,6 @@ Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bo
 
 ### Known gaps between the three (close them, do not copy them)
 
-- Orders have no create flow: the edit page passes no `[create]`, because the backend creates orders from items (product, start, passengers, pickup) and the order form has no item fields yet.
 - Product create sends `attributes: {}`; it succeeds only once the product form gets type-specific attribute fields.
 
 ### Edit page logic lives in `EntityEditPage`

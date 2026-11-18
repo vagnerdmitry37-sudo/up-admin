@@ -37,9 +37,7 @@ export const routes: Routes = [
         path: 'customers',
         title: 'Customers · UP',
         loadComponent: () =>
-          import('@features/customers/customers-page/customers-page').then(
-            (m) => m.CustomersPage,
-          ),
+          import('@features/customers/customers-page/customers-page').then((m) => m.CustomersPage),
       },
       {
         path: 'edit-customers-page',

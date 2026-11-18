@@ -495,6 +495,17 @@ export interface paths {
             'text/json': components['schemas']['ValidationProblemDetails'];
           };
         };
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ProblemDetails'];
+            'application/json': components['schemas']['ProblemDetails'];
+            'text/json': components['schemas']['ProblemDetails'];
+          };
+        };
         /** @description Not Found */
         404: {
           headers: {
@@ -1219,6 +1230,7 @@ export interface paths {
         query?: {
           first?: number;
           rows?: number;
+          globalFilter?: string;
         };
         header?: never;
         path?: never;
@@ -1727,6 +1739,8 @@ export interface components {
       notes: string;
     };
     CreateOrderRequest: {
+      /** Format: uuid */
+      customerId: string;
       items: components['schemas']['CreateOrderItemRequest'][];
     };
     CreateProductRequest: {

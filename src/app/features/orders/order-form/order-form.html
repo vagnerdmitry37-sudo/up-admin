@@ -1,7 +1,9 @@
 <app-entity-form [form]="form" [value]="order()">
-  <app-text-field
+  <app-search-field
     label="Customer"
     [control]="form.controls.customer"
-    [messages]="{ required: 'Enter a customer.', maxlength: 'Use 200 characters or fewer.' }"
+    [search]="searchCustomers"
+    [optionLabel]="customerLabel"
+    [messages]="{ required: 'Select a customer.' }"
   />
 </app-entity-form>

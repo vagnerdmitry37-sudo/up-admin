@@ -1,24 +1,28 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
-import { TextField } from '@shared/form-fields/text-field/text-field';
+import { Customer, Order } from '@core/api/models';
+import { SearchField } from '@shared/form-fields/search-field/search-field';
 import { EntityForm } from '@shared/entity-form/entity-form';
+import { OrdersService } from '../orders.service';
 
 export interface OrderFormValue {
-  customer: string;
+  customer: Customer;
 }
 
 @Component({
   selector: 'app-order-form',
-  imports: [TextField, EntityForm],
+  imports: [SearchField, EntityForm],
   templateUrl: './order-form.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrderForm {
-  readonly order = input<OrderFormValue>();
+  readonly order = input<Order>();
 
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
+  protected readonly searchCustomers = inject(OrdersService).searchCustomers;
+  protected readonly customerLabel = (customer: Customer) => `${customer.name} · ${customer.email}`;
   protected readonly form = this.formBuilder.group({
-    customer: ['', [Validators.required, Validators.maxLength(200)]],
+    customer: this.formBuilder.control<Customer | null>(null, Validators.required),
   });
 }

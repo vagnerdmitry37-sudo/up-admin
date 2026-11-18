@@ -4,6 +4,7 @@ import { API_BASE_URL } from '@core/api-base-url';
 import {
   CreateOrderItemRequest,
   CreateOrderRequest,
+  CustomersPageResponse,
   Order,
   OrdersPageResponse,
   ProductSortField,
@@ -13,6 +14,7 @@ import {
 import { firstValueFrom, map } from 'rxjs';
 
 const MAX_PRODUCT_OPTIONS = 200;
+const MAX_CUSTOMER_OPTIONS = 20;
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
@@ -41,6 +43,13 @@ export class OrdersService {
 
   delete = (ids: string[]) =>
     firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
+
+  searchCustomers = (query: string) =>
+    this.httpClient
+      .get<CustomersPageResponse>(`${this.apiBaseUrl}/customers`, {
+        params: { globalFilter: query, rows: MAX_CUSTOMER_OPTIONS },
+      })
+      .pipe(map((page) => page.items));
 
   getProducts = () =>
     this.httpClient

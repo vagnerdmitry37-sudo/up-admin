@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Order } from '@core/api/models';
 import { EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
-import { OrderForm } from '../order-form/order-form';
+import { OrderForm, OrderFormValue } from '../order-form/order-form';
 import { OrdersService } from '../orders.service';
 
 @Component({
@@ -13,6 +13,10 @@ import { OrdersService } from '../orders.service';
 export class EditOrdersPage {
   readonly ids = input<string>();
 
-  protected readonly loadOrders = inject(OrdersService).get;
+  private readonly ordersService = inject(OrdersService);
+
+  protected readonly loadOrders = this.ordersService.get;
   protected readonly orderNumber = (order: Order) => order.number;
+  protected readonly createOrder = (order: OrderFormValue) =>
+    this.ordersService.create({ customerId: order.customer.id, items: [] });
 }
