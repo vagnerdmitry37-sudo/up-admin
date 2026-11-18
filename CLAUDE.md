@@ -6,14 +6,14 @@
 
 ### Shared shape (`<entity>` = order | product | customer)
 
-| Piece | Location | Convention |
-| --- | --- | --- |
-| List route | `app.routes.ts` | `path: '<entity>s'`, title `<Entity>s · UP` |
-| Edit route | `app.routes.ts` | `path: 'edit-<entity>s-page'`, no path params |
-| List page | `<entity>s-page/` | navigates with `router.navigate(['/edit-<entity>s-page'], { queryParams: { ids: joinRouteIds(ids) } })` |
-| Edit page | `edit-<entity>s-page/` | `readonly ids = input<string>()`, `parseRouteIds`, `rxResource` over `<Entity>sService.get`, `EntityTabs` |
-| Service | `<entity>s.service.ts` | same method names across entities |
-| Form | `<entity>-form/` | used by the edit page |
+| Piece      | Location               | Convention                                                                                                                                                                      |
+| ---------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| List route | `app.routes.ts`        | `path: '<entity>s'`, title `<Entity>s · UP`                                                                                                                                     |
+| Edit route | `app.routes.ts`        | `path: 'edit-<entity>s-page'`, no path params                                                                                                                                   |
+| List page  | `<entity>s-page/`      | `loadPage = inject(<Entity>sService).list` and `columns`; template is only `<app-entity-list-page [loadPage]="loadPage" [columns]="columns" editPath="/edit-<entity>s-page" />` |
+| Edit page  | `edit-<entity>s-page/` | `readonly ids = input<string>()`, `parseRouteIds`, `rxResource` over `<Entity>sService.get`, `EntityTabs`                                                                       |
+| Service    | `<entity>s.service.ts` | same method names across entities                                                                                                                                               |
+| Form       | `<entity>-form/`       | used by the edit page                                                                                                                                                           |
 
 Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bound to the edit page's `ids` input by `withComponentInputBinding()`. Do not add `:id` path params: the edit pages open several records as tabs, and a required path segment would break `/edit-products-page` without IDs.
 

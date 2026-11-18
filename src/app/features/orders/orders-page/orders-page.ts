@@ -1,36 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Order } from '@core/api/models';
 import { TableColumn } from '@shared/data-table/data-table';
-import { LazyRows } from '@shared/data-table/lazy-rows';
-import { joinRouteIds } from '@shared/route-ids/route-ids';
-import { EntityTable } from '@shared/entity-table/entity-table';
+import { EntityListPage } from '@shared/entity-list-page/entity-list-page';
 import { OrdersService } from '../orders.service';
 
 @Component({
   selector: 'app-orders-page',
-  imports: [EntityTable],
+  imports: [EntityListPage],
   templateUrl: './orders-page.html',
   styleUrl: './orders-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OrdersPage implements OnInit {
-  private readonly router = inject(Router);
-
-  protected readonly lazyRows = new LazyRows<Order>(inject(OrdersService).list);
+export class OrdersPage {
+  protected readonly loadPage = inject(OrdersService).list;
   protected readonly columns: TableColumn<Order>[] = [
     { header: 'Number', value: (order) => order.number },
     { header: 'Created', value: (order) => order.createdAt },
     { header: 'Status', value: (order) => order.status },
     { header: 'Total', value: (order) => order.totalPrice, align: 'end' },
   ];
-
-  ngOnInit() {
-    this.lazyRows.reload();
-  }
-
-  protected openOrders = (ids: string[]) =>
-    this.router.navigate(['/edit-orders-page'], {
-      queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
-    });
 }
