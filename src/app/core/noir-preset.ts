@@ -115,6 +115,22 @@ export const NoirPreset = definePreset(Aura, {
         }
       `,
     },
+    toast: {
+      css: `
+        .p-toast {
+          line-height: normal;
+        }
+        .p-toast .p-toast-summary {
+          line-height: var(--p-toast-close-button-height);
+        }
+        .p-toast .p-toast-message-content .p-toast-message-icon {
+          margin-block: calc((var(--p-toast-close-button-height) - var(--p-toast-icon-size)) / 2);
+        }
+        .p-toast .p-toast-message-content .p-toast-close-button {
+          margin-block-start: 0;
+        }
+      `,
+    },
     select: {
       css: `
         .p-select-label {
