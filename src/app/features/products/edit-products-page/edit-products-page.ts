@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { ProductDetails } from '@core/api/models';
 import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
-import { ImageUpload } from '@shared/image-upload/image-upload';
+import { ImageUpload, ImageWriter } from '@shared/image-upload/image-upload';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
 import { ProductsService } from '../products.service';
 
@@ -28,5 +28,10 @@ export class EditProductsPage {
       this.productsService.update(
         changes.map(({ entity, value }) => ({ ...value, id: entity.id })),
       ),
+  };
+  protected readonly productImageWriter: ImageWriter = {
+    upload: (productId, files) => this.productsService.uploadImages(productId, files),
+    delete: this.productsService.deleteImages,
+    reorder: this.productsService.updateImageOrder,
   };
 }

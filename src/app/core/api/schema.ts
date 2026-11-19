@@ -2004,6 +2004,7 @@ export interface components {
       entityId: string;
       /** Format: int32 */
       sortOrder: number;
+      fileName: string;
       url: string;
     };
     JsonElement: unknown;

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { EditActionsService, EditActions } from './edit-actions.service';
 
 const actions = signal<EditActions>({});
+const formActions = signal<EditActions>({});
 
 @Component({ template: '' })
 class PageHost {
@@ -14,7 +15,7 @@ class PageHost {
 @Component({ template: '' })
 class FormHost {
   constructor() {
-    inject(EditActionsService).register({ actions: () => ({ save: { click: () => undefined } }) });
+    inject(EditActionsService).register({ actions: () => formActions() });
   }
 }
 
@@ -23,6 +24,7 @@ describe('EditActionsService', () => {
 
   beforeEach(() => {
     actions.set({});
+    formActions.set({});
     service = TestBed.inject(EditActionsService);
   });
 
@@ -41,15 +43,45 @@ describe('EditActionsService', () => {
     expect(create).toHaveBeenCalled();
   });
 
-  it('lets the latest registration win and restores the previous one when it goes away', () => {
+  it('adds a nested registration to the page actions and drops it when it goes away', () => {
     TestBed.createComponent(PageHost);
     actions.set({ create: { click: vi.fn() } });
+    formActions.set({ save: { click: vi.fn() } });
 
     const form = TestBed.createComponent(FormHost);
-    expect(Object.keys(service.actions())).toEqual(['save']);
+    expect(Object.keys(service.actions())).toEqual(['create', 'save']);
 
     form.destroy();
     expect(Object.keys(service.actions())).toEqual(['create']);
+  });
+
+  it('runs the latest registration of an action and restores the earlier one when it goes away', () => {
+    TestBed.createComponent(PageHost);
+    const pageSave = vi.fn();
+    const formSave = vi.fn();
+    actions.set({ save: { click: pageSave } });
+    formActions.set({ save: { click: formSave } });
+
+    const form = TestBed.createComponent(FormHost);
+    service.run('save');
+    expect(formSave).toHaveBeenCalledTimes(1);
+    expect(pageSave).not.toHaveBeenCalled();
+
+    form.destroy();
+    service.run('save');
+    expect(pageSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps an earlier visible action when a later registration hides it', () => {
+    TestBed.createComponent(PageHost);
+    const pageSave = vi.fn();
+    actions.set({ save: { click: pageSave } });
+    formActions.set({ save: { click: vi.fn(), visible: false } });
+    TestBed.createComponent(FormHost);
+
+    service.run('save');
+
+    expect(pageSave).toHaveBeenCalledTimes(1);
   });
 
   it('ignores running an action the page did not register', () => {

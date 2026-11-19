@@ -51,3 +51,17 @@ Entities are deleted only from the list table: select one or more rows, run Dele
 - Creating calls `writer.create(value)` and reopens the same route with `?ids=<new id>`. Updating calls `writer.update(changes)` once with every changed record (`EntityChange`: the loaded entity and the form value), which maps them to one bulk PUT (all or nothing), then reloads the records.
 - `EntityForm` connects itself to the enclosing `EntityEditPage` through DI (`connect` / `disconnect`) and reports `dirty`, so entity forms need no create- or update-specific code.
 - Product attribute fields live in `products/product-attributes-fields` (`app-product-attributes-fields`). `ProductForm` owns the `attributes` `FormRecord` and passes it in with the selected type; the component builds the fields from the selected type's definitions (`GET /api/product-types`): whole numbers use `app-number-field`, text uses `app-text-field`, with `required` / `min` / `maxLength` from the definition. Switching type keeps values of attributes both types share.
+
+### Images live in `ImageUpload`
+
+`shared/image-upload` (`ImageUpload`, `app-image-upload`) holds everything about an entity's images and is generic, like the images API (`entityType` + `entityId`); `EntityEditPage` knows nothing about images. The edit page passes `entityId`, `savedImages` and an `ImageWriter` (`upload`, `delete`, `reorder`) built from its feature service, as `EditProductsPage.productImageWriter` does with `ProductsService`. Every image change goes to the database at once through the writer, never through Save:
+
+- The gallery is one grid: the image cards, then an "Add images" upload card that always stays last (it is a disabled `cdkDrag`, and `keepsUploadCardLast` stops images from being sorted into its slot). Clicking it opens the file picker; files can also be dropped anywhere on the gallery.
+- Choosing or dropping files uploads them straight away (`upload`); they appear in the image list once the request ends; there is no separate uploading list (a shared saving indicator is planned).
+- Rejected files are never shown inside the component: FileUpload's own type and size messages (worded through its `invalidFile*Message*` inputs) are moved into the global error toast via `MessageService` ("Image not added", one toast per file), and the component checks the 10-files-per-upload limit itself, because FileUpload adds that message only after `onSelect`.
+- Dragging a saved image to a new place calls `reorder` with the full new order (`PUT /api/images/order` must list exactly the current images) and puts the old order back if the request fails.
+- Selecting saved images shows Delete in the action menu, registered by the component itself; it asks for confirmation in the shared `p-confirmdialog`, then calls `delete`.
+- A new record has no id yet, so the component renders nothing until the record is saved and the page reopens with its id.
+- Each card shows the image's original `fileName` (stored by the API on upload). Images uploaded before the API stored names have an empty `fileName` and show "Image N" (their position) instead.
+
+Today only products use it; orders and customers have no images. To add images to another entity, give its service the three image calls and pass a writer the same way.
