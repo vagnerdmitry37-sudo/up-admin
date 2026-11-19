@@ -1,5 +1,5 @@
 import { computed, signal } from '@angular/core';
-import { Observable, finalize } from 'rxjs';
+import { Observable, Subject, finalize, takeUntil } from 'rxjs';
 import { TableRange } from './data-table';
 
 export interface RowsPage<T> {
@@ -16,6 +16,7 @@ export class LazyRows<T> {
   private readonly firstPageFailed = signal(false);
   private readonly pendingRequests = signal(0);
   private readonly pendingRows = new Set<number>();
+  private readonly reloads = new Subject<void>();
   readonly loading = computed(() => this.pendingRequests() > 0);
   readonly empty = computed(() => this.rows()?.length === 0 && !this.firstPageFailed());
 
@@ -25,6 +26,7 @@ export class LazyRows<T> {
   ) {}
 
   reload(): void {
+    this.reloads.next();
     this.rows.set(undefined);
     this.firstPageFailed.set(false);
     this.load(FIRST_PAGE);
@@ -44,6 +46,7 @@ export class LazyRows<T> {
           indexes.forEach((index) => this.pendingRows.delete(index));
           this.pendingRequests.update((count) => count - 1);
         }),
+        takeUntil(this.reloads),
       )
       .subscribe({
         next: (page) =>
