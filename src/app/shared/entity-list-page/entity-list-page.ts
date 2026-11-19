@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { EditActionsService } from '@core/edit-actions.service';
-import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
+import { ConfirmationService, MessageService, OpenngIcons } from '@openng/optimus-ui/api';
 import { TableColumn } from '@shared/data-table/data-table';
 import { LazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -25,6 +25,7 @@ import { joinRouteIds } from '@shared/route-ids/route-ids';
 export class EntityListPage<T extends { id: string }> implements OnInit {
   private readonly router = inject(Router);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly messageService = inject(MessageService);
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
   readonly deleteEntities = input.required<(ids: string[]) => Promise<unknown>>();
@@ -32,7 +33,9 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
   readonly editPath = input.required<string>();
   readonly entityName = input.required<string>();
 
-  protected readonly lazyRows = computed(() => new LazyRows<T>(this.loadPage()));
+  protected readonly lazyRows = computed(
+    () => new LazyRows<T>(this.loadPage(), () => this.showLoadError()),
+  );
   protected readonly selection = signal<T[]>([]);
 
   constructor() {
@@ -61,6 +64,13 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
       acceptButtonProps: { label: 'Delete', severity: 'danger' },
       rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.delete(ids),
+    });
+
+  private readonly showLoadError = () =>
+    this.messageService.add({
+      severity: 'error',
+      summary: `The ${this.entityName()}s could not be loaded`,
+      detail: 'Reload the page to try again.',
     });
 
   private async delete(ids: string[]): Promise<void> {

@@ -29,7 +29,6 @@ export interface ImageWriter {
 const megabyte = 1024 * 1024;
 const maxFiles = 10;
 const maxFileBytes = 10 * megabyte;
-const errorMessageLife = 8000;
 
 @Component({
   selector: 'app-image-upload',
@@ -135,7 +134,6 @@ export class ImageUpload {
       severity: 'error',
       summary: 'Image not added',
       detail,
-      life: errorMessageLife,
     });
 
   private readonly confirmDelete = () => {

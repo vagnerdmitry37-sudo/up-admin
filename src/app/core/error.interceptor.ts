@@ -14,8 +14,6 @@ interface ErrorMessage {
   detail: string;
 }
 
-const ERROR_MESSAGE_LIFE_MS = 8000;
-
 const problemOf = (error: HttpErrorResponse): ProblemDetails =>
   typeof error.error === 'object' && error.error !== null ? (error.error as ProblemDetails) : {};
 
@@ -75,7 +73,6 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
       if (!handledElsewhere) {
         messageService.add({
           severity: 'error',
-          life: ERROR_MESSAGE_LIFE_MS,
           ...errorMessageFor(error),
         });
       }

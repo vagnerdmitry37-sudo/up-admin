@@ -18,6 +18,8 @@ export class Shell {
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
 
+  protected readonly messageLife = 8000;
+
   protected async logout(): Promise<void> {
     await this.sessionService.logout();
     await this.router.navigateByUrl('/login');
