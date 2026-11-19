@@ -14,9 +14,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { AppMessageService } from '@core/app-message.service';
 import { EditActionsService } from '@core/edit-actions.service';
 import { Image } from '@core/api/models';
-import { ConfirmationService, MessageService, OpenngIcons } from '@openng/optimus-ui/api';
+import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { AppMotion } from '@shared/motion/motion';
 
@@ -43,7 +44,7 @@ export class ImageUpload {
   readonly writer = input.required<ImageWriter>();
 
   private readonly confirmationService = inject(ConfirmationService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(AppMessageService);
   private readonly fileUpload = viewChild(FileUpload);
   private readonly uploading = signal<File[]>([]);
   private readonly deleting = signal(false);
@@ -130,11 +131,7 @@ export class ImageUpload {
   }
 
   private readonly showUploadError = (detail: string) =>
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Image not added',
-      detail,
-    });
+    this.messageService.error('Image not added', detail);
 
   private readonly confirmDelete = () => {
     const selected = this.selection();

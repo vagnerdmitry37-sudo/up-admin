@@ -8,8 +8,9 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { AppMessageService } from '@core/app-message.service';
 import { EditActionsService } from '@core/edit-actions.service';
-import { ConfirmationService, MessageService, OpenngIcons } from '@openng/optimus-ui/api';
+import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import { TableColumn } from '@shared/data-table/data-table';
 import { LazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -25,7 +26,7 @@ import { joinRouteIds } from '@shared/route-ids/route-ids';
 export class EntityListPage<T extends { id: string }> implements OnInit {
   private readonly router = inject(Router);
   private readonly confirmationService = inject(ConfirmationService);
-  private readonly messageService = inject(MessageService);
+  private readonly messageService = inject(AppMessageService);
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
   readonly deleteEntities = input.required<(ids: string[]) => Promise<unknown>>();
@@ -67,11 +68,10 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
     });
 
   private readonly showLoadError = () =>
-    this.messageService.add({
-      severity: 'error',
-      summary: `The ${this.entityName()}s could not be loaded`,
-      detail: 'Reload the page to try again.',
-    });
+    this.messageService.error(
+      `The ${this.entityName()}s could not be loaded`,
+      'Reload the page to try again.',
+    );
 
   private async delete(ids: string[]): Promise<void> {
     await this.deleteEntities()(ids);

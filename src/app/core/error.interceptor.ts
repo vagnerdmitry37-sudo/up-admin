@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpStatusCode } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
-import { MessageService } from '@openng/optimus-ui/api';
+import { AppMessageService } from '@core/app-message.service';
 import { catchError, throwError } from 'rxjs';
 
 interface ProblemDetails {
@@ -61,7 +61,7 @@ const errorMessageFor = (error: HttpErrorResponse): ErrorMessage => {
 };
 
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
-  const messageService = inject(MessageService);
+  const messageService = inject(AppMessageService);
   const authUrl = `${inject(API_BASE_URL)}/auth/`;
   const isLoginRequest = request.url === `${authUrl}login`;
   const isOtherAuthRequest = request.url.startsWith(authUrl) && !isLoginRequest;
@@ -74,10 +74,8 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         isOtherAuthRequest ||
         (isLoginRequest && error.status === HttpStatusCode.BadRequest);
       if (!handledElsewhere) {
-        messageService.add({
-          severity: 'error',
-          ...errorMessageFor(error),
-        });
+        const { summary, detail } = errorMessageFor(error);
+        messageService.error(summary, detail);
       }
       return throwError(() => error);
     }),
