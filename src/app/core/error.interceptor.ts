@@ -63,13 +63,16 @@ const errorMessageFor = (error: HttpErrorResponse): ErrorMessage => {
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   const messageService = inject(MessageService);
   const authUrl = `${inject(API_BASE_URL)}/auth/`;
+  const isLoginRequest = request.url === `${authUrl}login`;
+  const isOtherAuthRequest = request.url.startsWith(authUrl) && !isLoginRequest;
 
   return next(request).pipe(
     catchError((error: unknown) => {
       const handledElsewhere =
         !(error instanceof HttpErrorResponse) ||
         error.status === HttpStatusCode.Unauthorized ||
-        request.url.startsWith(authUrl);
+        isOtherAuthRequest ||
+        (isLoginRequest && error.status === HttpStatusCode.BadRequest);
       if (!handledElsewhere) {
         messageService.add({
           severity: 'error',
