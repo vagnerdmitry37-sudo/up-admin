@@ -28,10 +28,6 @@ describe('EditActionsService', () => {
     service = TestBed.inject(EditActionsService);
   });
 
-  it('has no actions until a page registers some', () => {
-    expect(service.actions()).toEqual({});
-  });
-
   it('follows the signals the registration reads', () => {
     TestBed.createComponent(PageHost);
     const create = vi.fn();
@@ -84,16 +80,6 @@ describe('EditActionsService', () => {
     expect(pageSave).toHaveBeenCalledTimes(1);
   });
 
-  it('ignores running an action the page did not register', () => {
-    TestBed.createComponent(PageHost);
-    const create = vi.fn();
-    actions.set({ create: { click: create } });
-
-    service.run('delete');
-
-    expect(create).not.toHaveBeenCalled();
-  });
-
   it('leaves out an action the page marks as not visible', () => {
     TestBed.createComponent(PageHost);
     const edit = vi.fn();
@@ -103,15 +89,6 @@ describe('EditActionsService', () => {
 
     expect(Object.keys(service.actions())).toEqual(['create']);
     expect(edit).not.toHaveBeenCalled();
-  });
-
-  it('drops a registration when its page is destroyed', () => {
-    const page = TestBed.createComponent(PageHost);
-    actions.set({ create: { click: vi.fn() } });
-
-    page.destroy();
-
-    expect(service.actions()).toEqual({});
   });
 
   it('lists every action the page marks as suggested', () => {

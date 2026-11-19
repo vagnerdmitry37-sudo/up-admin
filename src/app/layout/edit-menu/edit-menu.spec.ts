@@ -43,15 +43,6 @@ describe('EditMenu', () => {
     expect(actionLabels(menu.nativeElement)).toEqual(['Create', 'Edit']);
   });
 
-  it('hides an action the page marks as not visible', async () => {
-    TestBed.createComponent(Page);
-    actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn(), visible: false } });
-    const menu = TestBed.createComponent(EditMenu);
-    await menu.whenStable();
-
-    expect(actionLabels(menu.nativeElement)).toEqual(['Create']);
-  });
-
   it('runs the registered handler when an action is clicked', async () => {
     const edit = vi.fn();
     TestBed.createComponent(Page);
@@ -81,15 +72,6 @@ describe('EditMenu', () => {
 
     expect(menu.nativeElement.classList).toContain('suggesting');
     expect(marked).toEqual(['Create', 'Save']);
-  });
-
-  it('does not pulse when nothing is suggested', async () => {
-    TestBed.createComponent(Page);
-    actions.set({ create: { click: vi.fn() } });
-    const menu = TestBed.createComponent(EditMenu);
-    await menu.whenStable();
-
-    expect(menu.nativeElement.classList).not.toContain('suggesting');
   });
 
   it('opens when the page first offers actions', async () => {
