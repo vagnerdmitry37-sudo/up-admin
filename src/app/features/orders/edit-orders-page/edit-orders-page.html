@@ -3,6 +3,7 @@
   [load]="loadOrders"
   [label]="orderNumber"
   [writer]="orderWriter"
+  listPath="/orders"
 >
   <ng-template let-order>
     <app-order-form [order]="order" />

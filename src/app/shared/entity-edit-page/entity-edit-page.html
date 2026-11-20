@@ -1,5 +1,11 @@
-@if (entities.hasValue()) {
-  <app-entity-tabs [entities]="entities.value()" [label]="label()" [(active)]="activeId">
+@if (openEntities(); as shownEntities) {
+  <app-entity-tabs
+    [entities]="shownEntities"
+    [label]="label()"
+    [closable]="!saving()"
+    [(active)]="activeId"
+    (closeTab)="close($event)"
+  >
     <ng-template let-entity>
       <ng-container
         [ngTemplateOutlet]="entityTemplate()"

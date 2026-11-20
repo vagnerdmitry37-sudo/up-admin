@@ -89,6 +89,126 @@ describe('EditOrderItemsPage', () => {
     await new Promise((resolve) => setTimeout(resolve));
   };
 
+  const tabLabels = (fixture: ComponentFixture<EditOrderItemsPage>) =>
+    [...(fixture.nativeElement as HTMLElement).querySelectorAll('p-tab')].map((tab) =>
+      tab.textContent?.trim(),
+    );
+
+  const shownTabLabel = (fixture: ComponentFixture<EditOrderItemsPage>) =>
+    (fixture.nativeElement as HTMLElement)
+      .querySelector('p-tab[aria-selected="true"]')
+      ?.textContent?.trim();
+
+  const closeButton = (fixture: ComponentFixture<EditOrderItemsPage>, label: string) =>
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      `button[aria-label="Close ${label}"]`,
+    );
+
+  const showTab = async (fixture: ComponentFixture<EditOrderItemsPage>, label: string) => {
+    [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('p-tab')]
+      .find((tab) => tab.textContent?.trim() === label)
+      ?.click();
+    await fixture.whenStable();
+  };
+
+  const closeTab = async (fixture: ComponentFixture<EditOrderItemsPage>, label: string) => {
+    closeButton(fixture, label)?.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    const lastCall = navigate.mock.lastCall;
+    const ids = lastCall?.[1]?.queryParams?.ids;
+    if (ids) {
+      fixture.componentRef.setInput('ids', ids);
+    }
+    await fixture.whenStable();
+  };
+
+  const threeItems = () => [
+    orderItem('i1', 'Old Town'),
+    orderItem('i2', 'Airport'),
+    orderItem('i3', 'Castle'),
+  ];
+
+  it('closes a tab by dropping its id from the address without loading the items again', async () => {
+    const fixture = await render('i1,i2,i3', threeItems());
+
+    await closeTab(fixture, 'Product i2');
+
+    expect(navigate).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { ids: 'i1,i3' }, replaceUrl: true }),
+    );
+    expect(tabLabels(fixture)).toEqual(['Product i1', 'Product i3']);
+    httpTestingController.expectNone((request) => request.url === '/api/orders/by-ids');
+  });
+
+  it('keeps unsaved changes in the other tabs when one tab is closed', async () => {
+    const fixture = await render('i1,i2', threeItems().slice(0, 2));
+    await edit(fixture, { pickupAddress: 'Changed' });
+
+    await closeTab(fixture, 'Product i2');
+
+    expect(itemForm(fixture).getRawValue().pickupAddress).toBe('Changed');
+    expect(itemForm(fixture).dirty).toBe(true);
+  });
+
+  it('shows the right neighbour after closing the shown tab, or the left one when it was last', async () => {
+    const fixture = await render('i1,i2,i3', threeItems());
+    await showTab(fixture, 'Product i2');
+
+    await closeTab(fixture, 'Product i2');
+    expect(shownTabLabel(fixture)).toBe('Product i3');
+
+    await closeTab(fixture, 'Product i3');
+    expect(shownTabLabel(fixture)).toBe('Product i1');
+  });
+
+  it('returns to the order when the last open item is closed', async () => {
+    const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const fixture = await render('i1', [orderItem('i1', 'Old Town')]);
+
+    expect(tabLabels(fixture)).toEqual(['Product i1']);
+    await closeTab(fixture, 'Product i1');
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
+  });
+
+  it('asks before closing a tab with unsaved changes and closes it only on Discard', async () => {
+    const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
+    const fixture = await render('i1,i2', threeItems().slice(0, 2));
+    await edit(fixture, { passengers: 9 });
+
+    await closeTab(fixture, 'Product i1');
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Close Product i1 and discard its unsaved changes?' }),
+    );
+    expect(navigate).not.toHaveBeenCalled();
+
+    await confirm.mock.lastCall?.[0].accept?.();
+    expect(navigate).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { ids: 'i2' }, replaceUrl: true }),
+    );
+  });
+
+  it('disables closing tabs while saving', async () => {
+    const fixture = await render('i1,i2', threeItems().slice(0, 2));
+    await edit(fixture, { passengers: 5 });
+
+    await save();
+    await fixture.whenStable();
+    expect(closeButton(fixture, 'Product i1')?.disabled).toBe(true);
+
+    httpTestingController.expectOne('/api/orders/o1/items').flush([]);
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    httpTestingController
+      .expectOne((request) => request.url === '/api/orders/by-ids')
+      .flush([order(threeItems())]);
+    await fixture.whenStable();
+    expect(closeButton(fixture, 'Product i1')?.disabled).toBe(false);
+  });
+
   it('creates an item in its order with the product id and the start as ISO time', async () => {
     const fixture = await render();
 

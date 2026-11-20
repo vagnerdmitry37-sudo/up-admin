@@ -7,7 +7,9 @@ import {
   contentChild,
   input,
   model,
+  output,
 } from '@angular/core';
+import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
 
 export interface EntityTabContext<T> {
@@ -16,7 +18,7 @@ export interface EntityTabContext<T> {
 
 @Component({
   selector: 'app-entity-tabs',
-  imports: [NgTemplateOutlet, Tabs, TabList, Tab, TabPanels, TabPanel],
+  imports: [NgTemplateOutlet, Tabs, TabList, Tab, TabPanels, TabPanel, ButtonDirective, ButtonIcon],
   templateUrl: './entity-tabs.html',
   styleUrl: './entity-tabs.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,7 +26,9 @@ export interface EntityTabContext<T> {
 export class EntityTabs<T extends { id: string }> {
   readonly entities = input.required<readonly T[]>();
   readonly label = input.required<(entity: T) => string>();
+  readonly closable = input(false);
   readonly active = model<string>();
+  readonly closeTab = output<string>();
 
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityTabContext<T>>>(TemplateRef);
@@ -33,6 +37,10 @@ export class EntityTabs<T extends { id: string }> {
     const active = this.active();
     return entities.some((entity) => entity.id === active) ? active : entities[0]?.id;
   });
-
   protected readonly show = (id: string | number | undefined) => this.active.set(id?.toString());
+
+  protected readonly close = (id: string, event: Event) => {
+    event.stopPropagation();
+    this.closeTab.emit(id);
+  };
 }

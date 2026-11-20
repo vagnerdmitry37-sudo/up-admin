@@ -3,6 +3,7 @@
   [load]="loadCustomers"
   [label]="customerName"
   [writer]="customerWriter"
+  listPath="/customers"
 >
   <ng-template let-customer>
     <app-customer-form [customer]="customer" />

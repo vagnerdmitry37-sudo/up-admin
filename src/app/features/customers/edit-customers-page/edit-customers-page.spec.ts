@@ -5,6 +5,7 @@ import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService } from '@openng/optimus-ui/api';
 import { EditCustomersPage } from './edit-customers-page';
 
 const customer = (id: string, name: string): Customer => ({
@@ -27,6 +28,7 @@ describe('EditCustomersPage', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
+        ConfirmationService,
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);

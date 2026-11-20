@@ -3,6 +3,7 @@
   [load]="loadOrderItems"
   [label]="productName"
   [writer]="orderItemWriter"
+  [listPath]="orderPath()"
 >
   <ng-template let-orderItem>
     <app-order-item-form [orderItem]="orderItem" />

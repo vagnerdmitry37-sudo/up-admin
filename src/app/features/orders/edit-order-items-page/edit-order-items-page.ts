@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { OrderItem } from '@core/api/models';
 import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
+import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { map } from 'rxjs';
 import { OrderItemForm, OrderItemFormValue } from '../order-item-form/order-item-form';
 import { OrderItemsService } from '../order-items.service';
@@ -33,6 +34,9 @@ export class EditOrderItemsPage {
           orders.flatMap((order) => order.items).filter((item) => ids.includes(item.id)),
         ),
       );
+  protected readonly orderPath = computed(
+    () => `/edit-orders-page?ids=${joinRouteIds([this.orderId()])}`,
+  );
   protected readonly productName = (orderItem: OrderItem) => orderItem.productName;
   protected readonly orderItemWriter: EntityWriter<OrderItem, OrderItemFormValue> = {
     create: (orderItem) =>

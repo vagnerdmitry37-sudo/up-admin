@@ -50,9 +50,10 @@ Entities are deleted only from the list table: select one or more rows, run Dele
 
 ### Edit page logic lives in `EntityEditPage`
 
-`shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `writer` (`create` and `update`, both required) and the form template. Shared behaviour (creating and updating) goes there, not into the entity pages. Deleting is not done here: it lives in `EntityListPage`.
+`shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `writer` (`create` and `update`, both required), `listPath` and the form template. Shared behaviour (creating and updating) goes there, not into the entity pages. Deleting is not done here: it lives in `EntityListPage`.
 
-- With `ids`: loads the records and shows one tab per record (no tab bar for a single record), rendering the template with the record.
+- With `ids`: loads the records and shows one tab per record, rendering the template with the record. The tab bar is shown for any number of records, one included, so the layout never jumps while tabs are closed.
+- Each tab has a close button (×). It is disabled, not hidden, while saving, so tabs never change width. Closing the last open tab navigates to `listPath` (with `replaceUrl`): `/<entity>s` for the three entities, the order's edit page for order items. Closing only removes the id from `?ids` (with `replaceUrl`, so Back does not reopen it); it never deletes the record, and it is a view action, so it may live on the tab instead of the action menu. A tab with unsaved changes asks first (Discard / Keep editing). Closing the shown tab shows its right neighbour, or the left one if it was last. Removing ids does not reload the records (`loadedIds` ignores subsets), so unsaved edits in the other tabs survive. The × is focusable only on the active tab and stops Enter and Space from reaching `p-tab`, which would otherwise cancel its click.
 - Without `ids`: renders the template with `undefined`, so the form is empty.
 - Save appears while any open form is dirty. It validates only the dirty forms (`EntityForm.validValue`); if one is invalid, nothing is sent and its tab is shown.
 - Creating calls `writer.create(value)` and reopens the same route with `?ids=<new id>`. Updating calls `writer.update(changes)` once with every changed record (`EntityChange`: the loaded entity and the form value), which maps them to one bulk PUT (all or nothing), then reloads the records.

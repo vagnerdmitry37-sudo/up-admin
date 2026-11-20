@@ -3,6 +3,7 @@
   [load]="loadProducts"
   [label]="productName"
   [writer]="productWriter"
+  listPath="/products"
 >
   <ng-template let-product>
     <app-product-form [product]="product" [productTypes]="productTypes()" />
