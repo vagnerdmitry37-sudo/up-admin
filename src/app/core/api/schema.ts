@@ -655,66 +655,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: {
-      parameters: {
-        query?: {
-          first?: number;
-          rows?: number;
-        };
-        header?: never;
-        path: {
-          id: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['OrderItemsPageResponse'];
-            'application/json': components['schemas']['OrderItemsPageResponse'];
-            'text/json': components['schemas']['OrderItemsPageResponse'];
-          };
-        };
-        /** @description Bad Request */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['ValidationProblemDetails'];
-            'application/json': components['schemas']['ValidationProblemDetails'];
-            'text/json': components['schemas']['ValidationProblemDetails'];
-          };
-        };
-        /** @description Unauthorized */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['ProblemDetails'];
-            'application/json': components['schemas']['ProblemDetails'];
-            'text/json': components['schemas']['ProblemDetails'];
-          };
-        };
-        /** @description Not Found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['ProblemDetails'];
-            'application/json': components['schemas']['ProblemDetails'];
-            'text/json': components['schemas']['ProblemDetails'];
-          };
-        };
-      };
-    };
+    get?: never;
     put: {
       parameters: {
         query?: never;
@@ -2078,11 +2019,6 @@ export interface components {
       notes: string;
       /** Format: double */
       totalPrice: number;
-    };
-    OrderItemsPageResponse: {
-      items: components['schemas']['OrderItemResponse'][];
-      /** Format: int32 */
-      totalRecords: number;
     };
     OrderResponse: {
       /** Format: uuid */

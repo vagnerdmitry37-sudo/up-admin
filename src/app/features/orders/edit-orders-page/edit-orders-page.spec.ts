@@ -58,16 +58,10 @@ describe('EditOrdersPage', () => {
       httpTestingController
         .expectOne((request) => request.url === '/api/orders/by-ids')
         .flush(orders);
-      await new Promise((resolve) => setTimeout(resolve));
-      TestBed.tick();
-      expectItems(orders[0].id).flush({ items: [], totalRecords: 0 });
     }
     await fixture.whenStable();
     return fixture;
   };
-
-  const expectItems = (orderId: string) =>
-    httpTestingController.expectOne((request) => request.url === `/api/orders/${orderId}/items`);
 
   const openTab = async (fixture: ComponentFixture<EditOrdersPage>, label: string) => {
     [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]')]
@@ -124,12 +118,10 @@ describe('EditOrdersPage', () => {
       order('o1', customer('c1', 'Ada')),
       order('o2', customer('c2', 'Grace')),
     ]);
-    httpTestingController.expectNone((request) => request.url === '/api/orders/o2/items');
+    expect(fixture.nativeElement.querySelectorAll('app-order-items-table')).toHaveLength(1);
 
     await openTab(fixture, 'N-o2');
 
-    expectItems('o2').flush({ items: [], totalRecords: 0 });
-    await fixture.whenStable();
     expect(fixture.nativeElement.querySelectorAll('app-order-items-table')).toHaveLength(2);
   });
 

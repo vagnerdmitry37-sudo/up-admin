@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
-import { OrderItem } from '@core/api/models';
+import { Order, OrderItem } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -47,32 +47,40 @@ describe('OrderItemsTable', () => {
 
   afterEach(() => httpTestingController.verify());
 
-  const expectFirstPage = () =>
-    httpTestingController.expectOne(
-      (request) =>
-        request.method === 'GET' &&
-        request.url === '/api/orders/o1/items' &&
-        request.params.get('first') === '0' &&
-        request.params.get('rows') === '50',
-    );
+  const order = (items: OrderItem[]): Order => ({
+    id: 'o1',
+    number: 'N-o1',
+    status: 'Pending',
+    customer: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    totalPrice: 0,
+    items,
+  });
 
   const render = async (items: OrderItem[]) => {
     const fixture = TestBed.createComponent(OrderItemsTable);
-    fixture.componentRef.setInput('orderId', 'o1');
-    fixture.detectChanges();
-    expectFirstPage().flush({ items, totalRecords: items.length });
+    fixture.componentRef.setInput('order', order(items));
     await fixture.whenStable();
     return fixture;
   };
 
-  const select = async (fixture: ComponentFixture<OrderItemsTable>, items: OrderItem[]) => {
-    const table = fixture.debugElement.query(By.directive(EntityTable))
+  const entityTable = (fixture: ComponentFixture<OrderItemsTable>) =>
+    fixture.debugElement.query(By.directive(EntityTable))
       .componentInstance as EntityTable<OrderItem>;
-    table.selection.set(items);
+
+  const select = async (fixture: ComponentFixture<OrderItemsTable>, items: OrderItem[]) => {
+    entityTable(fixture).selection.set(items);
     await fixture.whenStable();
   };
 
-  it('deletes the selected items of its order in one request and reloads them', async () => {
+  it('shows the items of its order without requesting them', async () => {
+    const fixture = await render([orderItem('i1'), orderItem('i2')]);
+
+    httpTestingController.expectNone(() => true);
+    expect(entityTable(fixture).rows()).toEqual([orderItem('i1'), orderItem('i2')]);
+  });
+
+  it('deletes the selected items of its order in one request and shows the items left', async () => {
     const confirmationService = TestBed.inject(ConfirmationService);
     vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
       confirmation.accept?.();
@@ -87,11 +95,11 @@ describe('OrderItemsTable', () => {
       (candidate) => candidate.method === 'DELETE' && candidate.url === '/api/orders/o1/items',
     );
     expect(request.request.params.getAll('ids')).toEqual(['i1', 'i3']);
-    request.flush(null);
+    request.flush(order([orderItem('i2')]));
     await new Promise((resolve) => setTimeout(resolve));
-    expectFirstPage().flush({ items: [orderItem('i2')], totalRecords: 1 });
     await fixture.whenStable();
 
+    expect(entityTable(fixture).rows()).toEqual([orderItem('i2')]);
     expect(editActionsService.actions().delete).toBeUndefined();
   });
 });
