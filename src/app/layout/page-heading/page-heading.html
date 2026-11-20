@@ -1,0 +1,7 @@
+@if (heading(); as heading) {
+  <span class="title">{{ heading.title }}</span>
+  @if (heading.action; as action) {
+    <span class="separator" aria-hidden="true">/</span>
+    <span class="action">{{ action }}</span>
+  }
+}
