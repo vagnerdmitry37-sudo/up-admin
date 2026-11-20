@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { OrderItem } from '@core/api/models';
 import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader } from '@shared/data-table/lazy-rows';
@@ -16,6 +16,7 @@ export class OrderItems {
 
   private readonly orderItemsService = inject(OrderItemsService);
 
+  protected readonly editPath = computed(() => `/edit-order-items-page/${this.orderId()}`);
   protected readonly loadPage: RowsPageLoader<OrderItem> = (first, rows) =>
     this.orderItemsService.list(this.orderId(), first, rows);
   protected readonly deleteItems = (ids: string[]) =>

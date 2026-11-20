@@ -34,6 +34,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'edit-order-items-page/:orderId',
+        title: 'Edit order items · UP',
+        loadComponent: () =>
+          import('@features/orders/edit-order-items-page/edit-order-items-page').then(
+            (m) => m.EditOrderItemsPage,
+          ),
+      },
+      {
         path: 'customers',
         title: 'Customers · UP',
         loadComponent: () =>

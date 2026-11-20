@@ -12,7 +12,7 @@ import {
 } from '@core/api/models';
 import { firstValueFrom, map } from 'rxjs';
 
-const MAX_PRODUCT_OPTIONS = 200;
+const MAX_PRODUCT_OPTIONS = 20;
 const MAX_CUSTOMER_OPTIONS = 20;
 
 @Injectable({ providedIn: 'root' })
@@ -42,10 +42,14 @@ export class OrdersService {
       })
       .pipe(map((page) => page.items));
 
-  getProducts = () =>
+  searchProducts = (query: string) =>
     this.httpClient
       .get<ProductsPageResponse>(`${this.apiBaseUrl}/products`, {
-        params: { rows: MAX_PRODUCT_OPTIONS, sortField: 'Name' satisfies ProductSortField },
+        params: {
+          globalFilter: query,
+          rows: MAX_PRODUCT_OPTIONS,
+          sortField: 'Name' satisfies ProductSortField,
+        },
       })
       .pipe(map((page) => page.items));
 }
