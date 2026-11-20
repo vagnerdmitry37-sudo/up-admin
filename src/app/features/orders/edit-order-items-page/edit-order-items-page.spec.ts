@@ -172,6 +172,35 @@ describe('EditOrderItemsPage', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
   });
 
+  it('shows a New order item tab when creating and returns to the order when it is closed', async () => {
+    const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
+    const fixture = await render();
+
+    expect(tabLabels(fixture)).toEqual(['New order item']);
+    await closeTab(fixture, 'New order item');
+
+    expect(confirm).not.toHaveBeenCalled();
+    expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
+  });
+
+  it('asks before cancelling a changed new item and leaves only on Discard', async () => {
+    const navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
+    const fixture = await render();
+    await edit(fixture, { pickupAddress: 'Hotel Pupp' });
+
+    await closeTab(fixture, 'New order item');
+
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Close New order item and discard its unsaved changes?' }),
+    );
+    expect(navigateByUrl).not.toHaveBeenCalled();
+
+    await confirm.mock.lastCall?.[0].accept?.();
+    expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
+  });
+
   it('asks before closing a tab with unsaved changes and closes it only on Discard', async () => {
     const confirm = vi.spyOn(TestBed.inject(ConfirmationService), 'confirm');
     const fixture = await render('i1,i2', threeItems().slice(0, 2));

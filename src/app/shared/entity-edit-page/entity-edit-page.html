@@ -1,21 +1,16 @@
-@if (openEntities(); as shownEntities) {
+@if (tabs(); as shownTabs) {
   <app-entity-tabs
-    [entities]="shownEntities"
-    [label]="label()"
+    [entities]="shownTabs"
+    [label]="tabLabel()"
     [closable]="!saving()"
     [(active)]="activeId"
     (closeTab)="close($event)"
   >
-    <ng-template let-entity>
+    <ng-template let-tab>
       <ng-container
         [ngTemplateOutlet]="entityTemplate()"
-        [ngTemplateOutletContext]="{ $implicit: entity }"
+        [ngTemplateOutletContext]="{ $implicit: tab.entity }"
       />
     </ng-template>
   </app-entity-tabs>
-} @else if (!ids()) {
-  <ng-container
-    [ngTemplateOutlet]="entityTemplate()"
-    [ngTemplateOutletContext]="{ $implicit: undefined }"
-  />
 }

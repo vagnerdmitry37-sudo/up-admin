@@ -25,6 +25,13 @@ export interface EntityEditContext<T> {
   $implicit: T | undefined;
 }
 
+export interface EntityTab<T> {
+  id: string;
+  entity: T | undefined;
+}
+
+const newEntityTabId = 'new';
+
 export interface EntityChange<T, V> {
   entity: T;
   value: V;
@@ -45,6 +52,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
   readonly label = input.required<(entity: T) => string>();
+  readonly entityName = input.required<string>();
   readonly writer = input.required<EntityWriter<T, V>>();
   readonly listPath = input.required<string>();
 
@@ -73,6 +81,17 @@ export class EntityEditPage<T extends { id: string }, V> {
     }
     const openIds = this.openIds() ?? [];
     return this.entities.value().filter((entity) => openIds.includes(entity.id));
+  });
+  protected readonly tabs = computed<EntityTab<T>[] | undefined>(() => {
+    if (!this.ids()) {
+      return [{ id: newEntityTabId, entity: undefined }];
+    }
+    return this.openEntities()?.map((entity) => ({ id: entity.id, entity }));
+  });
+  protected readonly tabLabel = computed(() => {
+    const label = this.label();
+    const newEntityLabel = `New ${this.entityName()}`;
+    return (tab: EntityTab<T>) => (tab.entity ? label(tab.entity) : newEntityLabel);
   });
 
   constructor() {
@@ -116,28 +135,28 @@ export class EntityEditPage<T extends { id: string }, V> {
   };
 
   protected readonly close = async (id: string) => {
-    const entity = this.openEntities()?.find((candidate) => candidate.id === id);
-    if (!entity) {
+    const tab = this.tabs()?.find((candidate) => candidate.id === id);
+    if (!tab) {
       return;
     }
-    const form = this.forms().find((candidate) => candidate.value()?.id === id);
+    const form = this.forms().find((candidate) => candidate.value()?.id === tab.entity?.id);
     if (form?.dirty()) {
       this.confirmationService.confirm({
         header: 'Discard changes',
-        message: `Close ${this.label()(entity)} and discard its unsaved changes?`,
+        message: `Close ${this.tabLabel()(tab)} and discard its unsaved changes?`,
         icon: OpenngIcons.EXCLAMATION_TRIANGLE,
         defaultFocus: 'reject',
         acceptButtonProps: { label: 'Discard', severity: 'danger' },
         rejectButtonProps: { label: 'Keep editing', severity: 'secondary', outlined: true },
-        accept: () => this.closeEntity(id),
+        accept: () => this.closeTab(id),
       });
       return;
     }
-    await this.closeEntity(id);
+    await this.closeTab(id);
   };
 
-  private readonly closeEntity = async (id: string) => {
-    const openIds = (this.openEntities() ?? []).map((entity) => entity.id);
+  private readonly closeTab = async (id: string) => {
+    const openIds = (this.tabs() ?? []).map((tab) => tab.id);
     const remainingIds = openIds.filter((openId) => openId !== id);
     if (remainingIds.length === 0) {
       await this.router.navigateByUrl(this.listPath(), { replaceUrl: true });
