@@ -6,12 +6,12 @@ import { EntityListPage } from '@shared/entity-list-page/entity-list-page';
 import { OrderItemsService } from '../order-items.service';
 
 @Component({
-  selector: 'app-order-items',
+  selector: 'app-order-items-table',
   imports: [EntityListPage],
-  templateUrl: './order-items.html',
+  templateUrl: './order-items-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OrderItems {
+export class OrderItemsTable {
   readonly orderId = input.required<string>();
 
   private readonly orderItemsService = inject(OrderItemsService);

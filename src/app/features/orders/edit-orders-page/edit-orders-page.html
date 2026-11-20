@@ -7,7 +7,7 @@
   <ng-template let-order>
     <app-order-form [order]="order" />
     @if (order) {
-      <app-order-items [orderId]="order.id" />
+      <app-order-items-table [orderId]="order.id" />
     }
   </ng-template>
 </app-entity-edit-page>

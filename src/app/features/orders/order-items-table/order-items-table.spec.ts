@@ -8,7 +8,7 @@ import { OrderItem } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity-table/entity-table';
-import { OrderItems } from './order-items';
+import { OrderItemsTable } from './order-items-table';
 
 const orderItem = (id: string): OrderItem =>
   ({
@@ -26,7 +26,7 @@ const orderItem = (id: string): OrderItem =>
     totalPrice: 80,
   }) as OrderItem;
 
-describe('OrderItems', () => {
+describe('OrderItemsTable', () => {
   let httpTestingController: HttpTestingController;
   let editActionsService: EditActionsService;
 
@@ -57,7 +57,7 @@ describe('OrderItems', () => {
     );
 
   const render = async (items: OrderItem[]) => {
-    const fixture = TestBed.createComponent(OrderItems);
+    const fixture = TestBed.createComponent(OrderItemsTable);
     fixture.componentRef.setInput('orderId', 'o1');
     fixture.detectChanges();
     expectFirstPage().flush({ items, totalRecords: items.length });
@@ -65,7 +65,7 @@ describe('OrderItems', () => {
     return fixture;
   };
 
-  const select = async (fixture: ComponentFixture<OrderItems>, items: OrderItem[]) => {
+  const select = async (fixture: ComponentFixture<OrderItemsTable>, items: OrderItem[]) => {
     const table = fixture.debugElement.query(By.directive(EntityTable))
       .componentInstance as EntityTable<OrderItem>;
     table.selection.set(items);
