@@ -5,16 +5,18 @@
 :host(.lazy) {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
-  overflow-y: auto;
 
   p-table {
     flex: 1;
     min-height: 0;
   }
 
+  th,
   td {
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
