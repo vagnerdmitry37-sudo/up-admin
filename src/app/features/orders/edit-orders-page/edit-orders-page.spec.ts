@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer, Order } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { AutoComplete } from '@openng/optimus-ui/autocomplete';
 import { EntityForm } from '@shared/entity-form/entity-form';
 import { EditOrdersPage } from './edit-orders-page';
@@ -39,6 +40,8 @@ describe('EditOrdersPage', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
+        ConfirmationService,
+        MessageService,
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -55,6 +58,13 @@ describe('EditOrdersPage', () => {
       httpTestingController
         .expectOne((request) => request.url === '/api/orders/by-ids')
         .flush(orders);
+      await new Promise((resolve) => setTimeout(resolve));
+      TestBed.tick();
+      orders.forEach((loaded) =>
+        httpTestingController
+          .expectOne((request) => request.url === `/api/orders/${loaded.id}/items`)
+          .flush({ items: [], totalRecords: 0 }),
+      );
     }
     await fixture.whenStable();
     return fixture;

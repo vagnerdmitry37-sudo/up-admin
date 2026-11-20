@@ -2,14 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
-  CreateOrderItemRequest,
   CreateOrderRequest,
   CustomersPageResponse,
   Order,
   OrdersPageResponse,
   ProductSortField,
   ProductsPageResponse,
-  UpdateOrderItemRequest,
   UpdateOrderRequest,
 } from '@core/api/models';
 import { firstValueFrom, map } from 'rxjs';
@@ -33,17 +31,6 @@ export class OrdersService {
 
   update = (requests: UpdateOrderRequest[]) =>
     firstValueFrom(this.httpClient.put<Order[]>(this.url, requests));
-
-  createItem = (orderId: string, request: CreateOrderItemRequest) =>
-    firstValueFrom(this.httpClient.post<Order>(`${this.url}/${orderId}/items`, request));
-
-  updateItem = (orderId: string, itemId: string, request: UpdateOrderItemRequest) =>
-    firstValueFrom(this.httpClient.put<Order>(`${this.url}/${orderId}/items/${itemId}`, request));
-
-  deleteItems = (orderId: string, ids: string[]) =>
-    firstValueFrom(
-      this.httpClient.delete<Order>(`${this.url}/${orderId}/items`, { params: { ids } }),
-    );
 
   delete = (ids: string[]) =>
     firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));

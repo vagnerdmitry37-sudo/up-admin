@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core
 import { Order } from '@core/api/models';
 import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
 import { OrderForm, OrderFormValue } from '../order-form/order-form';
+import { OrderItems } from '../order-items/order-items';
 import { OrdersService } from '../orders.service';
 
 @Component({
   selector: 'app-edit-orders-page',
-  imports: [EntityEditPage, OrderForm],
+  imports: [EntityEditPage, OrderForm, OrderItems],
   templateUrl: './edit-orders-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
