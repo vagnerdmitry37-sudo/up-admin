@@ -60,14 +60,20 @@ describe('EditOrdersPage', () => {
         .flush(orders);
       await new Promise((resolve) => setTimeout(resolve));
       TestBed.tick();
-      orders.forEach((loaded) =>
-        httpTestingController
-          .expectOne((request) => request.url === `/api/orders/${loaded.id}/items`)
-          .flush({ items: [], totalRecords: 0 }),
-      );
+      expectItems(orders[0].id).flush({ items: [], totalRecords: 0 });
     }
     await fixture.whenStable();
     return fixture;
+  };
+
+  const expectItems = (orderId: string) =>
+    httpTestingController.expectOne((request) => request.url === `/api/orders/${orderId}/items`);
+
+  const openTab = async (fixture: ComponentFixture<EditOrdersPage>, label: string) => {
+    [...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]')]
+      .find((tab) => tab.textContent?.trim() === label)!
+      .click();
+    await fixture.whenStable();
   };
 
   const chooseCustomer = async (fixture: ComponentFixture<EditOrdersPage>, chosen: Customer) => {
@@ -111,6 +117,20 @@ describe('EditOrdersPage', () => {
     const request = httpTestingController.expectOne('/api/orders');
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual([{ id: 'o1', customerId: 'c2' }]);
+  });
+
+  it('builds the items table of a second order only when its tab is opened', async () => {
+    const fixture = await render('o1,o2', [
+      order('o1', customer('c1', 'Ada')),
+      order('o2', customer('c2', 'Grace')),
+    ]);
+    httpTestingController.expectNone((request) => request.url === '/api/orders/o2/items');
+
+    await openTab(fixture, 'N-o2');
+
+    expectItems('o2').flush({ items: [], totalRecords: 0 });
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelectorAll('app-order-items-table')).toHaveLength(2);
   });
 
   it('searches customers by the typed text and keeps searching after a failed search', async () => {

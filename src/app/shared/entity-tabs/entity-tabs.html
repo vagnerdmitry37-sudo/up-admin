@@ -12,11 +12,13 @@
     </p-tablist>
     <p-tabpanels>
       @for (entity of entities(); track entity.id) {
-        <p-tabpanel [value]="entity.id">
-          <ng-container
-            [ngTemplateOutlet]="entityTemplate()"
-            [ngTemplateOutletContext]="{ $implicit: entity }"
-          />
+        <p-tabpanel [value]="entity.id" lazy>
+          <ng-template #content>
+            <ng-container
+              [ngTemplateOutlet]="entityTemplate()"
+              [ngTemplateOutletContext]="{ $implicit: entity }"
+            />
+          </ng-template>
         </p-tabpanel>
       }
     </p-tabpanels>

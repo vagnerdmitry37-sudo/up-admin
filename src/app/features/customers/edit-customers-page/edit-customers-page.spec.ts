@@ -81,8 +81,15 @@ describe('EditCustomersPage', () => {
   };
 
   const tabs = (fixture: ComponentFixture<EditCustomersPage>) => [
-    ...(fixture.nativeElement as HTMLElement).querySelectorAll('[role="tab"]'),
+    ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]'),
   ];
+
+  const openTab = async (fixture: ComponentFixture<EditCustomersPage>, label: string) => {
+    tabs(fixture)
+      .find((tab) => tab.textContent?.trim() === label)!
+      .click();
+    await fixture.whenStable();
+  };
 
   it('offers Save once the new customer form changes, creates the customer and reopens the page with its id', async () => {
     const fixture = await render();
@@ -128,6 +135,7 @@ describe('EditCustomersPage', () => {
     const fixture = await render('c1,c2', [first, second]);
     expect(tabs(fixture).map((tab) => tab.textContent?.trim())).toEqual(['Ada', 'Grace']);
 
+    await openTab(fixture, 'Grace');
     await type(fixture, 'Name', 'Grace Hopper', 1);
     await save(fixture);
 
@@ -150,7 +158,9 @@ describe('EditCustomersPage', () => {
   it('shows the tab of an invalid customer instead of saving', async () => {
     const fixture = await render('c1,c2', [customer('c1', 'Ada'), customer('c2', 'Grace')]);
 
+    await openTab(fixture, 'Grace');
     await type(fixture, 'Name', '', 1);
+    await openTab(fixture, 'Ada');
     await type(fixture, 'Name', 'Ada Lovelace', 0);
     await save(fixture);
 
