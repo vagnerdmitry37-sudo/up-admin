@@ -2,17 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
-  CreateOrderItemRequest,
   CreateOrderRequest,
+  CustomersPageResponse,
   Order,
   OrdersPageResponse,
   ProductSortField,
   ProductsPageResponse,
-  UpdateOrderItemRequest,
+  UpdateOrderRequest,
 } from '@core/api/models';
 import { firstValueFrom, map } from 'rxjs';
 
-const MAX_PRODUCT_OPTIONS = 200;
+const MAX_PRODUCT_OPTIONS = 20;
+const MAX_CUSTOMER_OPTIONS = 20;
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
@@ -28,24 +29,27 @@ export class OrdersService {
   create = (request: CreateOrderRequest) =>
     firstValueFrom(this.httpClient.post<Order>(this.url, request));
 
-  createItem = (orderId: string, request: CreateOrderItemRequest) =>
-    firstValueFrom(this.httpClient.post<Order>(`${this.url}/${orderId}/items`, request));
-
-  updateItem = (orderId: string, itemId: string, request: UpdateOrderItemRequest) =>
-    firstValueFrom(this.httpClient.put<Order>(`${this.url}/${orderId}/items/${itemId}`, request));
-
-  deleteItems = (orderId: string, ids: string[]) =>
-    firstValueFrom(
-      this.httpClient.delete<Order>(`${this.url}/${orderId}/items`, { params: { ids } }),
-    );
+  update = (requests: UpdateOrderRequest[]) =>
+    firstValueFrom(this.httpClient.put<Order[]>(this.url, requests));
 
   delete = (ids: string[]) =>
     firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
 
-  getProducts = () =>
+  searchCustomers = (query: string) =>
+    this.httpClient
+      .get<CustomersPageResponse>(`${this.apiBaseUrl}/customers`, {
+        params: { globalFilter: query, rows: MAX_CUSTOMER_OPTIONS },
+      })
+      .pipe(map((page) => page.items));
+
+  searchProducts = (query: string) =>
     this.httpClient
       .get<ProductsPageResponse>(`${this.apiBaseUrl}/products`, {
-        params: { rows: MAX_PRODUCT_OPTIONS, sortField: 'Name' satisfies ProductSortField },
+        params: {
+          globalFilter: query,
+          rows: MAX_PRODUCT_OPTIONS,
+          sortField: 'Name' satisfies ProductSortField,
+        },
       })
       .pipe(map((page) => page.items));
 }

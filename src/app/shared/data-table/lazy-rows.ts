@@ -1,5 +1,5 @@
 import { computed, signal } from '@angular/core';
-import { Observable, finalize } from 'rxjs';
+import { Observable, Subject, finalize, takeUntil } from 'rxjs';
 import { TableRange } from './data-table';
 
 export interface RowsPage<T> {
@@ -13,15 +13,22 @@ const FIRST_PAGE: TableRange = { first: 0, rows: 50 };
 
 export class LazyRows<T> {
   readonly rows = signal<(T | undefined)[] | undefined>(undefined);
+  private readonly firstPageFailed = signal(false);
   private readonly pendingRequests = signal(0);
   private readonly pendingRows = new Set<number>();
+  private readonly reloads = new Subject<void>();
   readonly loading = computed(() => this.pendingRequests() > 0);
-  readonly empty = computed(() => this.rows()?.length === 0);
+  readonly empty = computed(() => this.rows()?.length === 0 && !this.firstPageFailed());
 
-  constructor(private readonly loadPage: RowsPageLoader<T>) {}
+  constructor(
+    private readonly loadPage: RowsPageLoader<T>,
+    private readonly onFirstPageError: () => void,
+  ) {}
 
   reload(): void {
+    this.reloads.next();
     this.rows.set(undefined);
+    this.firstPageFailed.set(false);
     this.load(FIRST_PAGE);
   }
 
@@ -39,14 +46,23 @@ export class LazyRows<T> {
           indexes.forEach((index) => this.pendingRows.delete(index));
           this.pendingRequests.update((count) => count - 1);
         }),
+        takeUntil(this.reloads),
       )
-      .subscribe((page) =>
-        this.rows.update((current = []) => {
-          const next = Array.from({ length: page.totalRecords }, (_, index) => current[index]);
-          next.splice(missing.first, page.items.length, ...page.items);
-          return next;
-        }),
-      );
+      .subscribe({
+        next: (page) =>
+          this.rows.update((current = []) => {
+            const next = Array.from({ length: page.totalRecords }, (_, index) => current[index]);
+            next.splice(missing.first, page.items.length, ...page.items);
+            return next;
+          }),
+        error: () => {
+          if (this.rows() === undefined) {
+            this.firstPageFailed.set(true);
+            this.rows.set([]);
+            this.onFirstPageError();
+          }
+        },
+      });
   }
 
   private missingRange(range: TableRange): TableRange | undefined {

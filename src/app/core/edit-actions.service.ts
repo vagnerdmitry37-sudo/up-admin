@@ -1,6 +1,14 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { ActionTriggerKind } from '@shared/action-trigger/action-trigger';
 
 export type EditAction = 'create' | 'edit' | 'save' | 'delete';
+
+export const EDIT_ACTION_TRIGGERS: Record<EditAction, ActionTriggerKind> = {
+  create: 'click',
+  edit: 'click',
+  save: 'hold',
+  delete: 'hold',
+};
 
 export interface EditActionConfig {
   click?: VoidFunction;
@@ -18,12 +26,14 @@ export interface EditActionsRegistration {
 export class EditActionsService {
   private readonly stack = signal<EditActionsRegistration[]>([]);
 
-  readonly actions = computed(() => {
-    const registered = this.stack().at(-1)?.actions() ?? {};
-    return Object.fromEntries(
-      Object.entries(registered).filter(([, config]) => config.visible !== false),
-    ) as EditActions;
-  });
+  readonly actions = computed(
+    () =>
+      Object.fromEntries(
+        this.stack().flatMap((registration) =>
+          Object.entries(registration.actions()).filter(([, config]) => config.visible !== false),
+        ),
+      ) as EditActions,
+  );
   readonly suggested = computed(() =>
     Object.entries(this.actions())
       .filter(([, config]) => config.suggested)

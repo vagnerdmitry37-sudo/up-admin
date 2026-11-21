@@ -11,7 +11,10 @@ import { CustomersService } from '../customers.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomersPage {
-  protected readonly loadPage = inject(CustomersService).list;
+  private readonly customersService = inject(CustomersService);
+
+  protected readonly loadPage = this.customersService.list;
+  protected readonly deleteEntities = this.customersService.delete;
   protected readonly columns: TableColumn<Customer>[] = [
     { header: 'Name', value: (customer) => customer.name },
     { header: 'Email', value: (customer) => customer.email },

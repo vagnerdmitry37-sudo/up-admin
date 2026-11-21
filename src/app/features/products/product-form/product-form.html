@@ -14,6 +14,13 @@
     [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
   />
 
+  <app-product-attributes-fields
+    [control]="attributes"
+    [type]="selectedType()"
+    [productTypes]="productTypes()"
+    [product]="product()"
+  />
+
   <app-text-field
     label="Name"
     [control]="form.controls.name"

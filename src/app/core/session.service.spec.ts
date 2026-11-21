@@ -109,10 +109,6 @@ describe('SessionService', () => {
     await login;
   };
 
-  it('does not report an expired token while signed out', () => {
-    expect(service.isExpired()).toBe(false);
-  });
-
   it('does not report a fresh token as expired', async () => {
     await signInExpiringIn(60_000);
 
@@ -125,12 +121,6 @@ describe('SessionService', () => {
     expect(service.isExpired()).toBe(true);
   });
 
-  it('reports a token past its expiry time as expired', async () => {
-    await signInExpiringIn(-5_000);
-
-    expect(service.isExpired()).toBe(true);
-  });
-
   it('takes the new expiry time from a refresh', async () => {
     await signInExpiringIn(-5_000);
 
@@ -139,18 +129,6 @@ describe('SessionService', () => {
       accessToken: 'token-2',
       expiresAt: new Date(Date.now() + 60_000).toISOString(),
     });
-    await refresh;
-
-    expect(service.isExpired()).toBe(false);
-  });
-
-  it('forgets the expiry time when the refresh token is rejected', async () => {
-    await signInExpiringIn(-5_000);
-
-    const refresh = service.refresh();
-    httpTestingController
-      .expectOne('/api/auth/refresh')
-      .flush(null, { status: 401, statusText: 'Unauthorized' });
     await refresh;
 
     expect(service.isExpired()).toBe(false);

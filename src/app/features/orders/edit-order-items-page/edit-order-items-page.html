@@ -1,0 +1,12 @@
+<app-entity-edit-page
+  [ids]="ids()"
+  [load]="loadOrderItems"
+  [label]="productName"
+  [writer]="orderItemWriter"
+  entityName="order item"
+  [listPath]="orderPath()"
+>
+  <ng-template let-orderItem>
+    <app-order-item-form [orderItem]="orderItem" />
+  </ng-template>
+</app-entity-edit-page>

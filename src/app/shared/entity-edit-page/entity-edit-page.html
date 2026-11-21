@@ -1,0 +1,16 @@
+@if (tabs(); as shownTabs) {
+  <app-entity-tabs
+    [entities]="shownTabs"
+    [label]="tabLabel()"
+    [closable]="!saving()"
+    [(active)]="activeId"
+    (closeTab)="close($event)"
+  >
+    <ng-template let-tab>
+      <ng-container
+        [ngTemplateOutlet]="entityTemplate()"
+        [ngTemplateOutletContext]="{ $implicit: tab.entity }"
+      />
+    </ng-template>
+  </app-entity-tabs>
+}

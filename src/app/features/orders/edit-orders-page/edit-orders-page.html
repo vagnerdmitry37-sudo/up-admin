@@ -1,7 +1,15 @@
-@if (orders.hasValue()) {
-  <app-entity-tabs [entities]="orders.value()" [label]="orderNumber">
-    <ng-template let-order>
-      <app-order-form [order]="order" />
-    </ng-template>
-  </app-entity-tabs>
-}
+<app-entity-edit-page
+  [ids]="ids()"
+  [load]="loadOrders"
+  [label]="orderNumber"
+  [writer]="orderWriter"
+  entityName="order"
+  listPath="/orders"
+>
+  <ng-template let-order>
+    <app-order-form [order]="order" />
+    @if (order) {
+      <app-order-items-table [order]="order" />
+    }
+  </ng-template>
+</app-entity-edit-page>

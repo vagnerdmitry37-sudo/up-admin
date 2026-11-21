@@ -1,7 +1,12 @@
-@if (customers.hasValue()) {
-  <app-entity-tabs [entities]="customers.value()" [label]="customerName">
-    <ng-template let-customer>
-      <app-customer-form [customer]="customer" />
-    </ng-template>
-  </app-entity-tabs>
-}
+<app-entity-edit-page
+  [ids]="ids()"
+  [load]="loadCustomers"
+  [label]="customerName"
+  [writer]="customerWriter"
+  entityName="customer"
+  listPath="/customers"
+>
+  <ng-template let-customer>
+    <app-customer-form [customer]="customer" />
+  </ng-template>
+</app-entity-edit-page>

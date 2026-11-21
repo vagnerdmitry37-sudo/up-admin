@@ -14,9 +14,10 @@
   [virtualScrollDelay]="0"
   [virtualScrollOptions]="{ showLoader: false }"
   (onLazyLoad)="loadRange($event)"
+  [tableStyle]="lazy() ? fixedTableLayout : undefined"
 >
   <ng-template #header>
-    <tr>
+    <tr [style.height.px]="rowHeight">
       @for (column of columns(); track column.header) {
         <th [class.end]="column.align === 'end'">{{ column.header }}</th>
       }

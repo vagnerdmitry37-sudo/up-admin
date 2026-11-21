@@ -1,14 +1,42 @@
-import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { CdkDropList } from '@angular/cdk/drag-drop';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ImageUpload } from './image-upload';
+import { Image } from '@core/api/models';
+import { EditActionsService } from '@core/edit-actions.service';
+import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
+import { ImageUpload, ImageWriter } from './image-upload';
+
+const image = (id: string, fileName: string): Image => ({
+  id,
+  entityType: 'Product',
+  entityId: 'p1',
+  sortOrder: 0,
+  fileName,
+  url: `https://img/${id}.webp`,
+});
 
 describe('ImageUpload', () => {
-  const render = async () => {
+  let writer: { [Key in keyof ImageWriter]: ReturnType<typeof vi.fn> };
+
+  beforeEach(() => {
+    URL.createObjectURL = vi.fn(() => 'blob:preview');
+    writer = { upload: vi.fn(), delete: vi.fn(), reorder: vi.fn() };
+    TestBed.configureTestingModule({ providers: [ConfirmationService, MessageService] });
+  });
+
+  const render = async (savedImages: Image[] = [], entityId: string | null = 'p1') => {
     const fixture = TestBed.createComponent(ImageUpload);
+    fixture.componentRef.setInput('entityId', entityId ?? undefined);
+    fixture.componentRef.setInput('savedImages', savedImages);
+    fixture.componentRef.setInput('writer', writer);
     await fixture.whenStable();
-    return fixture.nativeElement as HTMLElement;
+    return fixture;
   };
+
+  const cardNames = (fixture: ComponentFixture<ImageUpload>) =>
+    [...(fixture.nativeElement as HTMLElement).querySelectorAll('.files .file')].map((card) =>
+      card.textContent?.trim(),
+    );
 
   const chooseFiles = async (fixture: ComponentFixture<ImageUpload>, files: File[]) => {
     const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
@@ -16,292 +44,89 @@ describe('ImageUpload', () => {
     )!;
     Object.defineProperty(input, 'files', { value: files, configurable: true });
     input.dispatchEvent(new Event('change'));
+    await new Promise((resolve) => setTimeout(resolve));
     fixture.detectChanges();
     await fixture.whenStable();
-    return input;
   };
 
-  const savedImages = [
-    { id: 'i1', url: 'https://img/1.webp' },
-    { id: 'i2', url: 'https://img/2.webp' },
-  ];
+  it('shows nothing until the record has an id', async () => {
+    const fixture = await render([], null);
 
-  it('keeps pendingFiles in step with choosing, deleting and clearing images', async () => {
-    URL.createObjectURL = vi.fn(() => 'blob:preview');
-    const fixture = TestBed.createComponent(ImageUpload);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    const kept = new File(['a'], 'kept.jpg', { type: 'image/jpeg' });
-    const deleted = new File(['b'], 'deleted.jpg', { type: 'image/jpeg' });
-    expect(fixture.componentInstance.pendingFiles()).toEqual([]);
-
-    await chooseFiles(fixture, [kept, deleted]);
-    expect(fixture.componentInstance.pendingFiles()).toEqual([kept, deleted]);
-
-    element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')[1].click();
-    await fixture.whenStable();
-    fixture.componentInstance.deleteSelected();
-    expect(fixture.componentInstance.pendingFiles()).toEqual([kept]);
-
-    fixture.componentInstance.clearPending();
-    expect(fixture.componentInstance.pendingFiles()).toEqual([]);
+    expect((fixture.nativeElement as HTMLElement).querySelector('p-fileupload')).toBeNull();
   });
 
-  it('shows the drop zone with drag and click instructions', async () => {
-    const element = await render();
+  it('shows each image by file name, falls back to its position, and ends with the upload card', async () => {
+    const fixture = await render([image('i1', 'bridge.jpg'), image('i2', '')]);
 
-    expect(element.querySelector('button.drop-zone')?.textContent).toContain(
-      'Drag and drop images here, or click to choose files.',
+    expect(cardNames(fixture)).toEqual(['bridge.jpg', 'Image 2', 'Add images']);
+  });
+
+  it('uploads chosen files at once and adds the returned images before the upload card', async () => {
+    const fixture = await render([image('i1', 'bridge.jpg')]);
+    writer.upload.mockResolvedValue([image('i2', 'castle.jpg')]);
+    const file = new File(['a'], 'castle.jpg', { type: 'image/jpeg' });
+
+    await chooseFiles(fixture, [file]);
+
+    expect(writer.upload).toHaveBeenCalledWith('p1', [file]);
+    expect(cardNames(fixture)).toEqual(['bridge.jpg', 'castle.jpg', 'Add images']);
+  });
+
+  it('reports a file larger than 10 MB in a toast and does not upload it', async () => {
+    const fixture = await render();
+    const add = vi.spyOn(TestBed.inject(MessageService), 'add');
+    const file = new File(['a'], 'huge.jpg', { type: 'image/jpeg' });
+    Object.defineProperty(file, 'size', { value: 11 * 1024 * 1024 });
+
+    await chooseFiles(fixture, [file]);
+
+    expect(writer.upload).not.toHaveBeenCalled();
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'error',
+        summary: 'Image not added',
+        detail: 'huge.jpg is larger than 10 MB.',
+      }),
     );
+    expect((fixture.nativeElement as HTMLElement).querySelector('p-message')).toBeNull();
   });
 
-  it('opens the file picker when the drop zone is clicked', async () => {
-    const element = await render();
-    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
-    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+  it('saves the new order as soon as an image is dropped in a new place', async () => {
+    const first = image('i1', 'bridge.jpg');
+    const second = image('i2', 'castle.jpg');
+    const fixture = await render([first, second]);
+    writer.reorder.mockResolvedValue([second, first]);
 
-    element.querySelector<HTMLButtonElement>('button.drop-zone')!.click();
-
-    expect(openPicker).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not open the file picker when the area outside the drop zone is clicked', async () => {
-    const element = await render();
-    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
-    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
-
-    element.querySelector<HTMLElement>('.groups')!.click();
-
-    expect(openPicker).not.toHaveBeenCalled();
-  });
-
-  it('does not open the file picker when an image card is clicked', async () => {
-    URL.createObjectURL = vi.fn(() => 'blob:preview');
-    const fixture = TestBed.createComponent(ImageUpload);
+    fixture.debugElement
+      .query(By.directive(CdkDropList))
+      .triggerEventHandler('cdkDropListDropped', { previousIndex: 0, currentIndex: 1 });
     await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
-    Object.defineProperty(input, 'files', {
-      value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })],
+
+    expect(writer.reorder).toHaveBeenCalledWith('p1', ['i2', 'i1']);
+    expect(cardNames(fixture)).toEqual(['castle.jpg', 'bridge.jpg', 'Add images']);
+  });
+
+  it('deletes the selected images after confirmation and removes their cards', async () => {
+    const fixture = await render([image('i1', 'bridge.jpg'), image('i2', 'castle.jpg')]);
+    const editActionsService = TestBed.inject(EditActionsService);
+    const confirmationService = TestBed.inject(ConfirmationService);
+    vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
+      confirmation.accept?.();
+      return confirmationService;
     });
-    input.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
+    writer.delete.mockResolvedValue(undefined);
+    expect(editActionsService.actions().delete).toBeUndefined();
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.files .file')!
+      .click();
     await fixture.whenStable();
-    const openPicker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
-
-    element.querySelector<HTMLButtonElement>('button[aria-pressed]')!.click();
-
-    expect(openPicker).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.selection()).toHaveLength(1);
-  });
-
-  it('shows saved images as Saved cards and keeps the drop zone', async () => {
-    const fixture = TestBed.createComponent(ImageUpload);
-    fixture.componentRef.setInput('images', savedImages);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-
-    const cards = [...element.querySelectorAll('button[aria-pressed]')];
-    expect(cards.map((card) => card.querySelector('.name')?.textContent?.trim())).toEqual([
-      'Image 1',
-      'Image 2',
-    ]);
-    expect(cards.map((card) => card.querySelector('img')?.getAttribute('src'))).toEqual([
-      'https://img/1.webp',
-      'https://img/2.webp',
-    ]);
-    expect(cards.every((card) => card.textContent?.includes('Saved'))).toBe(true);
-    expect(element.querySelector('button.drop-zone')).not.toBeNull();
-  });
-
-  it('toggles saved images in and out of their own selection', async () => {
-    const fixture = TestBed.createComponent(ImageUpload);
-    fixture.componentRef.setInput('images', savedImages);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    const cards = () => element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]');
-
-    cards()[1].click();
-    await fixture.whenStable();
-    expect(fixture.componentInstance.savedSelection()).toEqual([savedImages[1]]);
-    expect(fixture.componentInstance.selection()).toEqual([]);
-    expect(cards()[1].getAttribute('aria-pressed')).toBe('true');
-
-    cards()[1].click();
-    await fixture.whenStable();
-    expect(fixture.componentInstance.savedSelection()).toEqual([]);
-    expect(cards()[1].getAttribute('aria-pressed')).toBe('false');
-  });
-
-  it('shows the size bar inside the Pending section only while images are pending', async () => {
-    URL.createObjectURL = vi.fn(() => 'blob:preview');
-    const fixture = TestBed.createComponent(ImageUpload);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.size-label')).toBeNull();
-
-    await chooseFiles(fixture, [new File(['ab'], 'photo.jpg', { type: 'image/jpeg' })]);
-
-    const pending = element.querySelector('.group')!;
-    expect(pending.querySelector('.group-title')?.textContent).toBe('Pending');
-    expect(pending.querySelector('.size-label')?.textContent).toContain('/ 100 MB');
-  });
-
-  it('shows rejection messages without an empty Pending block when no file was added', async () => {
-    const fixture = TestBed.createComponent(ImageUpload);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-
-    await chooseFiles(fixture, [new File(['x'], 'notes.txt', { type: 'text/plain' })]);
-
-    const pending = element.querySelector('.group')!;
-    expect(pending.querySelector('p-message')?.textContent).toContain('notes.txt');
-    expect(pending.querySelector('.group-title')).toBeNull();
-    expect(pending.querySelector('.size-label')).toBeNull();
-  });
-
-  it('accepts only JPEG, PNG and WebP images', async () => {
-    const element = await render();
-
-    const input = element.querySelector('input[type="file"]');
-    expect(input?.getAttribute('accept')).toBe('image/jpeg,image/png,image/webp');
-  });
-
-  it('explains why a chosen file was not added', async () => {
-    const fixture = TestBed.createComponent(ImageUpload);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    const tooLarge = new File(['x'], 'large.jpg', { type: 'image/jpeg' });
-    Object.defineProperty(tooLarge, 'size', { value: 11 * 1024 * 1024 });
-    const notAnImage = new File(['x'], 'notes.txt', { type: 'text/plain' });
-    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
-    Object.defineProperty(input, 'files', { value: [tooLarge, notAnImage] });
-
-    input.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
+    editActionsService.run('delete');
+    await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
 
-    const messages = element.querySelectorAll('p-message');
-    expect(messages).toHaveLength(2);
-    expect(messages[0].textContent).toContain('large.jpg: Invalid file size');
-    expect(messages[1].textContent).toContain('notes.txt: Invalid file type');
-  });
-
-  it('toggles a chosen image in and out of the selection, like a table row', async () => {
-    URL.createObjectURL = vi.fn(() => 'blob:preview');
-    const fixture = TestBed.createComponent(ImageUpload);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    const first = new File(['a'], 'first.jpg', { type: 'image/jpeg' });
-    const second = new File(['b'], 'second.jpg', { type: 'image/jpeg' });
-    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
-    Object.defineProperty(input, 'files', { value: [first, second] });
-    input.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    const cards = () => element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]');
-
-    cards()[0].click();
-    cards()[1].click();
-    await fixture.whenStable();
-    expect(fixture.componentInstance.selection()).toEqual([first, second]);
-    expect(cards()[0].getAttribute('aria-pressed')).toBe('true');
-
-    cards()[0].click();
-    await fixture.whenStable();
-    expect(fixture.componentInstance.selection()).toEqual([second]);
-    expect(cards()[0].getAttribute('aria-pressed')).toBe('false');
-  });
-
-  it('deletes only the selected images', async () => {
-    URL.createObjectURL = vi.fn(() => 'blob:preview');
-    const fixture = TestBed.createComponent(ImageUpload);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    const kept = new File(['a'], 'kept.jpg', { type: 'image/jpeg' });
-    const deleted = new File(['b'], 'deleted.jpg', { type: 'image/jpeg' });
-    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
-    Object.defineProperty(input, 'files', { value: [kept, deleted] });
-    input.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    element.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')[1].click();
-    await fixture.whenStable();
-
-    fixture.componentInstance.deleteSelected();
-    await fixture.whenStable();
-
-    const names = [...element.querySelectorAll('button[aria-pressed] .name')].map(
-      (name) => name.textContent,
-    );
-    expect(names).toEqual(['kept.jpg']);
-    expect(fixture.componentInstance.selection()).toEqual([]);
-  });
-
-  describe('reordering saved images', () => {
-    const threeImages = [...savedImages, { id: 'i3', url: 'https://img/3.webp' }];
-
-    const renderSaved = async (images = threeImages) => {
-      const fixture = TestBed.createComponent(ImageUpload);
-      fixture.componentRef.setInput('images', images);
-      await fixture.whenStable();
-      return fixture;
-    };
-
-    const drop = async (
-      fixture: ComponentFixture<ImageUpload>,
-      previousIndex: number,
-      currentIndex: number,
-    ) => {
-      fixture.debugElement
-        .query(By.directive(CdkDropList))
-        .injector.get(CdkDropList)
-        .dropped.emit({ previousIndex, currentIndex } as CdkDragDrop<unknown>);
-      await fixture.whenStable();
-    };
-
-    const shownUrls = (fixture: ComponentFixture<ImageUpload>) =>
-      [...(fixture.nativeElement as HTMLElement).querySelectorAll('.draggable img')].map((img) =>
-        img.getAttribute('src'),
-      );
-
-    it('gives every saved image a move handle', async () => {
-      const element = (await renderSaved()).nativeElement as HTMLElement;
-
-      expect(element.querySelectorAll('.draggable .drag-handle')).toHaveLength(3);
-    });
-
-    it('moves a dropped image to its new place and reports the changed order', async () => {
-      const fixture = await renderSaved();
-      expect(fixture.componentInstance.orderChanged()).toBe(false);
-
-      await drop(fixture, 2, 0);
-
-      expect(shownUrls(fixture)).toEqual([
-        'https://img/3.webp',
-        'https://img/1.webp',
-        'https://img/2.webp',
-      ]);
-      expect(fixture.componentInstance.orderChanged()).toBe(true);
-    });
-
-    it('reports no change when an image is dropped back where it was', async () => {
-      const fixture = await renderSaved();
-
-      await drop(fixture, 1, 1);
-
-      expect(fixture.componentInstance.orderChanged()).toBe(false);
-    });
-
-    it('shows the server order again once new saved images arrive', async () => {
-      const fixture = await renderSaved();
-      await drop(fixture, 2, 0);
-
-      fixture.componentRef.setInput('images', [...threeImages]);
-      await fixture.whenStable();
-
-      expect(shownUrls(fixture)).toEqual(threeImages.map((image) => image.url));
-      expect(fixture.componentInstance.orderChanged()).toBe(false);
-    });
+    expect(writer.delete).toHaveBeenCalledWith(['i1']);
+    expect(cardNames(fixture)).toEqual(['castle.jpg', 'Add images']);
+    expect(editActionsService.actions().delete).toBeUndefined();
   });
 });

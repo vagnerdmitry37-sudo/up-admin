@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  padding-inline-start: 0.75rem;
+  white-space: nowrap;
+}
+
+.title {
+  overflow: hidden;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  text-overflow: ellipsis;
+}
+
+.separator {
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--p-content-border-color);
+}
+
+.action {
+  flex: none;
+  font-size: 1rem;
+  color: var(--p-text-muted-color);
+}

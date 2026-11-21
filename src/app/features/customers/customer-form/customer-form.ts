@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
+import { Customer } from '@core/api/models';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { EntityForm } from '@shared/entity-form/entity-form';
 
@@ -16,7 +17,7 @@ export interface CustomerFormValue {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerForm {
-  readonly customer = input<CustomerFormValue>();
+  readonly customer = input<Customer>();
 
   private readonly formBuilder = inject(NonNullableFormBuilder);
 

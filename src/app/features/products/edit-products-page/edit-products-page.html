@@ -1,8 +1,17 @@
-@if (products.hasValue()) {
-  <app-entity-tabs [entities]="products.value()" [label]="productName">
-    <ng-template let-product>
-      <app-product-form [product]="product" [productTypes]="productTypes()" />
-      <app-image-upload [images]="product.images" />
-    </ng-template>
-  </app-entity-tabs>
-}
+<app-entity-edit-page
+  [ids]="ids()"
+  [load]="loadProducts"
+  [label]="productName"
+  [writer]="productWriter"
+  entityName="product"
+  listPath="/products"
+>
+  <ng-template let-product>
+    <app-product-form [product]="product" [productTypes]="productTypes()" />
+    <app-image-upload
+      [entityId]="product?.id"
+      [savedImages]="product?.images"
+      [writer]="productImageWriter"
+    />
+  </ng-template>
+</app-entity-edit-page>

@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   TemplateRef,
+  computed,
   contentChild,
   input,
   model,
@@ -30,7 +31,10 @@ export interface TableRange {
   templateUrl: './data-table.html',
   styleUrl: './data-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.lazy]': 'lazy()' },
+  host: {
+    '[class.lazy]': 'lazy()',
+    '[style.height.px]': 'lazy() ? contentHeight() : null',
+  },
 })
 export class DataTable<T extends object> {
   readonly rows = input.required<(T | undefined)[]>();
@@ -43,6 +47,11 @@ export class DataTable<T extends object> {
 
   protected readonly rowHeight = ROW_HEIGHT;
   protected readonly footerTemplate = contentChild<TemplateRef<unknown>>('footer');
+  protected readonly fixedTableLayout = { 'table-layout': 'fixed', width: '100%' };
+  protected readonly contentHeight = computed(() => {
+    const headerAndFooterRows = this.footerTemplate() ? 2 : 1;
+    return (this.rows().length + headerAndFooterRows) * ROW_HEIGHT;
+  });
   protected readonly trackRow = (index: number, row: T | undefined) => row ?? index;
 
   protected loadRange({ first, rows }: TableLazyLoadEvent) {

@@ -32,15 +32,21 @@ export class TextareaField {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       let lastWidth = 0;
+      let pendingResizeFrame = 0;
       const widthObserver = new ResizeObserver(([entry]) => {
         const width = entry.contentRect.width;
-        if (width !== lastWidth) {
-          lastWidth = width;
-          this.textarea().resize();
+        if (width === 0 || width === lastWidth) {
+          return;
         }
+        lastWidth = width;
+        cancelAnimationFrame(pendingResizeFrame);
+        pendingResizeFrame = requestAnimationFrame(() => this.textarea().resize());
       });
       widthObserver.observe(this.textareaElement().nativeElement);
-      destroyRef.onDestroy(() => widthObserver.disconnect());
+      destroyRef.onDestroy(() => {
+        widthObserver.disconnect();
+        cancelAnimationFrame(pendingResizeFrame);
+      });
     });
   }
 }

@@ -1,16 +1,36 @@
 <p-tabs [value]="shownId()" (valueChange)="show($event)" scrollable>
   <p-tablist>
     @for (entity of entities(); track entity.id) {
-      <p-tab [value]="entity.id">{{ label()(entity) }}</p-tab>
+      <p-tab class="tab" [value]="entity.id">
+        {{ label()(entity) }}
+        <button
+          pButton
+          type="button"
+          class="close"
+          [text]="true"
+          severity="secondary"
+          [rounded]="true"
+          [disabled]="!closable()"
+          [attr.aria-label]="'Close ' + label()(entity)"
+          [attr.tabindex]="entity.id === shownId() ? 0 : -1"
+          (click)="close(entity.id, $event)"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
+        >
+          <i class="pi pi-times" aria-hidden="true" pButtonIcon></i>
+        </button>
+      </p-tab>
     }
   </p-tablist>
   <p-tabpanels>
     @for (entity of entities(); track entity.id) {
-      <p-tabpanel [value]="entity.id">
-        <ng-container
-          [ngTemplateOutlet]="entityTemplate()"
-          [ngTemplateOutletContext]="{ $implicit: entity }"
-        />
+      <p-tabpanel [value]="entity.id" lazy>
+        <ng-template #content>
+          <ng-container
+            [ngTemplateOutlet]="entityTemplate()"
+            [ngTemplateOutletContext]="{ $implicit: entity }"
+          />
+        </ng-template>
       </p-tabpanel>
     }
   </p-tabpanels>

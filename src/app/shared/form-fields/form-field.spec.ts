@@ -35,14 +35,9 @@ describe('form fields', () => {
     };
   };
 
-  it('shows no error before the field is touched', async () => {
-    const { error } = await render();
-
-    expect(error()).toBe('');
-  });
-
-  it('shows the message for the first error once the field is touched', async () => {
+  it('shows the message for the first error only once the field is touched', async () => {
     const { fixture, error } = await render();
+    expect(error()).toBe('');
 
     fixture.componentInstance.name.markAsTouched();
     await fixture.whenStable();

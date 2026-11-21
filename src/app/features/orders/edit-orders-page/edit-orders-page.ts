@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
 import { Order } from '@core/api/models';
-import { parseRouteIds } from '@shared/route-ids/route-ids';
-import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
-import { OrderForm } from '../order-form/order-form';
+import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
+import { OrderForm, OrderFormValue } from '../order-form/order-form';
+import { OrderItemsTable } from '../order-items-table/order-items-table';
 import { OrdersService } from '../orders.service';
 
 @Component({
   selector: 'app-edit-orders-page',
-  imports: [EntityTabs, OrderForm],
+  imports: [EntityEditPage, OrderForm, OrderItemsTable],
   templateUrl: './edit-orders-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -17,12 +16,13 @@ export class EditOrdersPage {
 
   private readonly ordersService = inject(OrdersService);
 
-  protected readonly orders = rxResource({
-    params: () => {
-      const ids = this.ids();
-      return ids ? parseRouteIds(ids) : undefined;
-    },
-    stream: ({ params }) => this.ordersService.get(params),
-  });
+  protected readonly loadOrders = this.ordersService.get;
   protected readonly orderNumber = (order: Order) => order.number;
+  protected readonly orderWriter: EntityWriter<Order, OrderFormValue> = {
+    create: (order) => this.ordersService.create({ customerId: order.customer.id, items: [] }),
+    update: (changes) =>
+      this.ordersService.update(
+        changes.map(({ entity, value }) => ({ id: entity.id, customerId: value.customer.id })),
+      ),
+  };
 }

@@ -1,3 +1,23 @@
 :host {
   --p-tabs-tabpanel-padding: 0.875rem 0 0;
 }
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.close {
+  --p-button-icon-only-width: 2.75rem;
+  margin-block: -0.625rem;
+  margin-inline-end: -0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .close {
+    --p-button-icon-only-width: 2rem;
+    margin-block: -0.25rem;
+    margin-inline-end: -0.5rem;
+  }
+}

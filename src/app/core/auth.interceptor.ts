@@ -1,4 +1,9 @@
-import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpInterceptorFn,
+  HttpRequest,
+  HttpStatusCode,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
@@ -47,7 +52,22 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       }),
     );
 
+  const sendAfterRefresh = (refreshedAccessToken: string | null) => {
+    if (refreshedAccessToken) {
+      return send(refreshedAccessToken);
+    }
+    void router.navigateByUrl('/login');
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: HttpStatusCode.Unauthorized,
+          statusText: 'Unauthorized',
+          url: request.url,
+        }),
+    );
+  };
+
   return sessionService.isExpired()
-    ? from(sessionService.refresh()).pipe(switchMap(send))
+    ? from(sessionService.refresh()).pipe(switchMap(sendAfterRefresh))
     : send(sessionService.accessToken());
 };

@@ -59,6 +59,17 @@ describe('authInterceptor', () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it('goes to the login page without sending the request when an expired session cannot be refreshed', async () => {
+    isExpired.mockReturnValue(true);
+    refresh.mockResolvedValue(null);
+
+    const response = firstValueFrom(httpClient.get('/api/products'));
+
+    await expect(response).rejects.toMatchObject({ status: 401 });
+    httpTestingController.expectNone('/api/products');
+    expect(navigateByUrl).toHaveBeenCalledWith('/login');
+  });
+
   it('does not refresh before auth requests, even with an expired token', () => {
     isExpired.mockReturnValue(true);
     void firstValueFrom(httpClient.post('/api/auth/refresh', {}));
