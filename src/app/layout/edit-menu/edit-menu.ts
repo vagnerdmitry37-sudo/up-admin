@@ -7,7 +7,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditAction, EditActionsService } from '@core/edit-actions.service';
+import { EDIT_ACTION_TRIGGERS, EditAction, EditActionsService } from '@core/edit-actions.service';
+import { ActionTrigger } from '@shared/action-trigger/action-trigger';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
@@ -35,7 +36,7 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
   selector: 'app-edit-menu',
-  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion],
+  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion, ActionTrigger],
   host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',
@@ -79,6 +80,8 @@ export class EditMenu {
   }
 
   protected toggle = () => this.open.update((open) => !open);
+
+  protected triggerOf = (action: EditAction) => EDIT_ACTION_TRIGGERS[action];
 
   protected runAction = (action: EditAction) => this.editActionsService.run(action);
 

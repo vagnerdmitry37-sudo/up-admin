@@ -4,6 +4,12 @@
 
 Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-edit-menu`), registered with `EditActionsService.register`. Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars. To draw attention to an action, register it with `suggested: true` and, if needed, point to it in text.
 
+### Click actions and hold actions
+
+Every action has a trigger kind, set once in `EDIT_ACTION_TRIGGERS` (`core/edit-actions.service.ts`): `click` (create, edit) runs on a normal click; `hold` (save, delete) runs only after the button is pressed and held for `DEFAULT_HOLD_DURATION_MS` (800 ms). Releasing, leaving the button or losing focus before then cancels it. Keyboard users hold Enter or Space. Registrations never choose the kind: they only supply `click`, and the menu decides how it is triggered.
+
+The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding` and sets `--action-trigger-hold-progress` (0 to 1) on the host, which `EditMenu` draws as a ring filling around the button. It can be put on any button that needs a hold.
+
 ## Request errors are shown globally
 
 There are exactly two kinds of error display:

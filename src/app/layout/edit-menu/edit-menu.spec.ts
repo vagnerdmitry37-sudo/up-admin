@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { EditActionsService, EditActions } from '@core/edit-actions.service';
+import { DEFAULT_HOLD_DURATION_MS } from '@shared/action-trigger/action-trigger';
 import { EditMenu } from './edit-menu';
 
 const actions = signal<EditActions>({});
@@ -16,6 +17,32 @@ const actionLabels = (element: HTMLElement) =>
   [...element.querySelectorAll('.p-speeddial-item')]
     .filter((item) => !item.classList.contains('p-hidden'))
     .map((item) => item.querySelector('button')?.getAttribute('aria-label'));
+
+const pendingFrames = new Map<number, FrameRequestCallback>();
+
+const runFramesAt = (now: number) => {
+  const frames = [...pendingFrames.values()];
+  pendingFrames.clear();
+  frames.forEach((frame) => frame(now));
+};
+
+const controlAnimationFrames = () => {
+  let nextFrameId = 0;
+  pendingFrames.clear();
+  vi.spyOn(performance, 'now').mockReturnValue(0);
+  vi.spyOn(window, 'requestAnimationFrame').mockImplementation((frame) => {
+    pendingFrames.set(++nextFrameId, frame);
+    return nextFrameId;
+  });
+  vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId) => {
+    pendingFrames.delete(frameId);
+  });
+};
+
+const press = (button: HTMLElement) =>
+  button.dispatchEvent(new PointerEvent('pointerdown', { isPrimary: true, button: 0 }));
+
+const release = (button: HTMLElement) => button.dispatchEvent(new PointerEvent('pointerup'));
 
 const isOpen = (element: HTMLElement) => Boolean(element.querySelector('.p-speeddial-open'));
 
@@ -124,5 +151,57 @@ describe('EditMenu', () => {
     await menu.whenStable();
 
     expect(menu.nativeElement.querySelector('[aria-label="Create"]')).toBe(before);
+  });
+
+  describe('hold actions', () => {
+    const renderSave = async (save: VoidFunction) => {
+      TestBed.createComponent(Page);
+      actions.set({ save: { click: save } });
+      const menu = TestBed.createComponent(EditMenu);
+      await menu.whenStable();
+      return menu.nativeElement.querySelector('[aria-label="Save"]') as HTMLElement;
+    };
+
+    beforeEach(controlAnimationFrames);
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('runs Save only after the button is held for the hold duration', async () => {
+      const save = vi.fn();
+      const button = await renderSave(save);
+
+      button.click();
+      press(button);
+      runFramesAt(DEFAULT_HOLD_DURATION_MS - 1);
+      expect(save).not.toHaveBeenCalled();
+
+      runFramesAt(DEFAULT_HOLD_DURATION_MS);
+      release(button);
+      button.click();
+
+      expect(save).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not run Save when the button is released before the hold duration', async () => {
+      const save = vi.fn();
+      const button = await renderSave(save);
+
+      press(button);
+      runFramesAt(DEFAULT_HOLD_DURATION_MS / 2);
+      release(button);
+      runFramesAt(DEFAULT_HOLD_DURATION_MS);
+
+      expect(save).not.toHaveBeenCalled();
+    });
+
+    it('runs Save when Enter is held on the focused button', async () => {
+      const save = vi.fn();
+      const button = await renderSave(save);
+
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      runFramesAt(DEFAULT_HOLD_DURATION_MS);
+
+      expect(save).toHaveBeenCalledTimes(1);
+    });
   });
 });
