@@ -1,14 +1,6 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
-import { ActionTriggerKind } from '@shared/action-trigger/action-trigger';
 
 export type EditAction = 'create' | 'edit' | 'save' | 'delete';
-
-export const EDIT_ACTION_TRIGGERS: Record<EditAction, ActionTriggerKind> = {
-  create: 'click',
-  edit: 'click',
-  save: 'hold',
-  delete: 'hold',
-};
 
 export interface EditActionConfig {
   click?: () => unknown;

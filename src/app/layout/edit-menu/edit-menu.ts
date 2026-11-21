@@ -7,8 +7,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EDIT_ACTION_TRIGGERS, EditAction, EditActionsService } from '@core/edit-actions.service';
-import { ActionTrigger } from '@shared/action-trigger/action-trigger';
+import { EditAction, EditActionsService } from '@core/edit-actions.service';
+import { ActionTrigger, ActionTriggerKind } from '@shared/action-trigger/action-trigger';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
@@ -16,20 +16,25 @@ import { SpeedDial } from '@openng/optimus-ui/speeddial';
 import { ProgressRing } from '@shared/progress-ring/progress-ring';
 import { AppMotion } from '@shared/motion/motion';
 
-interface Action {
+interface ActionDefinition {
+  label: string;
+  icon: string;
+  trigger: ActionTriggerKind;
+}
+
+const ACTIONS: Record<EditAction, ActionDefinition> = {
+  create: { label: 'Create', icon: OpenngIcons.PLUS, trigger: 'click' },
+  edit: { label: 'Edit', icon: OpenngIcons.PENCIL, trigger: 'click' },
+  save: { label: 'Save', icon: OpenngIcons.SAVE, trigger: 'hold' },
+  delete: { label: 'Delete', icon: OpenngIcons.TRASH, trigger: 'hold' },
+};
+
+const ACTION_ORDER = Object.keys(ACTIONS) as EditAction[];
+
+interface MenuAction {
   action: EditAction;
   label: string;
   icon: string;
-}
-
-const ACTIONS: Action[] = [
-  { action: 'create', label: 'Create', icon: OpenngIcons.PLUS },
-  { action: 'edit', label: 'Edit', icon: OpenngIcons.PENCIL },
-  { action: 'save', label: 'Save', icon: OpenngIcons.SAVE },
-  { action: 'delete', label: 'Delete', icon: OpenngIcons.TRASH },
-];
-
-interface MenuAction extends Action {
   visible: boolean;
 }
 
@@ -56,14 +61,15 @@ export class EditMenu {
   protected readonly items = computed<MenuItem[]>(() => {
     const actions = this.editActionsService.actions();
     const suggested = this.suggested();
-    return ACTIONS.map(({ action, label, icon }) =>
-      this.item({
+    return ACTION_ORDER.map((action) => {
+      const { label, icon } = ACTIONS[action];
+      return this.item({
         action,
         label,
         icon: suggested.includes(action) ? `${icon} ${SUGGESTED_CLASS}` : icon,
         visible: Boolean(actions[action]),
-      }),
-    );
+      });
+    });
   });
 
   private availableActions = new Set<string>();
@@ -82,10 +88,9 @@ export class EditMenu {
 
   protected toggle = () => this.open.update((open) => !open);
 
-  protected triggerOf = (action: EditAction) => EDIT_ACTION_TRIGGERS[action];
+  protected triggerOf = (action: EditAction) => ACTIONS[action].trigger;
 
-  protected isRunning = (action: EditAction) =>
-    this.editActionsService.runningAction() === action;
+  protected isRunning = (action: EditAction) => this.editActionsService.runningAction() === action;
 
   protected runAction = (action: EditAction) => this.editActionsService.run(action);
 
