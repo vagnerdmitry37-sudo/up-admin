@@ -11,10 +11,9 @@
     [columns]="columns()"
     [loading]="lazyRows().loading()"
     [lazy]="true"
+    [deleteRows]="delete"
     (lazyLoad)="lazyRows().load($event)"
     (create)="open($event)"
     [(selection)]="selection"
-    (edit)="open($event)"
-    (delete)="delete($event)"
-  />
+    (edit)="open($event)"  />
 }

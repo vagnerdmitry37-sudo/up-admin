@@ -84,8 +84,8 @@ export class EditMenu {
 
   protected triggerOf = (action: EditAction) => EDIT_ACTION_TRIGGERS[action];
 
-  protected loadingOf = (action: EditAction) =>
-    Boolean(this.editActionsService.actions()[action]?.loading);
+  protected isRunning = (action: EditAction) =>
+    this.editActionsService.runningAction() === action;
 
   protected runAction = (action: EditAction) => this.editActionsService.run(action);
 

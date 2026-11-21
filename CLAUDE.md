@@ -10,9 +10,16 @@ Every action has a trigger kind, set once in `EDIT_ACTION_TRIGGERS` (`core/edit-
 
 The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding`, sets `--action-trigger-hold-progress` (0 to 1) on the host and exposes `holding()` and `holdProgress()` (`exportAs: 'actionTrigger'`). While holding, `EditMenu` shows `<app-progress-ring [value]="trigger.holdProgress()" />`, a ring that fills clockwise from the top, so the user sees how much of the hold is left; once the action runs it switches to the spinning ring (see below). It can be put on any button that needs a hold.
 
-### Loading state of an action
+### Running state of an action
 
-An action that is still running registers `loading: true` in its `EditActionConfig` and stays `visible` meanwhile (Save: `loading: this.saving()`, visible while there are changes or it is saving). The menu then draws `app-progress-ring` around the button and sets `aria-busy`, and `EditActionsService.run` ignores the action until `loading` turns false, so it cannot run twice. When the action finishes, the ring is removed with the flag.
+There is one running flag for the whole menu: `EditActionsService.runningAction`. An action's `click` returns the promise of its request (Save: `save()`, Delete: `deleteEntities(ids)` or the image `delete`); `EditActionsService.run` sets `runningAction` to that action, awaits the promise and clears it in `finally`. Components never keep their own `saving` / `deleting` flags. While an action runs:
+
+- the menu draws `app-progress-ring` around its button and sets `aria-busy`;
+- the action stays listed even if its page now marks it not `visible` (Save after the forms turn pristine, Delete after the selection is cleared);
+- `run` ignores every action, so nothing runs twice or alongside it;
+- `EntityEditPage` disables closing tabs (`actionRunning`).
+
+Saving with Enter in a form goes through the same path: `EntityForm` calls `EntityEditPage.submit`, which calls `run('save')`.
 
 `shared/progress-ring` (`ProgressRing`, `app-progress-ring`) is a ring in the primary color flush with its parent's edge, with no gap, so it reads as the button's own border. Without `value` it is the Optimus `p-progress-spinner` (work of unknown length); with `value` (0 to 1) it is its own SVG ring filled to that fraction over a border-colored track, because Optimus has no determinate circular progress. It is decorative (`aria-hidden`); the parent must be `position: relative` and set `aria-busy` itself, and the ring must be a sibling of a button, not its child, because Optimus buttons have `overflow: hidden` and would clip it (`EditMenu` wraps each button in `.edit-menu-action`). Use it for any round button that shows work in progress.
 
@@ -58,14 +65,14 @@ Selected IDs travel as the `ids` query param (`/edit-products-page?ids=1,2`), bo
 
 ### Deleting lives in `EntityListPage`
 
-Entities are deleted only from the list table: select one or more rows, hold Delete in the action menu (registered by `EntityTable`). There is no confirmation dialog: the press-and-hold is the safeguard. The list page then calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table. Customers that still have orders are refused by the API with 409.
+Entities are deleted only from the list table: select one or more rows, hold Delete in the action menu (registered by `EntityTable`, which runs its `deleteRows` input). There is no confirmation dialog: the press-and-hold is the safeguard. The list page's `delete` then calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table; Delete shows the running ring until that finishes (see Running state of an action). Customers that still have orders are refused by the API with 409.
 
 ### Edit page logic lives in `EntityEditPage`
 
 `shared/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `entityName` (same word as the list page's, used for the "New …" tab), `writer` (`create` and `update`, both required), `listPath` and the form template. Shared behaviour (creating and updating) goes there, not into the entity pages. Deleting is not done here: it lives in `EntityListPage`.
 
 - With `ids`: loads the records and shows one tab per record, rendering the template with the record. The tab bar is shown for any number of records, one included, so the layout never jumps while tabs are closed.
-- Each tab has a close button (×). It is disabled, not hidden, while saving, so tabs never change width. Closing the last open tab navigates to `listPath` (with `replaceUrl`): `/<entity>s` for the three entities, the order's edit page for order items. Closing only removes the id from `?ids` (with `replaceUrl`, so Back does not reopen it); it never deletes the record, and it is a view action, so it may live on the tab instead of the action menu. A tab with unsaved changes asks first (Discard / Keep editing) in the shared `p-confirmdialog` (in `Shell`, driven by `ConfirmationService`); this is its only remaining use. Closing the shown tab shows its right neighbour, or the left one if it was last. Removing ids does not reload the records (`loadedIds` ignores subsets), so unsaved edits in the other tabs survive. The × is focusable only on the active tab and stops Enter and Space from reaching `p-tab`, which would otherwise cancel its click.
+- Each tab has a close button (×). It is disabled, not hidden, while any menu action is running, so tabs never change width. Closing the last open tab navigates to `listPath` (with `replaceUrl`): `/<entity>s` for the three entities, the order's edit page for order items. Closing only removes the id from `?ids` (with `replaceUrl`, so Back does not reopen it); it never deletes the record, and it is a view action, so it may live on the tab instead of the action menu. A tab with unsaved changes asks first (Discard / Keep editing) in the shared `p-confirmdialog` (in `Shell`, driven by `ConfirmationService`); this is its only remaining use. Closing the shown tab shows its right neighbour, or the left one if it was last. Removing ids does not reload the records (`loadedIds` ignores subsets), so unsaved edits in the other tabs survive. The × is focusable only on the active tab and stops Enter and Space from reaching `p-tab`, which would otherwise cancel its click.
 - Without `ids`: shows a single "New `<entityName>`" tab (`EntityTab` with `entity: undefined`) and renders the template with `undefined`, so the form is empty. Create mode has a tab too, so the layout does not jump when saving turns it into the record's tab. Its × cancels creating: it goes to `listPath`, asking first if the form has changes. Create mode never mixes with open records: the tab list is either the one new tab or the loaded records.
 - Save appears while any open form is dirty. It validates only the dirty forms (`EntityForm.validValue`); if one is invalid, nothing is sent and its tab is shown.
 - Creating calls `writer.create(value)` and reopens the same route with `?ids=<new id>`. Updating calls `writer.update(changes)` once with every changed record (`EntityChange`: the loaded entity and the form value), which maps them to one bulk PUT (all or nothing), then reloads the records.
@@ -80,7 +87,7 @@ Entities are deleted only from the list table: select one or more rows, hold Del
 - Choosing or dropping files uploads them straight away (`upload`); they appear in the image list once the request ends; there is no separate uploading list (a shared saving indicator is planned).
 - Rejected files are never shown inside the component: FileUpload's own type and size messages (worded through its `invalidFile*Message*` inputs) are moved into the global error toast via `AppMessageService.error` ("Image not added", one toast per file), and the component checks the 10-files-per-upload limit itself, because FileUpload adds that message only after `onSelect`.
 - Dragging a saved image to a new place calls `reorder` with the full new order (`PUT /api/images/order` must list exactly the current images) and puts the old order back if the request fails.
-- Selecting saved images shows Delete in the action menu, registered by the component itself; holding it calls `delete` without a confirmation dialog.
+- Selecting saved images shows Delete in the action menu, registered by the component itself; holding it calls `delete` without a confirmation dialog, and Delete shows the running ring until the request ends.
 - A new record has no id yet, so the component renders nothing until the record is saved and the page reopens with its id.
 - Each card shows the image's original `fileName` (stored by the API on upload). Images uploaded before the API stored names have an empty `fileName` and show "Image N" (their position) instead.
 

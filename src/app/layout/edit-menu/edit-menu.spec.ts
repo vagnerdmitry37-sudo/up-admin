@@ -153,18 +153,23 @@ describe('EditMenu', () => {
     expect(menu.nativeElement.querySelector('[aria-label="Create"]')).toBe(before);
   });
 
-  it('shows a busy ring around an action while it is loading and removes it when it finishes', async () => {
+  it('shows a busy ring around an action while it is running and removes it when it finishes', async () => {
     TestBed.createComponent(Page);
-    actions.set({ save: { click: vi.fn(), loading: true } });
+    let finishSave!: VoidFunction;
+    actions.set({ save: { click: () => new Promise<void>((resolve) => (finishSave = resolve)) } });
     const menu = TestBed.createComponent(EditMenu);
     await menu.whenStable();
     const action = () =>
       menu.nativeElement.querySelector('[aria-label="Save"]').closest('.edit-menu-action');
 
+    const running = TestBed.inject(EditActionsService).run('save');
+    await menu.whenStable();
+
     expect(action().querySelector('app-progress-ring p-progress-spinner')).not.toBeNull();
     expect(action().querySelector('button').getAttribute('aria-busy')).toBe('true');
 
-    actions.set({ save: { click: vi.fn() } });
+    finishSave();
+    await running;
     await menu.whenStable();
 
     expect(action().querySelector('app-progress-ring')).toBeNull();

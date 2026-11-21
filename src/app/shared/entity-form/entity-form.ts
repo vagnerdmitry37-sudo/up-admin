@@ -65,5 +65,5 @@ export class EntityForm implements OnInit, OnDestroy {
     return form.getRawValue();
   };
 
-  protected readonly submit = () => this.entityEditPage?.save();
+  protected readonly submit = () => this.entityEditPage?.submit();
 }

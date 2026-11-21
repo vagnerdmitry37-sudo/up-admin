@@ -67,7 +67,11 @@ export class EntityEditPage<T extends { id: string }, V> {
   });
   private readonly loadedIds = computed(() => this.openIds(), { equal: containsAll });
 
-  protected readonly saving = signal(false);
+  private readonly editActionsService = inject(EditActionsService);
+
+  protected readonly actionRunning = computed(
+    () => this.editActionsService.runningAction() !== undefined,
+  );
   protected readonly activeId = signal<string | undefined>(undefined);
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityEditContext<T>>>(TemplateRef);
@@ -95,13 +99,9 @@ export class EntityEditPage<T extends { id: string }, V> {
   });
 
   constructor() {
-    inject(EditActionsService).register({
+    this.editActionsService.register({
       actions: () => ({
-        save: {
-          click: () => this.save(),
-          visible: this.changedForms().length > 0 || this.saving(),
-          loading: this.saving(),
-        },
+        save: { click: () => this.save(), visible: this.changedForms().length > 0 },
       }),
     });
   }
@@ -112,9 +112,11 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly disconnect = (entityForm: EntityForm) =>
     this.forms.update((forms) => forms.filter((form) => form !== entityForm));
 
-  readonly save = async () => {
+  readonly submit = () => this.editActionsService.run('save');
+
+  private readonly save = async () => {
     const changedForms = this.changedForms();
-    if (this.saving() || changedForms.length === 0) {
+    if (changedForms.length === 0) {
       return;
     }
     const values = changedForms.map((form) => form.validValue());
@@ -123,15 +125,10 @@ export class EntityEditPage<T extends { id: string }, V> {
       this.activeId.set(changedForms[firstInvalid].value()?.id);
       return;
     }
-    this.saving.set(true);
-    try {
-      if (this.ids()) {
-        await this.updateEntities(changedForms, values);
-      } else {
-        await this.createEntity(changedForms[0], values[0]);
-      }
-    } finally {
-      this.saving.set(false);
+    if (this.ids()) {
+      await this.updateEntities(changedForms, values);
+    } else {
+      await this.createEntity(changedForms[0], values[0]);
     }
   };
 

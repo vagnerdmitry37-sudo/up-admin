@@ -45,7 +45,6 @@ export class ImageUpload {
   private readonly messageService = inject(AppMessageService);
   private readonly fileUpload = viewChild(FileUpload);
   private readonly uploading = signal<File[]>([]);
-  private readonly deleting = signal(false);
 
   readonly images = linkedSignal<Image[]>(() => this.savedImages() ?? []);
   readonly selection = signal<string[]>([]);
@@ -64,10 +63,7 @@ export class ImageUpload {
   constructor() {
     inject(EditActionsService).register({
       actions: () => ({
-        delete: {
-          click: () => this.delete(this.selection()),
-          visible: this.selection().length > 0 && !this.deleting(),
-        },
+        delete: { click: () => this.delete(this.selection()), visible: this.selection().length > 0 },
       }),
     });
   }
@@ -131,16 +127,11 @@ export class ImageUpload {
   private readonly showUploadError = (detail: string) =>
     this.messageService.error('Image not added', detail);
 
-  private async delete(imageIds: string[]): Promise<void> {
-    this.deleting.set(true);
-    try {
-      await this.writer().delete(imageIds);
-      this.images.update((images) => images.filter((image) => !imageIds.includes(image.id)));
-      this.selection.update((selection) => selection.filter((id) => !imageIds.includes(id)));
-    } finally {
-      this.deleting.set(false);
-    }
-  }
+  private readonly delete = async (imageIds: string[]) => {
+    await this.writer().delete(imageIds);
+    this.images.update((images) => images.filter((image) => !imageIds.includes(image.id)));
+    this.selection.update((selection) => selection.filter((id) => !imageIds.includes(id)));
+  };
 }
 
 const toggled = <T>(items: T[], item: T): T[] =>

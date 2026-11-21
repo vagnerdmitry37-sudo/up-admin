@@ -14,11 +14,11 @@ export class EntityTable<T extends { id: string }> {
   readonly columns = input.required<TableColumn<T>[]>();
   readonly loading = input(false);
   readonly lazy = input(false);
+  readonly deleteRows = input.required<(ids: string[]) => Promise<unknown>>();
   readonly selection = model<T[]>([]);
   readonly lazyLoad = output<TableRange>();
   readonly create = output<string[]>();
   readonly edit = output<string[]>();
-  readonly delete = output<string[]>();
 
   private readonly selectedIds = () => this.selection().map((row) => row.id);
 
@@ -29,7 +29,7 @@ export class EntityTable<T extends { id: string }> {
         return {
           create: { click: () => this.create.emit(this.selectedIds()) },
           edit: { click: () => this.edit.emit(this.selectedIds()), visible: hasSelection },
-          delete: { click: () => this.delete.emit(this.selectedIds()), visible: hasSelection },
+          delete: { click: () => this.deleteRows()(this.selectedIds()), visible: hasSelection },
         };
       },
     });

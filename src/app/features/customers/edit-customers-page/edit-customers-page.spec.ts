@@ -157,13 +157,14 @@ describe('EditCustomersPage', () => {
     expect(editActionsService.actions().save).toBeUndefined();
   });
 
-  it('keeps Save in the menu as loading while the customers are being saved', async () => {
+  it('keeps Save in the menu as running while the customers are being saved', async () => {
     const first = customer('c1', 'Ada');
     const fixture = await render('c1', [first]);
 
     await type(fixture, 'Name', 'Ada Lovelace');
     await save(fixture);
-    expect(editActionsService.actions().save?.loading).toBe(true);
+    expect(editActionsService.runningAction()).toBe('save');
+    expect(editActionsService.actions().save).toBeDefined();
 
     httpTestingController
       .expectOne((candidate) => candidate.method === 'PUT' && candidate.url === '/api/customers')

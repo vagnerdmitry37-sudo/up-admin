@@ -51,7 +51,7 @@ describe('EditActionsService', () => {
     expect(Object.keys(service.actions())).toEqual(['create']);
   });
 
-  it('runs the latest registration of an action and restores the earlier one when it goes away', () => {
+  it('runs the latest registration of an action and restores the earlier one when it goes away', async () => {
     TestBed.createComponent(PageHost);
     const pageSave = vi.fn();
     const formSave = vi.fn();
@@ -59,7 +59,7 @@ describe('EditActionsService', () => {
     formActions.set({ save: { click: formSave } });
 
     const form = TestBed.createComponent(FormHost);
-    service.run('save');
+    await service.run('save');
     expect(formSave).toHaveBeenCalledTimes(1);
     expect(pageSave).not.toHaveBeenCalled();
 
@@ -91,17 +91,40 @@ describe('EditActionsService', () => {
     expect(edit).not.toHaveBeenCalled();
   });
 
-  it('does not run an action while it is loading', () => {
+  it('marks the action as running until it finishes and runs nothing else meanwhile', async () => {
     TestBed.createComponent(PageHost);
-    const save = vi.fn();
-    actions.set({ save: { click: save, loading: true } });
+    let finishSave!: VoidFunction;
+    const save = vi.fn(() => new Promise<void>((resolve) => (finishSave = resolve)));
+    const create = vi.fn();
+    actions.set({ create: { click: create }, save: { click: save } });
+
+    const running = service.run('save');
+    expect(service.runningAction()).toBe('save');
 
     service.run('save');
-    expect(save).not.toHaveBeenCalled();
-
-    actions.set({ save: { click: save } });
-    service.run('save');
+    service.run('create');
     expect(save).toHaveBeenCalledTimes(1);
+    expect(create).not.toHaveBeenCalled();
+
+    finishSave();
+    await running;
+    expect(service.runningAction()).toBeUndefined();
+  });
+
+  it('keeps a running action listed after its page hides it', async () => {
+    TestBed.createComponent(PageHost);
+    let finishDelete!: VoidFunction;
+    actions.set({
+      delete: { click: () => new Promise<void>((resolve) => (finishDelete = resolve)) },
+    });
+
+    const running = service.run('delete');
+    actions.set({ delete: { click: vi.fn(), visible: false } });
+    expect(Object.keys(service.actions())).toEqual(['delete']);
+
+    finishDelete();
+    await running;
+    expect(Object.keys(service.actions())).toEqual([]);
   });
 
   it('lists every action the page marks as suggested', () => {

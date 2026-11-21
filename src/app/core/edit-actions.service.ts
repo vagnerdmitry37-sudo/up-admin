@@ -11,9 +11,8 @@ export const EDIT_ACTION_TRIGGERS: Record<EditAction, ActionTriggerKind> = {
 };
 
 export interface EditActionConfig {
-  click?: VoidFunction;
+  click?: () => unknown;
   visible?: boolean;
-  loading?: boolean;
   suggested?: boolean;
 }
 
@@ -26,15 +25,19 @@ export interface EditActionsRegistration {
 @Injectable({ providedIn: 'root' })
 export class EditActionsService {
   private readonly stack = signal<EditActionsRegistration[]>([]);
+  private readonly running = signal<EditAction | undefined>(undefined);
 
-  readonly actions = computed(
-    () =>
-      Object.fromEntries(
-        this.stack().flatMap((registration) =>
-          Object.entries(registration.actions()).filter(([, config]) => config.visible !== false),
+  readonly runningAction = this.running.asReadonly();
+  readonly actions = computed(() => {
+    const running = this.running();
+    return Object.fromEntries(
+      this.stack().flatMap((registration) =>
+        Object.entries(registration.actions()).filter(
+          ([action, config]) => config.visible !== false || action === running,
         ),
-      ) as EditActions,
-  );
+      ),
+    ) as EditActions;
+  });
   readonly suggested = computed(() =>
     Object.entries(this.actions())
       .filter(([, config]) => config.suggested)
@@ -48,10 +51,16 @@ export class EditActionsService {
     );
   }
 
-  run(action: EditAction): void {
-    const config = this.actions()[action];
-    if (!config?.loading) {
-      config?.click?.();
+  async run(action: EditAction): Promise<void> {
+    const click = this.actions()[action]?.click;
+    if (!click || this.running()) {
+      return;
+    }
+    this.running.set(action);
+    try {
+      await click();
+    } finally {
+      this.running.set(undefined);
     }
   }
 }
