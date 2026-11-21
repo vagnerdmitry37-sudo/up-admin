@@ -6,7 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
-import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
+import { MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { CustomersPage } from './customers-page';
 
@@ -30,7 +30,6 @@ describe('CustomersPage', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
-        ConfirmationService,
         MessageService,
       ],
     });
@@ -110,20 +109,12 @@ describe('CustomersPage', () => {
     });
   });
 
-  it('deletes the selected customers in one request after confirmation and reloads the list', async () => {
-    const confirmationService = TestBed.inject(ConfirmationService);
-    const confirm = vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
-      confirmation.accept?.();
-      return confirmationService;
-    });
+  it('deletes the selected customers in one request and reloads the list', async () => {
     const fixture = await render([customer('c1'), customer('c2'), customer('c3')]);
 
     await select(fixture, [customer('c1'), customer('c2')]);
     editActionsService.run('delete');
 
-    expect(confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Delete 2 customers? This cannot be undone.' }),
-    );
     const request = httpTestingController.expectOne(
       (candidate) => candidate.method === 'DELETE' && candidate.url === '/api/customers',
     );
@@ -134,20 +125,5 @@ describe('CustomersPage', () => {
     await fixture.whenStable();
 
     expect(editActionsService.actions().delete).toBeUndefined();
-  });
-
-  it('keeps the list and the selection when the delete is cancelled', async () => {
-    const confirmationService = TestBed.inject(ConfirmationService);
-    vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
-      confirmation.reject?.();
-      return confirmationService;
-    });
-    const fixture = await render([customer('c1')]);
-
-    await select(fixture, [customer('c1')]);
-    editActionsService.run('delete');
-
-    httpTestingController.expectNone((request) => request.method === 'DELETE');
-    expect(editActionsService.actions().delete).toBeDefined();
   });
 });

@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Image } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
-import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
+import { MessageService } from '@openng/optimus-ui/api';
 import { ImageUpload, ImageWriter } from './image-upload';
 
 const image = (id: string, fileName: string): Image => ({
@@ -21,7 +21,7 @@ describe('ImageUpload', () => {
   beforeEach(() => {
     URL.createObjectURL = vi.fn(() => 'blob:preview');
     writer = { upload: vi.fn(), delete: vi.fn(), reorder: vi.fn() };
-    TestBed.configureTestingModule({ providers: [ConfirmationService, MessageService] });
+    TestBed.configureTestingModule({ providers: [MessageService] });
   });
 
   const render = async (savedImages: Image[] = [], entityId: string | null = 'p1') => {
@@ -106,14 +106,9 @@ describe('ImageUpload', () => {
     expect(cardNames(fixture)).toEqual(['castle.jpg', 'bridge.jpg', 'Add images']);
   });
 
-  it('deletes the selected images after confirmation and removes their cards', async () => {
+  it('deletes the selected images and removes their cards', async () => {
     const fixture = await render([image('i1', 'bridge.jpg'), image('i2', 'castle.jpg')]);
     const editActionsService = TestBed.inject(EditActionsService);
-    const confirmationService = TestBed.inject(ConfirmationService);
-    vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
-      confirmation.accept?.();
-      return confirmationService;
-    });
     writer.delete.mockResolvedValue(undefined);
     expect(editActionsService.actions().delete).toBeUndefined();
 

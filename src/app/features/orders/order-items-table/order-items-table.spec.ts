@@ -6,7 +6,7 @@ import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Order, OrderItem } from '@core/api/models';
 import { EditActionsService } from '@core/edit-actions.service';
-import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
+import { MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { OrderItemsTable } from './order-items-table';
 
@@ -37,7 +37,6 @@ describe('OrderItemsTable', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
-        ConfirmationService,
         MessageService,
       ],
     });
@@ -81,11 +80,6 @@ describe('OrderItemsTable', () => {
   });
 
   it('deletes the selected items of its order in one request and shows the items left', async () => {
-    const confirmationService = TestBed.inject(ConfirmationService);
-    vi.spyOn(confirmationService, 'confirm').mockImplementation((confirmation) => {
-      confirmation.accept?.();
-      return confirmationService;
-    });
     const fixture = await render([orderItem('i1'), orderItem('i2'), orderItem('i3')]);
 
     await select(fixture, [orderItem('i1'), orderItem('i3')]);

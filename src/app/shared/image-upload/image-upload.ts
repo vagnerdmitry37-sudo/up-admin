@@ -17,7 +17,6 @@ import {
 import { AppMessageService } from '@core/app-message.service';
 import { EditActionsService } from '@core/edit-actions.service';
 import { Image } from '@core/api/models';
-import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { AppMotion } from '@shared/motion/motion';
 
@@ -43,7 +42,6 @@ export class ImageUpload {
   readonly savedImages = input<Image[]>();
   readonly writer = input.required<ImageWriter>();
 
-  private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(AppMessageService);
   private readonly fileUpload = viewChild(FileUpload);
   private readonly uploading = signal<File[]>([]);
@@ -67,7 +65,7 @@ export class ImageUpload {
     inject(EditActionsService).register({
       actions: () => ({
         delete: {
-          click: () => this.confirmDelete(),
+          click: () => this.delete(this.selection()),
           visible: this.selection().length > 0 && !this.deleting(),
         },
       }),
@@ -132,19 +130,6 @@ export class ImageUpload {
 
   private readonly showUploadError = (detail: string) =>
     this.messageService.error('Image not added', detail);
-
-  private readonly confirmDelete = () => {
-    const selected = this.selection();
-    this.confirmationService.confirm({
-      header: 'Delete images',
-      message: `Delete ${selected.length === 1 ? 'this image' : `${selected.length} images`}? This cannot be undone.`,
-      icon: OpenngIcons.EXCLAMATION_TRIANGLE,
-      defaultFocus: 'reject',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      accept: () => this.delete(selected),
-    });
-  };
 
   private async delete(imageIds: string[]): Promise<void> {
     this.deleting.set(true);
