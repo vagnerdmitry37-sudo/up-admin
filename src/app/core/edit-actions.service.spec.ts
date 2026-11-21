@@ -91,6 +91,19 @@ describe('EditActionsService', () => {
     expect(edit).not.toHaveBeenCalled();
   });
 
+  it('does not run an action while it is loading', () => {
+    TestBed.createComponent(PageHost);
+    const save = vi.fn();
+    actions.set({ save: { click: save, loading: true } });
+
+    service.run('save');
+    expect(save).not.toHaveBeenCalled();
+
+    actions.set({ save: { click: save } });
+    service.run('save');
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+
   it('lists every action the page marks as suggested', () => {
     TestBed.createComponent(PageHost);
 

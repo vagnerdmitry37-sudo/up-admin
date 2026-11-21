@@ -153,6 +153,24 @@ describe('EditMenu', () => {
     expect(menu.nativeElement.querySelector('[aria-label="Create"]')).toBe(before);
   });
 
+  it('shows a busy ring around an action while it is loading and removes it when it finishes', async () => {
+    TestBed.createComponent(Page);
+    actions.set({ save: { click: vi.fn(), loading: true } });
+    const menu = TestBed.createComponent(EditMenu);
+    await menu.whenStable();
+    const action = () =>
+      menu.nativeElement.querySelector('[aria-label="Save"]').closest('.edit-menu-action');
+
+    expect(action().querySelector('app-progress-ring p-progress-spinner')).not.toBeNull();
+    expect(action().querySelector('button').getAttribute('aria-busy')).toBe('true');
+
+    actions.set({ save: { click: vi.fn() } });
+    await menu.whenStable();
+
+    expect(action().querySelector('app-progress-ring')).toBeNull();
+    expect(action().querySelector('button').hasAttribute('aria-busy')).toBe(false);
+  });
+
   describe('hold actions', () => {
     const renderSave = async (save: VoidFunction) => {
       TestBed.createComponent(Page);
@@ -192,6 +210,20 @@ describe('EditMenu', () => {
       runFramesAt(DEFAULT_HOLD_DURATION_MS);
 
       expect(save).not.toHaveBeenCalled();
+    });
+
+    it('fills a ring around Save as it is held and removes it on release', async () => {
+      const button = await renderSave(vi.fn());
+      const fill = () => button.closest('.edit-menu-action')!.querySelector('.progress-ring-fill');
+
+      press(button);
+      runFramesAt(DEFAULT_HOLD_DURATION_MS / 2);
+      TestBed.tick();
+      expect(fill()?.getAttribute('stroke-dasharray')).toBe('50 100');
+
+      release(button);
+      TestBed.tick();
+      expect(fill()).toBeNull();
     });
 
     it('runs Save when Enter is held on the focused button', async () => {

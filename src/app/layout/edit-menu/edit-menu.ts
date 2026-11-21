@@ -13,6 +13,7 @@ import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
+import { ProgressRing } from '@shared/progress-ring/progress-ring';
 import { AppMotion } from '@shared/motion/motion';
 
 interface Action {
@@ -36,7 +37,7 @@ const SUGGESTED_CLASS = 'edit-menu-suggested';
 
 @Component({
   selector: 'app-edit-menu',
-  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion, ActionTrigger],
+  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion, ActionTrigger, ProgressRing],
   host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
   templateUrl: './edit-menu.html',
   styleUrl: './edit-menu.scss',
@@ -82,6 +83,9 @@ export class EditMenu {
   protected toggle = () => this.open.update((open) => !open);
 
   protected triggerOf = (action: EditAction) => EDIT_ACTION_TRIGGERS[action];
+
+  protected loadingOf = (action: EditAction) =>
+    Boolean(this.editActionsService.actions()[action]?.loading);
 
   protected runAction = (action: EditAction) => this.editActionsService.run(action);
 

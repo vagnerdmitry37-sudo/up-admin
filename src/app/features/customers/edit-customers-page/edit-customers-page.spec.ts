@@ -157,6 +157,25 @@ describe('EditCustomersPage', () => {
     expect(editActionsService.actions().save).toBeUndefined();
   });
 
+  it('keeps Save in the menu as loading while the customers are being saved', async () => {
+    const first = customer('c1', 'Ada');
+    const fixture = await render('c1', [first]);
+
+    await type(fixture, 'Name', 'Ada Lovelace');
+    await save(fixture);
+    expect(editActionsService.actions().save?.loading).toBe(true);
+
+    httpTestingController
+      .expectOne((candidate) => candidate.method === 'PUT' && candidate.url === '/api/customers')
+      .flush([{ ...first, name: 'Ada Lovelace' }]);
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    expectLoad(['c1']).flush([{ ...first, name: 'Ada Lovelace' }]);
+    await fixture.whenStable();
+
+    expect(editActionsService.actions().save).toBeUndefined();
+  });
+
   it('shows the tab of an invalid customer instead of saving', async () => {
     const fixture = await render('c1,c2', [customer('c1', 'Ada'), customer('c2', 'Grace')]);
 

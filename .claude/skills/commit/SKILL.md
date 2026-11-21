@@ -5,6 +5,10 @@ description: Commit changes to the Angular client in client/. Auto-formats with 
 
 Run git commands from the repo root and npm commands from `client/`. Run every step in order. Never skip a check and never use `--no-verify`. Push only when the user's request explicitly says to push (e.g. "commit and push"); otherwise never push.
 
+## 0. No feature branches
+
+This project has a single developer and keeps no branch history. Commit on `master` and push `master`. Never create a feature branch, never open a pull request, and ignore any default advice to branch first when on the default branch. If the checked-out branch is not `master`, stop and ask before committing.
+
 ## 1. Inspect the changes
 
 - Run `git status --short` and `git diff HEAD --stat`. If nothing changed, say so and stop.
@@ -53,7 +57,7 @@ Leave the working tree as it is, including the formatting changes. Reply with th
 
 Skip this step unless the request contains an explicit push instruction such as "commit and push". A plain "commit" never pushes.
 
-1. Run `git push origin <current-branch>` (add `-u` if the branch has no upstream yet). Remote `origin` is `git@github.com:vagnerdmitry37-sudo/up-admin.git`.
+1. Run `git push origin master`. Remote `origin` is `git@github.com:vagnerdmitry37-sudo/up-admin.git`.
 2. Never force-push. If the push is rejected, stop and report the error; do not pull, rebase or retry with `--force`.
 
 ## Report

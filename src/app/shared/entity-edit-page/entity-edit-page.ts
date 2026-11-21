@@ -99,7 +99,8 @@ export class EntityEditPage<T extends { id: string }, V> {
       actions: () => ({
         save: {
           click: () => this.save(),
-          visible: this.changedForms().length > 0 && !this.saving(),
+          visible: this.changedForms().length > 0 || this.saving(),
+          loading: this.saving(),
         },
       }),
     });

@@ -13,21 +13,30 @@
     (onHide)="keepOpen()"
   >
     <ng-template #item let-item>
-      <button
-        type="button"
-        pButton
-        pRipple
-        class="p-speeddial-action"
-        severity="secondary"
-        [rounded]="true"
-        size="small"
-        [attr.aria-label]="item.label"
-        [attr.tabindex]="open() ? 0 : null"
-        [appActionTrigger]="triggerOf(item.id)"
-        (triggered)="runAction(item.id)"
-      >
-        <span pButtonIcon [class]="item.icon"></span>
-      </button>
+      <div class="edit-menu-action">
+        <button
+          type="button"
+          pButton
+          pRipple
+          class="p-speeddial-action"
+          severity="secondary"
+          [rounded]="true"
+          size="small"
+          [attr.aria-label]="item.label"
+          [attr.tabindex]="open() ? 0 : null"
+          [attr.aria-busy]="loadingOf(item.id) || null"
+          [appActionTrigger]="triggerOf(item.id)"
+          #trigger="actionTrigger"
+          (triggered)="runAction(item.id)"
+        >
+          <span pButtonIcon [class]="item.icon"></span>
+        </button>
+        @if (loadingOf(item.id)) {
+          <app-progress-ring />
+        } @else if (trigger.holding()) {
+          <app-progress-ring [value]="trigger.holdProgress()" />
+        }
+      </div>
     </ng-template>
   </p-speeddial>
 }

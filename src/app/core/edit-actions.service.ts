@@ -13,6 +13,7 @@ export const EDIT_ACTION_TRIGGERS: Record<EditAction, ActionTriggerKind> = {
 export interface EditActionConfig {
   click?: VoidFunction;
   visible?: boolean;
+  loading?: boolean;
   suggested?: boolean;
 }
 
@@ -47,5 +48,10 @@ export class EditActionsService {
     );
   }
 
-  run = (action: EditAction) => this.actions()[action]?.click?.();
+  run(action: EditAction): void {
+    const config = this.actions()[action];
+    if (!config?.loading) {
+      config?.click?.();
+    }
+  }
 }

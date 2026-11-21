@@ -8,7 +8,13 @@ Create, edit, save, delete and any other operation on an entity are done only th
 
 Every action has a trigger kind, set once in `EDIT_ACTION_TRIGGERS` (`core/edit-actions.service.ts`): `click` (create, edit) runs on a normal click; `hold` (save, delete) runs only after the button is pressed and held for `DEFAULT_HOLD_DURATION_MS` (800 ms). Releasing, leaving the button or losing focus before then cancels it. Keyboard users hold Enter or Space. Registrations never choose the kind: they only supply `click`, and the menu decides how it is triggered.
 
-The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding` and sets `--action-trigger-hold-progress` (0 to 1) on the host, which `EditMenu` draws as a ring filling around the button. It can be put on any button that needs a hold.
+The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding`, sets `--action-trigger-hold-progress` (0 to 1) on the host and exposes `holding()` and `holdProgress()` (`exportAs: 'actionTrigger'`). While holding, `EditMenu` shows `<app-progress-ring [value]="trigger.holdProgress()" />`, a ring that fills clockwise from the top, so the user sees how much of the hold is left; once the action runs it switches to the spinning ring (see below). It can be put on any button that needs a hold.
+
+### Loading state of an action
+
+An action that is still running registers `loading: true` in its `EditActionConfig` and stays `visible` meanwhile (Save: `loading: this.saving()`, visible while there are changes or it is saving). The menu then draws `app-progress-ring` around the button and sets `aria-busy`, and `EditActionsService.run` ignores the action until `loading` turns false, so it cannot run twice. When the action finishes, the ring is removed with the flag.
+
+`shared/progress-ring` (`ProgressRing`, `app-progress-ring`) is a ring in the primary color flush with its parent's edge, with no gap, so it reads as the button's own border. Without `value` it is the Optimus `p-progress-spinner` (work of unknown length); with `value` (0 to 1) it is its own SVG ring filled to that fraction over a border-colored track, because Optimus has no determinate circular progress. It is decorative (`aria-hidden`); the parent must be `position: relative` and set `aria-busy` itself, and the ring must be a sibling of a button, not its child, because Optimus buttons have `overflow: hidden` and would clip it (`EditMenu` wraps each button in `.edit-menu-action`). Use it for any round button that shows work in progress.
 
 ## Request errors are shown globally
 
