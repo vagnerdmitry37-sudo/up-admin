@@ -153,29 +153,6 @@ describe('ActionMenu', () => {
     expect(menu.nativeElement.querySelector('[aria-label="Create"]')).toBe(before);
   });
 
-  it('shows a busy ring around an action while it is running and removes it when it finishes', async () => {
-    TestBed.createComponent(Page);
-    let finishSave!: VoidFunction;
-    actions.set({ save: { click: () => new Promise<void>((resolve) => (finishSave = resolve)) } });
-    const menu = TestBed.createComponent(ActionMenu);
-    await menu.whenStable();
-    const action = () =>
-      menu.nativeElement.querySelector('[aria-label="Save"]').closest('.action-menu-action');
-
-    const running = TestBed.inject(ActionMenuService).run('save');
-    await menu.whenStable();
-
-    expect(action().querySelector('app-progress-ring p-progress-spinner')).not.toBeNull();
-    expect(action().querySelector('button').getAttribute('aria-busy')).toBe('true');
-
-    finishSave();
-    await running;
-    await menu.whenStable();
-
-    expect(action().querySelector('app-progress-ring')).toBeNull();
-    expect(action().querySelector('button').hasAttribute('aria-busy')).toBe(false);
-  });
-
   describe('hold actions', () => {
     const renderSave = async (save: VoidFunction) => {
       TestBed.createComponent(Page);

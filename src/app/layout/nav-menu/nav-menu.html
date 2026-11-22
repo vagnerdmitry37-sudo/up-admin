@@ -1,16 +1,21 @@
-<button
-  type="button"
-  pButton
-  class="trigger"
-  aria-label="Menu"
-  aria-haspopup="menu"
-  [rounded]="true"
-  [attr.aria-expanded]="open()"
-  (click)="toggle(menu, $event)"
->
-  <i class="pi pi-bars icon" aria-hidden="true" pButtonIcon [class.hidden]="open()"></i>
-  <i class="pi pi-times icon close" aria-hidden="true" pButtonIcon [class.hidden]="!open()"></i>
-</button>
+<div class="nav-menu-trigger">
+  <button
+    type="button"
+    pButton
+    class="trigger"
+    [class.trigger-busy]="ring.spinning()"
+    aria-label="Menu"
+    aria-haspopup="menu"
+    [rounded]="true"
+    [attr.aria-expanded]="open()"
+    [attr.aria-busy]="ring.spinning() || null"
+    (click)="toggle(menu, $event)"
+  >
+    <i class="pi pi-bars icon" aria-hidden="true" pButtonIcon [class.hidden]="open()"></i>
+    <i class="pi pi-times icon close" aria-hidden="true" pButtonIcon [class.hidden]="!open()"></i>
+  </button>
+  <app-progress-ring #ring="progressRing" [running]="busy()" />
+</div>
 
 <p-menu
   #menu

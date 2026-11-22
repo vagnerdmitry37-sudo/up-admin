@@ -24,16 +24,13 @@
           size="small"
           [attr.aria-label]="item.label"
           [attr.tabindex]="open() ? 0 : null"
-          [attr.aria-busy]="isRunning(item.id) || null"
           [appActionTrigger]="triggerOf(item.id)"
           #trigger="actionTrigger"
           (triggered)="runAction(item.id)"
         >
           <span pButtonIcon [class]="item.icon"></span>
         </button>
-        @if (isRunning(item.id)) {
-          <app-progress-ring />
-        } @else if (trigger.holding()) {
+        @if (trigger.holding()) {
           <app-progress-ring [value]="trigger.holdProgress()" />
         }
       </div>

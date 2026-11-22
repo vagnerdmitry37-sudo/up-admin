@@ -2,8 +2,27 @@
   display: block;
 }
 
+.nav-menu-trigger {
+  position: relative;
+  display: flex;
+}
+
 .trigger {
   --p-button-icon-only-width: 2.8rem;
+}
+
+.trigger-busy {
+  --p-button-primary-background: var(--p-button-secondary-background);
+  --p-button-primary-hover-background: var(--p-button-secondary-hover-background);
+  --p-button-primary-active-background: var(--p-button-secondary-active-background);
+  --p-button-primary-border-color: var(--p-button-secondary-border-color);
+  --p-button-primary-hover-border-color: var(--p-button-secondary-hover-border-color);
+  --p-button-primary-active-border-color: var(--p-button-secondary-active-border-color);
+  --p-button-primary-color: var(--p-button-secondary-color);
+  --p-button-primary-hover-color: var(--p-button-secondary-hover-color);
+  --p-button-primary-active-color: var(--p-button-secondary-active-color);
+  --p-button-primary-focus-ring-color: var(--p-button-secondary-focus-ring-color);
+  --p-button-primary-focus-ring-shadow: var(--p-button-secondary-focus-ring-shadow);
 }
 
 .icon {
