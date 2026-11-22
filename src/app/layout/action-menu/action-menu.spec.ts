@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { EditActionsService, EditActions } from '@core/edit-actions.service';
 import { DEFAULT_HOLD_DURATION_MS } from '@shared/action-trigger/action-trigger';
-import { EditMenu } from './edit-menu';
+import { ActionMenu } from './action-menu';
 
 const actions = signal<EditActions>({});
 
@@ -46,16 +46,16 @@ const release = (button: HTMLElement) => button.dispatchEvent(new PointerEvent('
 
 const isOpen = (element: HTMLElement) => Boolean(element.querySelector('.p-speeddial-open'));
 
-describe('EditMenu', () => {
+describe('ActionMenu', () => {
   beforeEach(() => {
     actions.set({});
     TestBed.configureTestingModule({
-      imports: [EditMenu],
+      imports: [ActionMenu],
     });
   });
 
   it('is not shown when the page has no actions', async () => {
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
 
     expect(menu.nativeElement.querySelector('p-speeddial')).toBeNull();
@@ -64,7 +64,7 @@ describe('EditMenu', () => {
   it('shows only the actions the page registered', async () => {
     TestBed.createComponent(Page);
     actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn() } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
 
     expect(actionLabels(menu.nativeElement)).toEqual(['Create', 'Edit']);
@@ -74,7 +74,7 @@ describe('EditMenu', () => {
     const edit = vi.fn();
     TestBed.createComponent(Page);
     actions.set({ edit: { click: edit } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
 
     menu.nativeElement.querySelector('[aria-label="Edit"]').click();
@@ -89,11 +89,11 @@ describe('EditMenu', () => {
       edit: { click: vi.fn() },
       save: { click: vi.fn(), suggested: true },
     });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
     menu.nativeElement.querySelector('.p-speeddial-button').click();
     await menu.whenStable();
-    const marked = [...menu.nativeElement.querySelectorAll('.edit-menu-suggested')].map((icon) =>
+    const marked = [...menu.nativeElement.querySelectorAll('.action-menu-suggested')].map((icon) =>
       icon.closest('button')?.getAttribute('aria-label'),
     );
 
@@ -104,7 +104,7 @@ describe('EditMenu', () => {
   it('opens when the page first offers actions', async () => {
     TestBed.createComponent(Page);
     actions.set({ create: { click: vi.fn() } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
 
     expect(isOpen(menu.nativeElement)).toBe(true);
@@ -113,7 +113,7 @@ describe('EditMenu', () => {
   it('stays closed after the user closes it while the actions stay the same', async () => {
     TestBed.createComponent(Page);
     actions.set({ create: { click: vi.fn() } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
 
     menu.nativeElement.querySelector('.p-speeddial-button').click();
@@ -127,7 +127,7 @@ describe('EditMenu', () => {
   it('reopens after the user closed it when a new action becomes available', async () => {
     TestBed.createComponent(Page);
     actions.set({ create: { click: vi.fn() }, edit: { click: vi.fn(), visible: false } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
 
     menu.nativeElement.querySelector('.p-speeddial-button').click();
@@ -143,7 +143,7 @@ describe('EditMenu', () => {
   it('keeps the same buttons when the actions do not change', async () => {
     TestBed.createComponent(Page);
     actions.set({ create: { click: vi.fn() } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
     const before = menu.nativeElement.querySelector('[aria-label="Create"]');
 
@@ -157,10 +157,10 @@ describe('EditMenu', () => {
     TestBed.createComponent(Page);
     let finishSave!: VoidFunction;
     actions.set({ save: { click: () => new Promise<void>((resolve) => (finishSave = resolve)) } });
-    const menu = TestBed.createComponent(EditMenu);
+    const menu = TestBed.createComponent(ActionMenu);
     await menu.whenStable();
     const action = () =>
-      menu.nativeElement.querySelector('[aria-label="Save"]').closest('.edit-menu-action');
+      menu.nativeElement.querySelector('[aria-label="Save"]').closest('.action-menu-action');
 
     const running = TestBed.inject(EditActionsService).run('save');
     await menu.whenStable();
@@ -180,7 +180,7 @@ describe('EditMenu', () => {
     const renderSave = async (save: VoidFunction) => {
       TestBed.createComponent(Page);
       actions.set({ save: { click: save } });
-      const menu = TestBed.createComponent(EditMenu);
+      const menu = TestBed.createComponent(ActionMenu);
       await menu.whenStable();
       return menu.nativeElement.querySelector('[aria-label="Save"]') as HTMLElement;
     };
@@ -219,7 +219,7 @@ describe('EditMenu', () => {
 
     it('fills a ring around Save as it is held and removes it on release', async () => {
       const button = await renderSave(vi.fn());
-      const fill = () => button.closest('.edit-menu-action')!.querySelector('.progress-ring-fill');
+      const fill = () => button.closest('.action-menu-action')!.querySelector('.progress-ring-fill');
 
       press(button);
       runFramesAt(DEFAULT_HOLD_DURATION_MS / 2);

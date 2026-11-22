@@ -96,18 +96,18 @@ export const NoirPreset = definePreset(Aura, {
             transition: none;
           }
         }
-        .p-speeddial-action:has(.edit-menu-suggested),
-        app-edit-menu.suggesting .p-speeddial-button {
-          animation: edit-menu-pulse 1.6s ease-out infinite;
+        .p-speeddial-action:has(.action-menu-suggested),
+        app-action-menu.suggesting .p-speeddial-button {
+          animation: action-menu-pulse 1.6s ease-out infinite;
         }
-        @keyframes edit-menu-pulse {
+        @keyframes action-menu-pulse {
           0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-primary-color) 50%, transparent); }
           70% { box-shadow: 0 0 0 0.75rem transparent; }
           100% { box-shadow: 0 0 0 0 transparent; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .p-speeddial-action:has(.edit-menu-suggested),
-          app-edit-menu.suggesting .p-speeddial-button {
+          .p-speeddial-action:has(.action-menu-suggested),
+          app-action-menu.suggesting .p-speeddial-button {
             animation: none;
             outline: 2px solid var(--p-primary-color);
             outline-offset: 2px;

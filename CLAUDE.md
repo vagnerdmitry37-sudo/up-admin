@@ -2,13 +2,13 @@
 
 ## Entity operations go only through the action menu
 
-Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-edit-menu`), registered with `EditActionsService.register`. Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars. To draw attention to an action, register it with `suggested: true` and, if needed, point to it in text.
+Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-action-menu`), registered with `EditActionsService.register`. Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars. To draw attention to an action, register it with `suggested: true` and, if needed, point to it in text.
 
 ### Click actions and hold actions
 
-Each action is defined in one place, `ACTIONS` in `layout/edit-menu/edit-menu.ts` (a `Record<EditAction, …>` with label, icon and trigger kind, in arc order), so a new `EditAction` without a full entry fails the build. The trigger kind is: `click` (create, edit) runs on a normal click; `hold` (save, delete) runs only after the button is pressed and held for `DEFAULT_HOLD_DURATION_MS` (800 ms). Releasing, leaving the button or losing focus before then cancels it. Keyboard users hold Enter or Space. Registrations never choose the kind: they only supply `click`, and the menu decides how it is triggered.
+Each action is defined in one place, `ACTIONS` in `layout/action-menu/action-menu.ts` (a `Record<EditAction, …>` with label, icon and trigger kind, in arc order), so a new `EditAction` without a full entry fails the build. The trigger kind is: `click` (create, edit) runs on a normal click; `hold` (save, delete) runs only after the button is pressed and held for `DEFAULT_HOLD_DURATION_MS` (800 ms). Releasing, leaving the button or losing focus before then cancels it. Keyboard users hold Enter or Space. Registrations never choose the kind: they only supply `click`, and the menu decides how it is triggered.
 
-The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding`, sets `--action-trigger-hold-progress` (0 to 1) on the host and exposes `holding()` and `holdProgress()` (`exportAs: 'actionTrigger'`). While holding, `EditMenu` shows `<app-progress-ring [value]="trigger.holdProgress()" />`, a ring that fills clockwise from the top, so the user sees how much of the hold is left; once the action runs it switches to the spinning ring (see below). It can be put on any button that needs a hold.
+The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding`, sets `--action-trigger-hold-progress` (0 to 1) on the host and exposes `holding()` and `holdProgress()` (`exportAs: 'actionTrigger'`). While holding, `ActionMenu` shows `<app-progress-ring [value]="trigger.holdProgress()" />`, a ring that fills clockwise from the top, so the user sees how much of the hold is left; once the action runs it switches to the spinning ring (see below). It can be put on any button that needs a hold.
 
 ### Running state of an action
 
@@ -21,7 +21,7 @@ There is one running flag for the whole menu: `EditActionsService.runningAction`
 
 Saving with Enter in a form goes through the same path: `EntityForm` calls `EntityEditPage.submit`, which calls `run('save')`.
 
-`shared/progress-ring` (`ProgressRing`, `app-progress-ring`) is a ring in the primary color flush with its parent's edge, with no gap, so it reads as the button's own border. Without `value` it is the Optimus `p-progress-spinner` (work of unknown length); with `value` (0 to 1) it is its own SVG ring filled to that fraction over a border-colored track, because Optimus has no determinate circular progress. It is decorative (`aria-hidden`); the parent must be `position: relative` and set `aria-busy` itself, and the ring must be a sibling of a button, not its child, because Optimus buttons have `overflow: hidden` and would clip it (`EditMenu` wraps each button in `.edit-menu-action`). Use it for any round button that shows work in progress.
+`shared/progress-ring` (`ProgressRing`, `app-progress-ring`) is a ring in the primary color flush with its parent's edge, with no gap, so it reads as the button's own border. Without `value` it is the Optimus `p-progress-spinner` (work of unknown length); with `value` (0 to 1) it is its own SVG ring filled to that fraction over a border-colored track, because Optimus has no determinate circular progress. It is decorative (`aria-hidden`); the parent must be `position: relative` and set `aria-busy` itself, and the ring must be a sibling of a button, not its child, because Optimus buttons have `overflow: hidden` and would clip it (`ActionMenu` wraps each button in `.action-menu-action`). Use it for any round button that shows work in progress.
 
 ## Request errors are shown globally
 

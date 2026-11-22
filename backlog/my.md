@@ -1,7 +1,5 @@
-done - make the actions setting in one place
-
-make one - create action avalible all the time
+Make one - create action avalible all the time
 
 copy feature
 
-panding system
+panding systems

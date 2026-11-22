@@ -19,7 +19,7 @@ Run the `reviewer` skill on the same scope before writing tests. Its findings de
 
 A test earns its place only when it would catch a regression that matters. Before writing one, name that regression in one sentence; if you cannot, skip the test.
 
-- **Test:** logic with branches or state (lazy loading, selection, edit-menu actions), what the user sees in main flows and empty states, requests sent (URL, params, body), and every bug that was fixed.
+- **Test:** logic with branches or state (lazy loading, selection, action-menu actions), what the user sees in main flows and empty states, requests sent (URL, params, body), and every bug that was fixed.
 - **Skip:** presentational components with no logic (a heading and a message), services that only forward to `HttpClient`, Angular or Optimus behaviour, and logic already covered through another spec (a shared class tested through the page that uses it needs no separate spec).
 - One test per behaviour. Several asserts in one test are fine when they describe one outcome.
 - Fewer, stronger tests beat many shallow ones. Say in the report what you deliberately left untested.

@@ -38,17 +38,17 @@ interface MenuAction {
   visible: boolean;
 }
 
-const SUGGESTED_CLASS = 'edit-menu-suggested';
+const SUGGESTED_CLASS = 'action-menu-suggested';
 
 @Component({
-  selector: 'app-edit-menu',
+  selector: 'app-action-menu',
   imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion, ActionTrigger, ProgressRing],
   host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
-  templateUrl: './edit-menu.html',
-  styleUrl: './edit-menu.scss',
+  templateUrl: './action-menu.html',
+  styleUrl: './action-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditMenu {
+export class ActionMenu {
   private readonly editActionsService = inject(EditActionsService);
   private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
