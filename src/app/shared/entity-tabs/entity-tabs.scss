@@ -5,7 +5,17 @@
 .tab {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.25rem;
+  width: 12rem;
+}
+
+.tab-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .close {

@@ -2,7 +2,7 @@
   <p-tablist>
     @for (entity of entities(); track entity.id) {
       <p-tab class="tab" [value]="entity.id">
-        {{ label()(entity) }}
+        <span class="tab-label" [title]="label()(entity)">{{ label()(entity) }}</span>
         <button
           pButton
           type="button"
