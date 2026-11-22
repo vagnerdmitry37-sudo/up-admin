@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppMessageService } from '@core/app-message.service';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { LazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -38,7 +38,7 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
   protected readonly selection = signal<T[]>([]);
 
   constructor() {
-    inject(EditActionsService).register({
+    inject(ActionMenuService).register({
       actions: () => ({
         create: { click: () => this.open([]), suggested: this.lazyRows().empty() },
       }),

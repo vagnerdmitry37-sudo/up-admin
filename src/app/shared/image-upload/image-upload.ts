@@ -15,7 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { AppMessageService } from '@core/app-message.service';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { Image } from '@core/api/models';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { AppMotion } from '@shared/motion/motion';
@@ -61,9 +61,12 @@ export class ImageUpload {
   protected readonly keepsUploadCardLast = (index: number) => index < this.images().length;
 
   constructor() {
-    inject(EditActionsService).register({
+    inject(ActionMenuService).register({
       actions: () => ({
-        delete: { click: () => this.delete(this.selection()), visible: this.selection().length > 0 },
+        delete: {
+          click: () => this.delete(this.selection()),
+          visible: this.selection().length > 0,
+        },
       }),
     });
   }

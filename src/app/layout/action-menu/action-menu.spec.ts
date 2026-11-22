@@ -1,15 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { EditActionsService, EditActions } from '@core/edit-actions.service';
+import { ActionMenuService, MenuActions } from '@core/action-menu.service';
 import { DEFAULT_HOLD_DURATION_MS } from '@shared/action-trigger/action-trigger';
 import { ActionMenu } from './action-menu';
 
-const actions = signal<EditActions>({});
+const actions = signal<MenuActions>({});
 
 @Component({ selector: 'app-page', template: '' })
 class Page {
   constructor() {
-    inject(EditActionsService).register({ actions: () => actions() });
+    inject(ActionMenuService).register({ actions: () => actions() });
   }
 }
 
@@ -162,7 +162,7 @@ describe('ActionMenu', () => {
     const action = () =>
       menu.nativeElement.querySelector('[aria-label="Save"]').closest('.action-menu-action');
 
-    const running = TestBed.inject(EditActionsService).run('save');
+    const running = TestBed.inject(ActionMenuService).run('save');
     await menu.whenStable();
 
     expect(action().querySelector('app-progress-ring p-progress-spinner')).not.toBeNull();
@@ -219,7 +219,8 @@ describe('ActionMenu', () => {
 
     it('fills a ring around Save as it is held and removes it on release', async () => {
       const button = await renderSave(vi.fn());
-      const fill = () => button.closest('.action-menu-action')!.querySelector('.progress-ring-fill');
+      const fill = () =>
+        button.closest('.action-menu-action')!.querySelector('.progress-ring-fill');
 
       press(button);
       runFramesAt(DEFAULT_HOLD_DURATION_MS / 2);

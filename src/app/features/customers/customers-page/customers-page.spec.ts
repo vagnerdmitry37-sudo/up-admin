@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { CustomersPage } from './customers-page';
@@ -20,7 +20,7 @@ const customer = (id: string): Customer => ({
 
 describe('CustomersPage', () => {
   let httpTestingController: HttpTestingController;
-  let editActionsService: EditActionsService;
+  let actionMenuService: ActionMenuService;
   let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('CustomersPage', () => {
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
-    editActionsService = TestBed.inject(EditActionsService);
+    actionMenuService = TestBed.inject(ActionMenuService);
     navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   });
 
@@ -71,7 +71,7 @@ describe('CustomersPage', () => {
     const fixture = await render([]);
 
     expect(text(fixture)).toContain('No customers yet');
-    expect(editActionsService.suggested()).toEqual(['create']);
+    expect(actionMenuService.suggested()).toEqual(['create']);
   });
 
   it('reports a failed first load in a toast and shows an empty table instead of the empty state', async () => {
@@ -92,17 +92,17 @@ describe('CustomersPage', () => {
   it('opens an empty edit page from Create', async () => {
     await render([customer('c1')]);
 
-    editActionsService.run('create');
+    actionMenuService.run('create');
 
     expect(navigate).toHaveBeenCalledWith(['/edit-customers-page'], { queryParams: undefined });
   });
 
   it('offers Edit only for a selection and opens the selected customers together', async () => {
     const fixture = await render([customer('c1'), customer('c2'), customer('c3')]);
-    expect(editActionsService.actions().edit).toBeUndefined();
+    expect(actionMenuService.actions().edit).toBeUndefined();
 
     await select(fixture, [customer('c1'), customer('c3')]);
-    editActionsService.run('edit');
+    actionMenuService.run('edit');
 
     expect(navigate).toHaveBeenCalledWith(['/edit-customers-page'], {
       queryParams: { ids: 'c1,c3' },
@@ -113,7 +113,7 @@ describe('CustomersPage', () => {
     const fixture = await render([customer('c1'), customer('c2'), customer('c3')]);
 
     await select(fixture, [customer('c1'), customer('c2')]);
-    editActionsService.run('delete');
+    actionMenuService.run('delete');
 
     const request = httpTestingController.expectOne(
       (candidate) => candidate.method === 'DELETE' && candidate.url === '/api/customers',
@@ -124,6 +124,6 @@ describe('CustomersPage', () => {
     expectFirstPage().flush({ items: [customer('c3')], totalRecords: 1 });
     await fixture.whenStable();
 
-    expect(editActionsService.actions().delete).toBeUndefined();
+    expect(actionMenuService.actions().delete).toBeUndefined();
   });
 });

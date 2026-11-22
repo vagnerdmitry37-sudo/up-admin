@@ -7,7 +7,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { EditAction, EditActionsService } from '@core/edit-actions.service';
+import { MenuAction, ActionMenuService } from '@core/action-menu.service';
 import { ActionTrigger, ActionTriggerKind } from '@shared/action-trigger/action-trigger';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
@@ -22,17 +22,17 @@ interface ActionDefinition {
   trigger: ActionTriggerKind;
 }
 
-const ACTIONS: Record<EditAction, ActionDefinition> = {
+const ACTIONS: Record<MenuAction, ActionDefinition> = {
   create: { label: 'Create', icon: OpenngIcons.PLUS, trigger: 'click' },
   edit: { label: 'Edit', icon: OpenngIcons.PENCIL, trigger: 'click' },
   save: { label: 'Save', icon: OpenngIcons.SAVE, trigger: 'hold' },
   delete: { label: 'Delete', icon: OpenngIcons.TRASH, trigger: 'hold' },
 };
 
-const ACTION_ORDER = Object.keys(ACTIONS) as EditAction[];
+const ACTION_ORDER = Object.keys(ACTIONS) as MenuAction[];
 
-interface MenuAction {
-  action: EditAction;
+interface ActionMenuItem {
+  action: MenuAction;
   label: string;
   icon: string;
   visible: boolean;
@@ -49,17 +49,17 @@ const SUGGESTED_CLASS = 'action-menu-suggested';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionMenu {
-  private readonly editActionsService = inject(EditActionsService);
+  private readonly actionMenuService = inject(ActionMenuService);
   private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
 
   protected readonly open = signal(false);
-  protected readonly suggested = this.editActionsService.suggested;
+  protected readonly suggested = this.actionMenuService.suggested;
   protected readonly hasActions = computed(
-    () => Object.keys(this.editActionsService.actions()).length > 0,
+    () => Object.keys(this.actionMenuService.actions()).length > 0,
   );
   protected readonly items = computed<MenuItem[]>(() => {
-    const actions = this.editActionsService.actions();
+    const actions = this.actionMenuService.actions();
     const suggested = this.suggested();
     return ACTION_ORDER.map((action) => {
       const { label, icon } = ACTIONS[action];
@@ -76,7 +76,7 @@ export class ActionMenu {
 
   constructor() {
     effect(() => {
-      const availableActions = Object.keys(this.editActionsService.actions());
+      const availableActions = Object.keys(this.actionMenuService.actions());
       if (availableActions.length === 0) {
         this.open.set(false);
       } else if (availableActions.some((action) => !this.availableActions.has(action))) {
@@ -88,13 +88,13 @@ export class ActionMenu {
 
   protected toggle = () => this.open.update((open) => !open);
 
-  protected triggerOf = (action: EditAction) => ACTIONS[action].trigger;
+  protected triggerOf = (action: MenuAction) => ACTIONS[action].trigger;
 
-  protected isRunning = (action: EditAction) => this.editActionsService.runningAction() === action;
+  protected isRunning = (action: MenuAction) => this.actionMenuService.runningAction() === action;
 
-  protected runAction = (action: EditAction) => this.editActionsService.run(action);
+  protected runAction = (action: MenuAction) => this.actionMenuService.run(action);
 
-  private item({ action, label, icon, visible }: MenuAction): MenuItem {
+  private item({ action, label, icon, visible }: ActionMenuItem): MenuItem {
     const key = `${action}|${label}|${icon}|${visible}`;
     let item = this.itemCache.get(key);
     if (!item) {

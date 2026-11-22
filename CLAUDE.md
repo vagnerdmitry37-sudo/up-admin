@@ -2,17 +2,17 @@
 
 ## Entity operations go only through the action menu
 
-Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-action-menu`), registered with `EditActionsService.register`. Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars. To draw attention to an action, register it with `suggested: true` and, if needed, point to it in text.
+Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-action-menu`), registered with `ActionMenuService.register`. Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars. To draw attention to an action, register it with `suggested: true` and, if needed, point to it in text.
 
 ### Click actions and hold actions
 
-Each action is defined in one place, `ACTIONS` in `layout/action-menu/action-menu.ts` (a `Record<EditAction, …>` with label, icon and trigger kind, in arc order), so a new `EditAction` without a full entry fails the build. The trigger kind is: `click` (create, edit) runs on a normal click; `hold` (save, delete) runs only after the button is pressed and held for `DEFAULT_HOLD_DURATION_MS` (800 ms). Releasing, leaving the button or losing focus before then cancels it. Keyboard users hold Enter or Space. Registrations never choose the kind: they only supply `click`, and the menu decides how it is triggered.
+Each action is defined in one place, `ACTIONS` in `layout/action-menu/action-menu.ts` (a `Record<MenuAction, …>` with label, icon and trigger kind, in arc order), so a new `MenuAction` without a full entry fails the build. The trigger kind is: `click` (create, edit) runs on a normal click; `hold` (save, delete) runs only after the button is pressed and held for `DEFAULT_HOLD_DURATION_MS` (800 ms). Releasing, leaving the button or losing focus before then cancels it. Keyboard users hold Enter or Space. Registrations never choose the kind: they only supply `click`, and the menu decides how it is triggered.
 
 The input handling lives in `shared/action-trigger` (`ActionTrigger`, `[appActionTrigger]="kind"`, emits `triggered`). While holding it adds `action-trigger-holding`, sets `--action-trigger-hold-progress` (0 to 1) on the host and exposes `holding()` and `holdProgress()` (`exportAs: 'actionTrigger'`). While holding, `ActionMenu` shows `<app-progress-ring [value]="trigger.holdProgress()" />`, a ring that fills clockwise from the top, so the user sees how much of the hold is left; once the action runs it switches to the spinning ring (see below). It can be put on any button that needs a hold.
 
 ### Running state of an action
 
-There is one running flag for the whole menu: `EditActionsService.runningAction`. An action's `click` returns the promise of its request (Save: `save()`, Delete: `deleteEntities(ids)` or the image `delete`); `EditActionsService.run` sets `runningAction` to that action, awaits the promise and clears it in `finally`. Components never keep their own `saving` / `deleting` flags. While an action runs:
+There is one running flag for the whole menu: `ActionMenuService.runningAction`. An action's `click` returns the promise of its request (Save: `save()`, Delete: `deleteEntities(ids)` or the image `delete`); `ActionMenuService.run` sets `runningAction` to that action, awaits the promise and clears it in `finally`. Components never keep their own `saving` / `deleting` flags. While an action runs:
 
 - the menu draws `app-progress-ring` around its button and sets `aria-busy`;
 - the action stays listed even if its page now marks it not `visible` (Save after the forms turn pristine, Delete after the selection is cleared);

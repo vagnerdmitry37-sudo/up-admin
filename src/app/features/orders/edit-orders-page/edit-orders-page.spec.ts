@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer, Order } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { AutoComplete } from '@openng/optimus-ui/autocomplete';
 import { EntityForm } from '@shared/entity-form/entity-form';
@@ -81,7 +81,7 @@ describe('EditOrdersPage', () => {
   };
 
   const save = async () => {
-    TestBed.inject(EditActionsService).run('save');
+    TestBed.inject(ActionMenuService).run('save');
     await new Promise((resolve) => setTimeout(resolve));
   };
 

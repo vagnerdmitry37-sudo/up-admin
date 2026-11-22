@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
 import { EditCustomersPage } from './edit-customers-page';
 
@@ -18,7 +18,7 @@ const customer = (id: string, name: string): Customer => ({
 
 describe('EditCustomersPage', () => {
   let httpTestingController: HttpTestingController;
-  let editActionsService: EditActionsService;
+  let actionMenuService: ActionMenuService;
   let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe('EditCustomersPage', () => {
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
-    editActionsService = TestBed.inject(EditActionsService);
+    actionMenuService = TestBed.inject(ActionMenuService);
     navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   });
 
@@ -77,7 +77,7 @@ describe('EditCustomersPage', () => {
   };
 
   const save = async (fixture: ComponentFixture<EditCustomersPage>) => {
-    editActionsService.run('save');
+    actionMenuService.run('save');
     await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
   };
@@ -95,12 +95,12 @@ describe('EditCustomersPage', () => {
 
   it('offers Save once the new customer form changes, creates the customer and reopens the page with its id', async () => {
     const fixture = await render();
-    expect(editActionsService.actions().save).toBeUndefined();
+    expect(actionMenuService.actions().save).toBeUndefined();
 
     await type(fixture, 'Name', 'Ada');
     await type(fixture, 'Email', 'ada@example.com');
     await type(fixture, 'Phone', '+123');
-    expect(editActionsService.actions().save).toBeDefined();
+    expect(actionMenuService.actions().save).toBeDefined();
     await save(fixture);
 
     const request = httpTestingController.expectOne('/api/customers');
@@ -154,7 +154,7 @@ describe('EditCustomersPage', () => {
     await fixture.whenStable();
 
     expect(tabs(fixture).map((tab) => tab.textContent?.trim())).toEqual(['Ada', 'Grace Hopper']);
-    expect(editActionsService.actions().save).toBeUndefined();
+    expect(actionMenuService.actions().save).toBeUndefined();
   });
 
   it('keeps Save in the menu as running while the customers are being saved', async () => {
@@ -163,8 +163,8 @@ describe('EditCustomersPage', () => {
 
     await type(fixture, 'Name', 'Ada Lovelace');
     await save(fixture);
-    expect(editActionsService.runningAction()).toBe('save');
-    expect(editActionsService.actions().save).toBeDefined();
+    expect(actionMenuService.runningAction()).toBe('save');
+    expect(actionMenuService.actions().save).toBeDefined();
 
     httpTestingController
       .expectOne((candidate) => candidate.method === 'PUT' && candidate.url === '/api/customers')
@@ -174,7 +174,7 @@ describe('EditCustomersPage', () => {
     expectLoad(['c1']).flush([{ ...first, name: 'Ada Lovelace' }]);
     await fixture.whenStable();
 
-    expect(editActionsService.actions().save).toBeUndefined();
+    expect(actionMenuService.actions().save).toBeUndefined();
   });
 
   it('shows the tab of an invalid customer instead of saving', async () => {

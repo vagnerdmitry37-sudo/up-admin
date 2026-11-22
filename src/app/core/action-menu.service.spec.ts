@@ -1,31 +1,31 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { EditActionsService, EditActions } from './edit-actions.service';
+import { ActionMenuService, MenuActions } from './action-menu.service';
 
-const actions = signal<EditActions>({});
-const formActions = signal<EditActions>({});
+const actions = signal<MenuActions>({});
+const formActions = signal<MenuActions>({});
 
 @Component({ template: '' })
 class PageHost {
   constructor() {
-    inject(EditActionsService).register({ actions: () => actions() });
+    inject(ActionMenuService).register({ actions: () => actions() });
   }
 }
 
 @Component({ template: '' })
 class FormHost {
   constructor() {
-    inject(EditActionsService).register({ actions: () => formActions() });
+    inject(ActionMenuService).register({ actions: () => formActions() });
   }
 }
 
-describe('EditActionsService', () => {
-  let service: EditActionsService;
+describe('ActionMenuService', () => {
+  let service: ActionMenuService;
 
   beforeEach(() => {
     actions.set({});
     formActions.set({});
-    service = TestBed.inject(EditActionsService);
+    service = TestBed.inject(ActionMenuService);
   });
 
   it('follows the signals the registration reads', () => {

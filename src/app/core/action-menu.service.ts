@@ -1,23 +1,23 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 
-export type EditAction = 'create' | 'edit' | 'save' | 'delete';
+export type MenuAction = 'create' | 'edit' | 'save' | 'delete';
 
-export interface EditActionConfig {
+export interface MenuActionConfig {
   click?: () => unknown;
   visible?: boolean;
   suggested?: boolean;
 }
 
-export type EditActions = Partial<Record<EditAction, EditActionConfig>>;
+export type MenuActions = Partial<Record<MenuAction, MenuActionConfig>>;
 
-export interface EditActionsRegistration {
-  actions: () => EditActions;
+export interface MenuActionsRegistration {
+  actions: () => MenuActions;
 }
 
 @Injectable({ providedIn: 'root' })
-export class EditActionsService {
-  private readonly stack = signal<EditActionsRegistration[]>([]);
-  private readonly running = signal<EditAction | undefined>(undefined);
+export class ActionMenuService {
+  private readonly stack = signal<MenuActionsRegistration[]>([]);
+  private readonly running = signal<MenuAction | undefined>(undefined);
 
   readonly runningAction = this.running.asReadonly();
   readonly actions = computed(() => {
@@ -28,22 +28,22 @@ export class EditActionsService {
           ([action, config]) => config.visible !== false || action === running,
         ),
       ),
-    ) as EditActions;
+    ) as MenuActions;
   });
   readonly suggested = computed(() =>
     Object.entries(this.actions())
       .filter(([, config]) => config.suggested)
-      .map(([action]) => action as EditAction),
+      .map(([action]) => action as MenuAction),
   );
 
-  register(registration: EditActionsRegistration): void {
+  register(registration: MenuActionsRegistration): void {
     this.stack.update((stack) => [...stack, registration]);
     inject(DestroyRef).onDestroy(() =>
       this.stack.update((stack) => stack.filter((item) => item !== registration)),
     );
   }
 
-  async run(action: EditAction): Promise<void> {
+  async run(action: MenuAction): Promise<void> {
     const click = this.actions()[action]?.click;
     if (!click || this.running()) {
       return;

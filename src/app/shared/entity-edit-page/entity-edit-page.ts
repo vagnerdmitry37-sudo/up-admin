@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import type { EntityForm } from '@shared/entity-form/entity-form';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
@@ -67,10 +67,10 @@ export class EntityEditPage<T extends { id: string }, V> {
   });
   private readonly loadedIds = computed(() => this.openIds(), { equal: containsAll });
 
-  private readonly editActionsService = inject(EditActionsService);
+  private readonly actionMenuService = inject(ActionMenuService);
 
   protected readonly actionRunning = computed(
-    () => this.editActionsService.runningAction() !== undefined,
+    () => this.actionMenuService.runningAction() !== undefined,
   );
   protected readonly activeId = signal<string | undefined>(undefined);
   protected readonly entityTemplate =
@@ -99,7 +99,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   });
 
   constructor() {
-    this.editActionsService.register({
+    this.actionMenuService.register({
       actions: () => ({
         save: { click: () => this.save(), visible: this.changedForms().length > 0 },
       }),
@@ -112,7 +112,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly disconnect = (entityForm: EntityForm) =>
     this.forms.update((forms) => forms.filter((form) => form !== entityForm));
 
-  readonly submit = () => this.editActionsService.run('save');
+  readonly submit = () => this.actionMenuService.run('save');
 
   private readonly save = async () => {
     const changedForms = this.changedForms();

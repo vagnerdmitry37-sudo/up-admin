@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
 
 @Component({
@@ -23,7 +23,7 @@ export class EntityTable<T extends { id: string }> {
   private readonly selectedIds = () => this.selection().map((row) => row.id);
 
   constructor() {
-    inject(EditActionsService).register({
+    inject(ActionMenuService).register({
       actions: () => {
         const hasSelection = this.selection().length > 0;
         return {

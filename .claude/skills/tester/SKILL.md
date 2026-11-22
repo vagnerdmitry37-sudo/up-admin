@@ -33,8 +33,8 @@ A test earns its place only when it would catch a regression that matters. Befor
   - **HTTP:** `provideHttpClient()`, `provideHttpClientTesting()`, `{ provide: API_BASE_URL, useValue: '/api' }`; answer requests with `httpTestingController.expectOne(...).flush(...)`; `afterEach(() => httpTestingController.verify())`.
   - **Pages that load on start:** `TestBed.tick()`, then answer every request the page makes (for example products and images on the edit page), then `await fixture.whenStable()`. Awaiting `whenStable()` before answering hangs.
   - **Routing:** `provideRouter([])` and `vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)`.
-  - **Edit menu:** read `TestBed.inject(EditActionsService).actions()` and trigger with `run('save' | 'delete' | …)`; wait with `await new Promise((resolve) => setTimeout(resolve))` after a run that sends requests.
-  - **Naming:** injected things keep their class name in lowerCamelCase (`httpTestingController`, `editActionsService`); in a service's own spec the subject is `service`.
+  - **Edit menu:** read `TestBed.inject(ActionMenuService).actions()` and trigger with `run('save' | 'delete' | …)`; wait with `await new Promise((resolve) => setTimeout(resolve))` after a run that sends requests.
+  - **Naming:** injected things keep their class name in lowerCamelCase (`httpTestingController`, `actionMenuService`); in a service's own spec the subject is `service`.
   - **Choosing files in the image uploader (jsdom):** stub `URL.createObjectURL = vi.fn(() => 'blob:preview')`, then on `input[type="file"]` use `Object.defineProperty(input, 'files', { value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })] })`, dispatch `new Event('change')`, then `fixture.detectChanges()` and `await fixture.whenStable()`. Fake a large file with `Object.defineProperty(file, 'size', { value: 11 * 1024 * 1024 })`.
   - **Opening the file picker:** spy on the hidden input with `vi.spyOn(input, 'click').mockImplementation(() => undefined)`.
   - `src/test-setup.ts` stubs browser APIs jsdom lacks (`ResizeObserver` for Optimus Tabs).

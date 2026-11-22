@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Order, OrderItem } from '@core/api/models';
-import { EditActionsService } from '@core/edit-actions.service';
+import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { OrderItemsTable } from './order-items-table';
@@ -28,7 +28,7 @@ const orderItem = (id: string): OrderItem =>
 
 describe('OrderItemsTable', () => {
   let httpTestingController: HttpTestingController;
-  let editActionsService: EditActionsService;
+  let actionMenuService: ActionMenuService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -41,7 +41,7 @@ describe('OrderItemsTable', () => {
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
-    editActionsService = TestBed.inject(EditActionsService);
+    actionMenuService = TestBed.inject(ActionMenuService);
   });
 
   afterEach(() => httpTestingController.verify());
@@ -83,7 +83,7 @@ describe('OrderItemsTable', () => {
     const fixture = await render([orderItem('i1'), orderItem('i2'), orderItem('i3')]);
 
     await select(fixture, [orderItem('i1'), orderItem('i3')]);
-    editActionsService.run('delete');
+    actionMenuService.run('delete');
 
     const request = httpTestingController.expectOne(
       (candidate) => candidate.method === 'DELETE' && candidate.url === '/api/orders/o1/items',
@@ -94,6 +94,6 @@ describe('OrderItemsTable', () => {
     await fixture.whenStable();
 
     expect(entityTable(fixture).rows()).toEqual([orderItem('i2')]);
-    expect(editActionsService.actions().delete).toBeUndefined();
+    expect(actionMenuService.actions().delete).toBeUndefined();
   });
 });
