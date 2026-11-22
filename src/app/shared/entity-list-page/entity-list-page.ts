@@ -1,17 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppMessageService } from '@core/app-message.service';
 import { ActionMenuService } from '@core/action-menu.service';
 import { TableColumn } from '@shared/data-table/data-table';
-import { LazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
+import { RowsPageLoader, lazyRows } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
 
@@ -22,7 +14,7 @@ import { joinRouteIds } from '@shared/route-ids/route-ids';
   styleUrl: './entity-list-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityListPage<T extends { id: string }> implements OnInit {
+export class EntityListPage<T extends { id: string }> {
   private readonly router = inject(Router);
   private readonly messageService = inject(AppMessageService);
 
@@ -32,21 +24,18 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
   readonly editPath = input.required<string>();
   readonly entityName = input.required<string>();
 
-  protected readonly lazyRows = computed(
-    () => new LazyRows<T>(this.loadPage(), () => this.showLoadError()),
-  );
+  protected readonly lazyRows = lazyRows<T>({
+    loadPage: () => this.loadPage(),
+    onFirstPageError: () => this.showLoadError(),
+  });
   protected readonly selection = signal<T[]>([]);
 
   constructor() {
     inject(ActionMenuService).register({
       actions: () => ({
-        create: { click: () => this.open([]), suggested: this.lazyRows().empty() },
+        create: { click: () => this.open([]), suggested: this.lazyRows.empty() },
       }),
     });
-  }
-
-  ngOnInit() {
-    this.lazyRows().reload();
   }
 
   protected readonly open = (ids: string[]) =>
@@ -63,6 +52,6 @@ export class EntityListPage<T extends { id: string }> implements OnInit {
   protected readonly delete = async (ids: string[]) => {
     await this.deleteEntities()(ids);
     this.selection.set([]);
-    this.lazyRows().reload();
+    this.lazyRows.reload();
   };
 }

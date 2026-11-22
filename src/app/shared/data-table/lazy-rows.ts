@@ -1,4 +1,13 @@
-import { computed, signal } from '@angular/core';
+import {
+  DestroyRef,
+  Signal,
+  assertInInjectionContext,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { Observable, Subject, finalize, takeUntil } from 'rxjs';
 import { TableRange } from './data-table';
 
@@ -9,74 +18,97 @@ export interface RowsPage<T> {
 
 export type RowsPageLoader<T> = (first: number, rows: number) => Observable<RowsPage<T>>;
 
+export interface LazyRowsOptions<T> {
+  loadPage: () => RowsPageLoader<T>;
+  onFirstPageError: () => void;
+}
+
+export interface LazyRows<T> {
+  rows: Signal<(T | undefined)[] | undefined>;
+  loading: Signal<boolean>;
+  empty: Signal<boolean>;
+  load: (range: TableRange) => void;
+  reload: () => void;
+}
+
 const FIRST_PAGE: TableRange = { first: 0, rows: 50 };
 
-export class LazyRows<T> {
-  readonly rows = signal<(T | undefined)[] | undefined>(undefined);
-  private readonly firstPageFailed = signal(false);
-  private readonly pendingRequests = signal(0);
-  private readonly pendingRows = new Set<number>();
-  private readonly reloads = new Subject<void>();
-  readonly loading = computed(() => this.pendingRequests() > 0);
-  readonly empty = computed(() => this.rows()?.length === 0 && !this.firstPageFailed());
+export const lazyRows = <T>({ loadPage, onFirstPageError }: LazyRowsOptions<T>): LazyRows<T> => {
+  assertInInjectionContext(lazyRows);
 
-  constructor(
-    private readonly loadPage: RowsPageLoader<T>,
-    private readonly onFirstPageError: () => void,
-  ) {}
+  const rows = signal<(T | undefined)[] | undefined>(undefined);
+  const firstPageFailed = signal(false);
+  const pendingRequests = signal(0);
+  const pendingRows = new Set<number>();
+  const reloads = new Subject<void>();
 
-  reload(): void {
-    this.reloads.next();
-    this.rows.set(undefined);
-    this.firstPageFailed.set(false);
-    this.load(FIRST_PAGE);
-  }
+  inject(DestroyRef).onDestroy(() => reloads.next());
 
-  load(range: TableRange): void {
-    const missing = this.missingRange(range);
-    if (!missing) {
-      return;
-    }
-    const indexes = Array.from({ length: missing.rows }, (_, offset) => missing.first + offset);
-    indexes.forEach((index) => this.pendingRows.add(index));
-    this.pendingRequests.update((count) => count + 1);
-    this.loadPage(missing.first, missing.rows)
-      .pipe(
-        finalize(() => {
-          indexes.forEach((index) => this.pendingRows.delete(index));
-          this.pendingRequests.update((count) => count - 1);
-        }),
-        takeUntil(this.reloads),
-      )
-      .subscribe({
-        next: (page) =>
-          this.rows.update((current = []) => {
-            const next = Array.from({ length: page.totalRecords }, (_, index) => current[index]);
-            next.splice(missing.first, page.items.length, ...page.items);
-            return next;
-          }),
-        error: () => {
-          if (this.rows() === undefined) {
-            this.firstPageFailed.set(true);
-            this.rows.set([]);
-            this.onFirstPageError();
-          }
-        },
-      });
-  }
-
-  private missingRange(range: TableRange): TableRange | undefined {
-    const rows = this.rows();
-    if (!rows) {
+  const missingRange = (range: TableRange): TableRange | undefined => {
+    const current = rows();
+    if (!current) {
       return range;
     }
-    const isAvailable = rows
+    const isAvailable = current
       .slice(range.first, range.first + range.rows)
-      .map((row, offset) => Boolean(row) || this.pendingRows.has(range.first + offset));
+      .map((row, offset) => Boolean(row) || pendingRows.has(range.first + offset));
     const start = isAvailable.indexOf(false);
     if (start === -1) {
       return undefined;
     }
     return { first: range.first + start, rows: isAvailable.lastIndexOf(false) - start + 1 };
-  }
-}
+  };
+
+  const load = (range: TableRange) => {
+    const missing = missingRange(range);
+    if (!missing) {
+      return;
+    }
+    const indexes = Array.from({ length: missing.rows }, (_, offset) => missing.first + offset);
+    indexes.forEach((index) => pendingRows.add(index));
+    pendingRequests.update((count) => count + 1);
+    untracked(loadPage)(missing.first, missing.rows)
+      .pipe(
+        finalize(() => {
+          indexes.forEach((index) => pendingRows.delete(index));
+          pendingRequests.update((count) => count - 1);
+        }),
+        takeUntil(reloads),
+      )
+      .subscribe({
+        next: (page) =>
+          rows.update((current = []) => {
+            const next = Array.from({ length: page.totalRecords }, (_, index) => current[index]);
+            next.splice(missing.first, page.items.length, ...page.items);
+            return next;
+          }),
+        error: () => {
+          if (rows() === undefined) {
+            firstPageFailed.set(true);
+            rows.set([]);
+            onFirstPageError();
+          }
+        },
+      });
+  };
+
+  const reload = () => {
+    reloads.next();
+    rows.set(undefined);
+    firstPageFailed.set(false);
+    load(FIRST_PAGE);
+  };
+
+  effect(() => {
+    loadPage();
+    untracked(reload);
+  });
+
+  return {
+    rows: rows.asReadonly(),
+    loading: computed(() => pendingRequests() > 0),
+    empty: computed(() => rows()?.length === 0 && !firstPageFailed()),
+    load,
+    reload,
+  };
+};
