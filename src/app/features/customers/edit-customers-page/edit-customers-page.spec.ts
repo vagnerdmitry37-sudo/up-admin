@@ -5,6 +5,7 @@ import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
 import { ActionMenuService } from '@core/action-menu.service';
+import { HttpActivity } from '@core/http-activity.service';
 import { ConfirmationService } from '@openng/optimus-ui/api';
 import { EditCustomersPage } from './edit-customers-page';
 
@@ -163,7 +164,9 @@ describe('EditCustomersPage', () => {
 
     await type(fixture, 'Name', 'Ada Lovelace');
     await save(fixture);
-    expect(actionMenuService.runningAction()).toBe('save');
+    expect(
+      TestBed.inject(HttpActivity).isRunning({ source: 'action-menu', operation: 'save' }),
+    ).toBe(true);
     expect(actionMenuService.actions().save).toBeDefined();
 
     httpTestingController

@@ -26,22 +26,20 @@ export class ActionMenuService {
   private readonly httpActivity = inject(HttpActivity);
   private readonly stack = signal<MenuActionsRegistration[]>([]);
 
-  readonly runningAction = computed(
+  private readonly registeredActions = computed(
     () =>
-      this.httpActivity.running().find((activity) => activity.source === 'action-menu')
-        ?.operation as MenuAction | undefined,
+      Object.fromEntries(
+        this.stack().flatMap((registration) =>
+          Object.entries(registration.actions())
+            .filter(
+              ([action, config]) =>
+                config.visible !== false ||
+                this.httpActivity.isRunning({ source: 'action-menu', operation: action }),
+            )
+            .map(([action, config]) => [action, { entity: registration.entity(), config }]),
+        ),
+      ) as Partial<Record<MenuAction, RegisteredAction>>,
   );
-
-  private readonly registeredActions = computed(() => {
-    const running = this.runningAction();
-    return Object.fromEntries(
-      this.stack().flatMap((registration) =>
-        Object.entries(registration.actions())
-          .filter(([action, config]) => config.visible !== false || action === running)
-          .map(([action, config]) => [action, { entity: registration.entity(), config }]),
-      ),
-    ) as Partial<Record<MenuAction, RegisteredAction>>;
-  });
 
   readonly actions = computed(
     () =>
@@ -65,7 +63,7 @@ export class ActionMenuService {
   async run(action: MenuAction): Promise<void> {
     const registered = this.registeredActions()[action];
     const click = registered?.config.click;
-    if (!registered || !click || this.runningAction()) {
+    if (!registered || !click || this.httpActivity.isRunning({ source: 'action-menu' })) {
       return;
     }
     await this.httpActivity.track(

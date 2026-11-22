@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActionMenuService, MenuActions } from './action-menu.service';
+import { HttpActivity } from './http-activity.service';
 
 const actions = signal<MenuActions>({});
 const formActions = signal<MenuActions>({});
@@ -21,11 +22,13 @@ class FormHost {
 
 describe('ActionMenuService', () => {
   let service: ActionMenuService;
+  let httpActivity: HttpActivity;
 
   beforeEach(() => {
     actions.set({});
     formActions.set({});
     service = TestBed.inject(ActionMenuService);
+    httpActivity = TestBed.inject(HttpActivity);
   });
 
   it('follows the signals the registration reads', () => {
@@ -99,7 +102,7 @@ describe('ActionMenuService', () => {
     actions.set({ create: { click: create }, save: { click: save } });
 
     const running = service.run('save');
-    expect(service.runningAction()).toBe('save');
+    expect(httpActivity.isRunning({ source: 'action-menu', operation: 'save' })).toBe(true);
 
     service.run('save');
     service.run('create');
@@ -108,7 +111,7 @@ describe('ActionMenuService', () => {
 
     finishSave();
     await running;
-    expect(service.runningAction()).toBeUndefined();
+    expect(httpActivity.isRunning({ source: 'action-menu' })).toBe(false);
   });
 
   it('keeps a running action listed after its page hides it', async () => {

@@ -12,7 +12,7 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionMenuService } from '@core/action-menu.service';
-import { ActivityEntity } from '@core/http-activity.service';
+import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import type { EntityForm } from '@shared/entity-form/entity-form';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
@@ -69,9 +69,10 @@ export class EntityEditPage<T extends { id: string }, V> {
   private readonly loadedIds = computed(() => this.openIds(), { equal: containsAll });
 
   private readonly actionMenuService = inject(ActionMenuService);
+  private readonly httpActivity = inject(HttpActivity);
 
-  protected readonly actionRunning = computed(
-    () => this.actionMenuService.runningAction() !== undefined,
+  protected readonly actionRunning = computed(() =>
+    this.httpActivity.isRunning({ source: 'action-menu' }),
   );
   protected readonly activeId = signal<string | undefined>(undefined);
   protected readonly entityTemplate =

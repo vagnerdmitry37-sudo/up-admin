@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { MenuAction, ActionMenuService } from '@core/action-menu.service';
+import { HttpActivity } from '@core/http-activity.service';
 import { ActionTrigger, ActionTriggerKind } from '@shared/action-trigger/action-trigger';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
@@ -50,6 +51,7 @@ const SUGGESTED_CLASS = 'action-menu-suggested';
 })
 export class ActionMenu {
   private readonly actionMenuService = inject(ActionMenuService);
+  private readonly httpActivity = inject(HttpActivity);
   private readonly dial = viewChild(SpeedDial);
   private readonly itemCache = new Map<string, MenuItem>();
 
@@ -90,7 +92,8 @@ export class ActionMenu {
 
   protected triggerOf = (action: MenuAction) => ACTIONS[action].trigger;
 
-  protected isRunning = (action: MenuAction) => this.actionMenuService.runningAction() === action;
+  protected isRunning = (action: MenuAction) =>
+    this.httpActivity.isRunning({ source: 'action-menu', operation: action });
 
   protected runAction = (action: MenuAction) => this.actionMenuService.run(action);
 
