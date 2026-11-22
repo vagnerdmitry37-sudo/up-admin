@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  model,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
 import { ActionMenuService } from '@core/action-menu.service';
-import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
+import { ActivityEntity } from '@core/http-activity.service';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
 
 @Component({
@@ -19,7 +11,7 @@ import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-tabl
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityTable<T extends { id: string }> {
-  readonly rows = input.required<(T | undefined)[] | undefined>();
+  readonly rows = input.required<(T | undefined)[]>();
   readonly columns = input.required<TableColumn<T>[]>();
   readonly lazy = input(false);
   readonly entity = input.required<ActivityEntity>();
@@ -28,12 +20,6 @@ export class EntityTable<T extends { id: string }> {
   readonly lazyLoad = output<TableRange>();
   readonly create = output<string[]>();
   readonly edit = output<string[]>();
-
-  private readonly httpActivity = inject(HttpActivity);
-
-  protected readonly loading = computed(() =>
-    this.httpActivity.isRunning({ entity: this.entity(), method: 'GET' }),
-  );
 
   private readonly selectedIds = () => this.selection().map((row) => row.id);
 

@@ -44,11 +44,12 @@ export const lazyRows = <T>({ loadPage, onFirstPageError }: LazyRowsOptions<T>):
 
   const missingRange = (range: TableRange): TableRange | undefined => {
     const current = rows();
-    const length = current ? Math.min(range.rows, current.length - range.first) : range.rows;
-    const isAvailable = Array.from({ length: Math.max(length, 0) }, (_, offset) => {
-      const index = range.first + offset;
-      return Boolean(current?.[index]) || pendingRows.has(index);
-    });
+    if (!current) {
+      return range;
+    }
+    const isAvailable = current
+      .slice(range.first, range.first + range.rows)
+      .map((row, offset) => Boolean(row) || pendingRows.has(range.first + offset));
     const start = isAvailable.indexOf(false);
     if (start === -1) {
       return undefined;

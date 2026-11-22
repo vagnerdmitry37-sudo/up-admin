@@ -5,9 +5,9 @@
       Use the Create action in the menu below to add your first {{ entityName() }}.
     </p>
   </section>
-} @else {
+} @else if (lazyRows.rows(); as rows) {
   <app-entity-table
-    [rows]="lazyRows.rows()"
+    [rows]="rows"
     [columns]="columns()"
     [lazy]="true"
     [entity]="entityName()"
