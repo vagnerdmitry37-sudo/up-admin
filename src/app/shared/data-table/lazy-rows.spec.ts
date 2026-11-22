@@ -37,14 +37,12 @@ describe('lazyRows', () => {
 
   it('loads the first 50 rows on its own and sizes the list to the total', () => {
     expect(requests.map(({ first, rows }) => ({ first, rows }))).toEqual([{ first: 0, rows: 50 }]);
-    expect(table.loading()).toBe(true);
 
     answer(0, rowsFrom(0, 50), 120);
 
     expect(table.rows()).toHaveLength(120);
     expect(table.rows()?.[49]).toEqual({ id: 49 });
     expect(table.rows()?.[50]).toBeUndefined();
-    expect(table.loading()).toBe(false);
   });
 
   it('requests only the rows it does not have yet', () => {
@@ -96,7 +94,6 @@ describe('lazyRows', () => {
 
     expect(table.rows()).toEqual([]);
     expect(table.empty()).toBe(false);
-    expect(table.loading()).toBe(false);
     expect(onFirstPageError).toHaveBeenCalledTimes(1);
   });
 
@@ -121,6 +118,5 @@ describe('lazyRows', () => {
     answer(2, [{ id: 999 }], 1);
 
     expect(table.rows()).toEqual([{ id: 999 }]);
-    expect(table.loading()).toBe(false);
   });
 });

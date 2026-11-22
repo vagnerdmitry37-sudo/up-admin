@@ -5,11 +5,10 @@
       Use the Create action in the menu below to add your first {{ entityName() }}.
     </p>
   </section>
-} @else if (lazyRows.rows(); as rows) {
+} @else {
   <app-entity-table
-    [rows]="rows"
+    [rows]="lazyRows.rows()"
     [columns]="columns()"
-    [loading]="lazyRows.loading()"
     [lazy]="true"
     [entity]="entityName()"
     [deleteRows]="delete"

@@ -25,7 +25,6 @@ export interface LazyRowsOptions<T> {
 
 export interface LazyRows<T> {
   rows: Signal<(T | undefined)[] | undefined>;
-  loading: Signal<boolean>;
   empty: Signal<boolean>;
   load: (range: TableRange) => void;
   reload: () => void;
@@ -38,7 +37,6 @@ export const lazyRows = <T>({ loadPage, onFirstPageError }: LazyRowsOptions<T>):
 
   const rows = signal<(T | undefined)[] | undefined>(undefined);
   const firstPageFailed = signal(false);
-  const pendingRequests = signal(0);
   const pendingRows = new Set<number>();
   const reloads = new Subject<void>();
 
@@ -46,12 +44,11 @@ export const lazyRows = <T>({ loadPage, onFirstPageError }: LazyRowsOptions<T>):
 
   const missingRange = (range: TableRange): TableRange | undefined => {
     const current = rows();
-    if (!current) {
-      return range;
-    }
-    const isAvailable = current
-      .slice(range.first, range.first + range.rows)
-      .map((row, offset) => Boolean(row) || pendingRows.has(range.first + offset));
+    const length = current ? Math.min(range.rows, current.length - range.first) : range.rows;
+    const isAvailable = Array.from({ length: Math.max(length, 0) }, (_, offset) => {
+      const index = range.first + offset;
+      return Boolean(current?.[index]) || pendingRows.has(index);
+    });
     const start = isAvailable.indexOf(false);
     if (start === -1) {
       return undefined;
@@ -66,13 +63,9 @@ export const lazyRows = <T>({ loadPage, onFirstPageError }: LazyRowsOptions<T>):
     }
     const indexes = Array.from({ length: missing.rows }, (_, offset) => missing.first + offset);
     indexes.forEach((index) => pendingRows.add(index));
-    pendingRequests.update((count) => count + 1);
     untracked(loadPage)(missing.first, missing.rows)
       .pipe(
-        finalize(() => {
-          indexes.forEach((index) => pendingRows.delete(index));
-          pendingRequests.update((count) => count - 1);
-        }),
+        finalize(() => indexes.forEach((index) => pendingRows.delete(index))),
         takeUntil(reloads),
       )
       .subscribe({
@@ -106,7 +99,6 @@ export const lazyRows = <T>({ loadPage, onFirstPageError }: LazyRowsOptions<T>):
 
   return {
     rows: rows.asReadonly(),
-    loading: computed(() => pendingRequests() > 0),
     empty: computed(() => rows()?.length === 0 && !firstPageFailed()),
     load,
     reload,

@@ -13,6 +13,7 @@ import { TableModule } from '@openng/optimus-ui/table';
 import { TableLazyLoadEvent } from '@openng/optimus-ui/types/table';
 
 const ROW_HEIGHT = 49;
+const ROWS_RESERVED_WHILE_LOADING = 50;
 
 export interface TableColumn<T> {
   header: string;
@@ -33,6 +34,7 @@ export interface TableRange {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.lazy]': 'lazy()',
+    '[attr.aria-busy]': 'loading() || null',
     '[style.height.px]': 'lazy() ? contentHeight() : null',
   },
 })
@@ -50,7 +52,9 @@ export class DataTable<T extends object> {
   protected readonly fixedTableLayout = { 'table-layout': 'fixed', width: '100%' };
   protected readonly contentHeight = computed(() => {
     const headerAndFooterRows = this.footerTemplate() ? 2 : 1;
-    return (this.rows().length + headerAndFooterRows) * ROW_HEIGHT;
+    const rowCount = this.rows().length;
+    const bodyRows = this.loading() && rowCount === 0 ? ROWS_RESERVED_WHILE_LOADING : rowCount;
+    return (bodyRows + headerAndFooterRows) * ROW_HEIGHT;
   });
   protected readonly trackRow = (index: number, row: T | undefined) => row ?? index;
 
