@@ -32,6 +32,15 @@ There are exactly two kinds of error display:
 
 Every failed API request is turned into one Optimus toast (`p-toast` in `Shell`, fed through `AppMessageService.error`) by `core/error.interceptor.ts`, so pages never catch HTTP errors to show a message. The interceptor maps the status to a plain-language summary: 0 no connection, 400 the validation messages, 403 not allowed, 404 refresh and try again, 409 the server `detail`, 5xx try again later. It skips 401 and `auth/` requests, which `authInterceptor` and `SessionService` handle, except `auth/login`: there it skips only 400, which `LoginPage` shows inline as rejected credentials, so a failed login (no connection, 5xx) still gets a toast; and rethrows the error so callers still stop. Write server `detail` texts for 409 so a user can read them.
 
+## Request activity is tracked centrally
+
+`HttpClient` has no global stream of requests, so `core/http-activity.interceptor.ts` (`httpActivityInterceptor`, registered first in `app.config.ts`) records every request in `core/http-activity.service.ts` (`HttpActivity`), the single source of truth for what is in flight. Call sites need no code for it.
+
+- Each request is a `TrackedRequest` `{ id, method, url, status }`. It starts as `running` and ends exactly once as `succeeded` (an `HttpResponse` arrived), `failed` (error) or `cancelled` (unsubscribed before a response, for example after leaving the page).
+- Read it with `running` (signal of the requests in flight) or `isRunning(method?)` inside a `computed` or template; subscribe with `on(method, status?)` (for example `on('PUT', 'succeeded')`) or `changes` for every status change.
+- Background `auth/` requests (token refresh, logout) are not tracked; `auth/login` is.
+- It only records status. Error toasts stay in `error.interceptor`.
+
 ## Entity features are mirrors: orders, products, customers
 
 `src/app/features/orders`, `src/app/features/products` and `src/app/features/customers` are the same feature built for three entities. They must stay structurally identical. Any change to one of them is applied to all three in the same change, unless the entity truly cannot support it; in that case say so explicitly to the user instead of silently diverging.

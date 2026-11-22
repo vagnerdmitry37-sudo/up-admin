@@ -10,6 +10,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { AppErrorHandler } from '@core/app-error-handler';
 import { authInterceptor } from '@core/auth.interceptor';
 import { errorInterceptor } from '@core/error.interceptor';
+import { httpActivityInterceptor } from '@core/http-activity.interceptor';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
@@ -21,7 +22,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     { provide: ErrorHandler, useClass: AppErrorHandler },
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([errorInterceptor, authInterceptor])),
+    provideHttpClient(
+      withInterceptors([httpActivityInterceptor, errorInterceptor, authInterceptor]),
+    ),
     provideOptimus({ theme: { preset: NoirPreset } }),
     ConfirmationService,
     MessageService,
