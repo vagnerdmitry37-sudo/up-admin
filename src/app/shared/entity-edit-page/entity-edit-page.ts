@@ -12,6 +12,7 @@ import {
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionMenuService } from '@core/action-menu.service';
+import { ActivityEntity } from '@core/http-activity.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import type { EntityForm } from '@shared/entity-form/entity-form';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
@@ -52,7 +53,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
   readonly label = input.required<(entity: T) => string>();
-  readonly entityName = input.required<string>();
+  readonly entityName = input.required<ActivityEntity>();
   readonly writer = input.required<EntityWriter<T, V>>();
   readonly listPath = input.required<string>();
 
@@ -100,6 +101,7 @@ export class EntityEditPage<T extends { id: string }, V> {
 
   constructor() {
     this.actionMenuService.register({
+      entity: this.entityName,
       actions: () => ({
         save: { click: () => this.save(), visible: this.changedForms().length > 0 },
       }),

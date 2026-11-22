@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { ApiClient } from '@core/api-client';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
   CreateCustomerRequest,
@@ -11,21 +11,19 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CustomersService {
-  private readonly httpClient = inject(HttpClient);
+  private readonly api = inject(ApiClient).forEntity('customer');
   private readonly url = `${inject(API_BASE_URL)}/customers`;
 
   list = (first: number, rows: number) =>
-    this.httpClient.get<CustomersPageResponse>(this.url, { params: { first, rows } });
+    this.api.get<CustomersPageResponse>(this.url, { params: { first, rows } });
 
-  get = (ids: string[]) =>
-    this.httpClient.get<Customer[]>(`${this.url}/by-ids`, { params: { ids } });
+  get = (ids: string[]) => this.api.get<Customer[]>(`${this.url}/by-ids`, { params: { ids } });
 
   create = (request: CreateCustomerRequest) =>
-    firstValueFrom(this.httpClient.post<Customer>(this.url, request));
+    firstValueFrom(this.api.post<Customer>(this.url, request));
 
   update = (requests: UpdateCustomerRequest[]) =>
-    firstValueFrom(this.httpClient.put<Customer[]>(this.url, requests));
+    firstValueFrom(this.api.put<Customer[]>(this.url, requests));
 
-  delete = (ids: string[]) =>
-    firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
+  delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
 }

@@ -9,7 +9,7 @@ const actions = signal<MenuActions>({});
 @Component({ selector: 'app-page', template: '' })
 class Page {
   constructor() {
-    inject(ActionMenuService).register({ actions: () => actions() });
+    inject(ActionMenuService).register({ entity: () => 'product', actions: () => actions() });
   }
 }
 

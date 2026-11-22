@@ -4,9 +4,11 @@ import { TestBed } from '@angular/core/testing';
 import { MessageService } from '@openng/optimus-ui/api';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from './api-base-url';
-import { errorInterceptor } from './error.interceptor';
+import { httpActivityInterceptor } from './http-activity.interceptor';
+import { ApiClient, ApiRequestOptions } from './api-client';
+import { provideRequestErrorToasts } from './request-error-toasts';
 
-describe('errorInterceptor', () => {
+describe('requestErrorToasts', () => {
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
   let add: ReturnType<typeof vi.spyOn>;
@@ -14,7 +16,8 @@ describe('errorInterceptor', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptors([errorInterceptor])),
+        provideHttpClient(withInterceptors([httpActivityInterceptor])),
+        provideRequestErrorToasts(),
         provideHttpClientTesting(),
         { provide: API_BASE_URL, useValue: '/api' },
         MessageService,
@@ -27,8 +30,17 @@ describe('errorInterceptor', () => {
 
   afterEach(() => httpTestingController.verify());
 
-  const fail = async (url: string, status: number, body: object | null = null) => {
-    const response = firstValueFrom(httpClient.post(url, {}));
+  const loginOptions: ApiRequestOptions = { handledStatuses: [400] };
+
+  const fail = async (
+    url: string,
+    status: number,
+    body: object | null = null,
+    options: ApiRequestOptions = {},
+  ) => {
+    const response = firstValueFrom(
+      TestBed.inject(ApiClient).forEntity('product').post(url, {}, options),
+    );
     httpTestingController.expectOne(url).flush(body, { status, statusText: 'Error' });
     await expect(response).rejects.toMatchObject({ status });
   };
@@ -90,21 +102,21 @@ describe('errorInterceptor', () => {
     expect(add).not.toHaveBeenCalled();
   });
 
-  it('stays silent for session requests other than login', async () => {
-    await fail('/api/auth/refresh', 500);
-    await fail('/api/auth/logout', 500);
+  it('stays silent for untracked requests such as token refresh and logout', async () => {
+    await fail('/api/auth/refresh', 500, null, { untracked: true });
+    await fail('/api/auth/logout', 500, null, { untracked: true });
 
     expect(add).not.toHaveBeenCalled();
   });
 
   it('leaves rejected login credentials to the login form', async () => {
-    await fail('/api/auth/login', 400);
+    await fail('/api/auth/login', 400, null, loginOptions);
 
     expect(add).not.toHaveBeenCalled();
   });
 
   it('reports a login that fails on the server', async () => {
-    await fail('/api/auth/login', 500);
+    await fail('/api/auth/login', 500, null, loginOptions);
 
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ summary: 'Something went wrong' }));
   });

@@ -1,4 +1,5 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
 
 export type MenuAction = 'create' | 'edit' | 'save' | 'delete';
 
@@ -11,25 +12,43 @@ export interface MenuActionConfig {
 export type MenuActions = Partial<Record<MenuAction, MenuActionConfig>>;
 
 export interface MenuActionsRegistration {
+  entity: () => ActivityEntity;
   actions: () => MenuActions;
+}
+
+interface RegisteredAction {
+  entity: ActivityEntity;
+  config: MenuActionConfig;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ActionMenuService {
+  private readonly httpActivity = inject(HttpActivity);
   private readonly stack = signal<MenuActionsRegistration[]>([]);
-  private readonly running = signal<MenuAction | undefined>(undefined);
 
-  readonly runningAction = this.running.asReadonly();
-  readonly actions = computed(() => {
-    const running = this.running();
+  readonly runningAction = computed(
+    () =>
+      this.httpActivity.running().find((activity) => activity.source === 'action-menu')
+        ?.operation as MenuAction | undefined,
+  );
+
+  private readonly registeredActions = computed(() => {
+    const running = this.runningAction();
     return Object.fromEntries(
       this.stack().flatMap((registration) =>
-        Object.entries(registration.actions()).filter(
-          ([action, config]) => config.visible !== false || action === running,
-        ),
+        Object.entries(registration.actions())
+          .filter(([action, config]) => config.visible !== false || action === running)
+          .map(([action, config]) => [action, { entity: registration.entity(), config }]),
       ),
-    ) as MenuActions;
+    ) as Partial<Record<MenuAction, RegisteredAction>>;
   });
+
+  readonly actions = computed(
+    () =>
+      Object.fromEntries(
+        Object.entries(this.registeredActions()).map(([action, { config }]) => [action, config]),
+      ) as MenuActions,
+  );
   readonly suggested = computed(() =>
     Object.entries(this.actions())
       .filter(([, config]) => config.suggested)
@@ -44,15 +63,14 @@ export class ActionMenuService {
   }
 
   async run(action: MenuAction): Promise<void> {
-    const click = this.actions()[action]?.click;
-    if (!click || this.running()) {
+    const registered = this.registeredActions()[action];
+    const click = registered?.config.click;
+    if (!registered || !click || this.runningAction()) {
       return;
     }
-    this.running.set(action);
-    try {
-      await click();
-    } finally {
-      this.running.set(undefined);
-    }
+    await this.httpActivity.track(
+      { entity: registered.entity, operation: action, source: 'action-menu' },
+      click,
+    );
   }
 }

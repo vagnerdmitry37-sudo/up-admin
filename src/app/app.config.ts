@@ -9,8 +9,8 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { AppErrorHandler } from '@core/app-error-handler';
 import { authInterceptor } from '@core/auth.interceptor';
-import { errorInterceptor } from '@core/error.interceptor';
 import { httpActivityInterceptor } from '@core/http-activity.interceptor';
+import { provideRequestErrorToasts } from '@core/request-error-toasts';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
@@ -22,12 +22,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     { provide: ErrorHandler, useClass: AppErrorHandler },
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(
-      withInterceptors([httpActivityInterceptor, errorInterceptor, authInterceptor]),
-    ),
+    provideHttpClient(withInterceptors([httpActivityInterceptor, authInterceptor])),
     provideOptimus({ theme: { preset: NoirPreset } }),
     ConfirmationService,
     MessageService,
+    provideRequestErrorToasts(),
     provideAppInitializer(() => inject(SessionService).restore()),
   ],
 };

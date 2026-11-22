@@ -1,24 +1,24 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { API_BASE_URL } from '@core/api-base-url';
-import { HttpActivity, RequestMethod } from '@core/http-activity.service';
+import { HttpActivity, REQUEST_TAG } from '@core/http-activity.service';
 import { defer, tap } from 'rxjs';
 
 export const httpActivityInterceptor: HttpInterceptorFn = (request, next) => {
   const httpActivity = inject(HttpActivity);
-  const authUrl = `${inject(API_BASE_URL)}/auth/`;
-  const isBackgroundAuthRequest =
-    request.url.startsWith(authUrl) && request.url !== `${authUrl}login`;
+  const { untracked, entity, handledStatuses } = request.context.get(REQUEST_TAG);
 
-  if (isBackgroundAuthRequest) {
+  if (untracked) {
     return next(request);
   }
 
   return defer(() => {
-    const trackedRequest = httpActivity.start(
-      request.method as RequestMethod,
-      request.urlWithParams,
-    );
+    const trackedRequest = httpActivity.start({
+      kind: 'request',
+      entity,
+      method: request.method,
+      url: request.urlWithParams,
+      handledStatuses,
+    });
     return next(request).pipe(
       tap({
         next: (event) => {
@@ -27,7 +27,7 @@ export const httpActivityInterceptor: HttpInterceptorFn = (request, next) => {
           }
         },
         complete: () => httpActivity.finish(trackedRequest, 'succeeded'),
-        error: () => httpActivity.finish(trackedRequest, 'failed'),
+        error: (error: unknown) => httpActivity.finish(trackedRequest, 'failed', error),
         unsubscribe: () => httpActivity.finish(trackedRequest, 'cancelled'),
       }),
     );

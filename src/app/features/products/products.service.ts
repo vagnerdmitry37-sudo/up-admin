@@ -1,5 +1,5 @@
-import { HttpClient, httpResource } from '@angular/common/http';
 import { Injectable, computed, inject } from '@angular/core';
+import { ApiClient } from '@core/api-client';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
   CreateProductRequest,
@@ -15,11 +15,13 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  private readonly httpClient = inject(HttpClient);
+  private readonly api = inject(ApiClient).forEntity('product');
+  private readonly imageApi = inject(ApiClient).forEntity('image');
+  private readonly productTypeApi = inject(ApiClient).forEntity('product type');
   private readonly apiBaseUrl = inject(API_BASE_URL);
   private readonly url = `${this.apiBaseUrl}/products`;
   private readonly imagesUrl = `${this.apiBaseUrl}/images`;
-  private readonly productTypesResource = httpResource<ProductTypeDefinition[]>(
+  private readonly productTypesResource = this.productTypeApi.resource<ProductTypeDefinition[]>(
     () => `${this.apiBaseUrl}/product-types`,
   );
 
@@ -28,31 +30,30 @@ export class ProductsService {
   );
 
   list = (first: number, rows: number) =>
-    this.httpClient.get<ProductsPageResponse>(this.url, { params: { first, rows } });
+    this.api.get<ProductsPageResponse>(this.url, { params: { first, rows } });
 
   get = (ids: string[]) =>
-    this.httpClient.get<ProductDetails[]>(`${this.url}/by-ids`, { params: { ids } });
+    this.api.get<ProductDetails[]>(`${this.url}/by-ids`, { params: { ids } });
 
   create = (requests: CreateProductRequest[]) =>
-    firstValueFrom(this.httpClient.post<Product[]>(this.url, requests));
+    firstValueFrom(this.api.post<Product[]>(this.url, requests));
 
   update = (requests: UpdateProductRequest[]) =>
-    firstValueFrom(this.httpClient.put<Product[]>(this.url, requests));
+    firstValueFrom(this.api.put<Product[]>(this.url, requests));
 
-  delete = (ids: string[]) =>
-    firstValueFrom(this.httpClient.delete<void>(this.url, { params: { ids } }));
+  delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
 
   deleteImages = (ids: string[]) =>
-    firstValueFrom(this.httpClient.delete<void>(this.imagesUrl, { params: { ids } }));
+    firstValueFrom(this.imageApi.delete<void>(this.imagesUrl, { params: { ids } }));
 
   getImages = (productIds: string[]) =>
-    this.httpClient.get<Image[]>(this.imagesUrl, {
+    this.imageApi.get<Image[]>(this.imagesUrl, {
       params: { entityType: 'Product', entityIds: productIds },
     });
 
   updateImageOrder = (productId: string, imageIds: string[]) =>
     firstValueFrom(
-      this.httpClient.put<Image[]>(`${this.imagesUrl}/order`, {
+      this.imageApi.put<Image[]>(`${this.imagesUrl}/order`, {
         entityType: 'Product',
         entityId: productId,
         imageIds,
@@ -66,6 +67,6 @@ export class ProductsService {
     for (const file of files) {
       form.append('files', file, file.name);
     }
-    return firstValueFrom(this.httpClient.post<Image[]>(this.imagesUrl, form));
+    return firstValueFrom(this.imageApi.post<Image[]>(this.imagesUrl, form));
   }
 }

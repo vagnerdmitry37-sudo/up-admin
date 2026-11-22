@@ -4,6 +4,13 @@ const { defineConfig, globalIgnores } = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 
+const httpClientRestriction = {
+  name: '@angular/common/http',
+  importNames: ['HttpClient', 'httpResource'],
+  message:
+    'Send requests through ApiClient (core/api-client.ts) so every request is tracked by HttpActivity.',
+};
+
 module.exports = defineConfig([
   globalIgnores(['src/app/core/api/schema.ts']),
   {
@@ -36,11 +43,20 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['src/app/**/*.ts'],
+    ignores: ['src/app/core/api-client.ts', '**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [httpClientRestriction] }],
+    },
+  },
+  {
     files: ['src/app/features/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
+          paths: [httpClientRestriction],
           patterns: [
             {
               group: ['@features/*', '../../*'],

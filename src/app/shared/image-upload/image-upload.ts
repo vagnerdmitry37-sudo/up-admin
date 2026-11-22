@@ -17,6 +17,7 @@ import {
 import { AppMessageService } from '@core/app-message.service';
 import { ActionMenuService } from '@core/action-menu.service';
 import { Image } from '@core/api/models';
+import { HttpActivity } from '@core/http-activity.service';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { AppMotion } from '@shared/motion/motion';
 
@@ -43,6 +44,7 @@ export class ImageUpload {
   readonly writer = input.required<ImageWriter>();
 
   private readonly messageService = inject(AppMessageService);
+  private readonly httpActivity = inject(HttpActivity);
   private readonly fileUpload = viewChild(FileUpload);
   private readonly uploading = signal<File[]>([]);
 
@@ -62,6 +64,7 @@ export class ImageUpload {
 
   constructor() {
     inject(ActionMenuService).register({
+      entity: () => 'image',
       actions: () => ({
         delete: {
           click: () => this.delete(this.selection()),
@@ -89,7 +92,10 @@ export class ImageUpload {
     }
     this.uploading.update((uploading) => [...uploading, ...files]);
     try {
-      const created = await this.writer().upload(entityId, files);
+      const created = await this.httpActivity.track(
+        { entity: 'image', operation: 'upload', source: 'image-upload' },
+        () => this.writer().upload(entityId, files),
+      );
       this.images.update((images) => [...images, ...created]);
     } finally {
       this.uploading.update((uploading) => uploading.filter((file) => !files.includes(file)));
@@ -108,9 +114,13 @@ export class ImageUpload {
     moveItemInArray(reordered, previousIndex, currentIndex);
     this.images.set(reordered);
     try {
-      const saved = await this.writer().reorder(
-        entityId,
-        reordered.map((image) => image.id),
+      const saved = await this.httpActivity.track(
+        { entity: 'image', operation: 'reorder', source: 'image-upload' },
+        () =>
+          this.writer().reorder(
+            entityId,
+            reordered.map((image) => image.id),
+          ),
       );
       this.images.set(saved);
     } catch (error) {

@@ -1,8 +1,7 @@
-import { HttpErrorResponse, HttpInterceptorFn, HttpStatusCode } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { API_BASE_URL } from '@core/api-base-url';
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { inject, provideAppInitializer } from '@angular/core';
 import { AppMessageService } from '@core/app-message.service';
-import { catchError, throwError } from 'rxjs';
+import { Activity, HttpActivity } from '@core/http-activity.service';
 
 interface ProblemDetails {
   detail?: string;
@@ -60,24 +59,23 @@ const errorMessageFor = (error: HttpErrorResponse): ErrorMessage => {
   return { summary: 'Request failed', detail: problem.detail ?? 'Please try again.' };
 };
 
-export const errorInterceptor: HttpInterceptorFn = (request, next) => {
-  const messageService = inject(AppMessageService);
-  const authUrl = `${inject(API_BASE_URL)}/auth/`;
-  const isLoginRequest = request.url === `${authUrl}login`;
-  const isOtherAuthRequest = request.url.startsWith(authUrl) && !isLoginRequest;
+const toastableErrorOf = ({ error, handledStatuses = [] }: Activity) =>
+  error instanceof HttpErrorResponse &&
+  error.status !== HttpStatusCode.Unauthorized &&
+  !handledStatuses.includes(error.status)
+    ? error
+    : undefined;
 
-  return next(request).pipe(
-    catchError((error: unknown) => {
-      const handledElsewhere =
-        !(error instanceof HttpErrorResponse) ||
-        error.status === HttpStatusCode.Unauthorized ||
-        isOtherAuthRequest ||
-        (isLoginRequest && error.status === HttpStatusCode.BadRequest);
-      if (!handledElsewhere) {
-        const { summary, detail } = errorMessageFor(error);
-        messageService.error(summary, detail);
-      }
-      return throwError(() => error);
-    }),
-  );
-};
+export const provideRequestErrorToasts = () =>
+  provideAppInitializer(() => {
+    const messageService = inject(AppMessageService);
+    inject(HttpActivity)
+      .on({ kind: 'request', status: 'failed' })
+      .subscribe((failedRequest) => {
+        const error = toastableErrorOf(failedRequest);
+        if (error) {
+          const { summary, detail } = errorMessageFor(error);
+          messageService.error(summary, detail);
+        }
+      });
+  });

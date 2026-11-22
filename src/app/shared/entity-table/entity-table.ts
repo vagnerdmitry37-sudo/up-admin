@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
 import { ActionMenuService } from '@core/action-menu.service';
+import { ActivityEntity } from '@core/http-activity.service';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
 
 @Component({
@@ -14,6 +15,7 @@ export class EntityTable<T extends { id: string }> {
   readonly columns = input.required<TableColumn<T>[]>();
   readonly loading = input(false);
   readonly lazy = input(false);
+  readonly entity = input.required<ActivityEntity>();
   readonly deleteRows = input.required<(ids: string[]) => Promise<unknown>>();
   readonly selection = model<T[]>([]);
   readonly lazyLoad = output<TableRange>();
@@ -24,6 +26,7 @@ export class EntityTable<T extends { id: string }> {
 
   constructor() {
     inject(ActionMenuService).register({
+      entity: this.entity,
       actions: () => {
         const hasSelection = this.selection().length > 0;
         return {

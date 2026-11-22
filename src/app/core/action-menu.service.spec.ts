@@ -8,14 +8,14 @@ const formActions = signal<MenuActions>({});
 @Component({ template: '' })
 class PageHost {
   constructor() {
-    inject(ActionMenuService).register({ actions: () => actions() });
+    inject(ActionMenuService).register({ entity: () => 'product', actions: () => actions() });
   }
 }
 
 @Component({ template: '' })
 class FormHost {
   constructor() {
-    inject(ActionMenuService).register({ actions: () => formActions() });
+    inject(ActionMenuService).register({ entity: () => 'product', actions: () => formActions() });
   }
 }
 

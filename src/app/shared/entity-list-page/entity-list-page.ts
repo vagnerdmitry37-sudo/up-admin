@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angu
 import { Router } from '@angular/router';
 import { AppMessageService } from '@core/app-message.service';
 import { ActionMenuService } from '@core/action-menu.service';
+import { ActivityEntity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader, lazyRows } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -22,7 +23,7 @@ export class EntityListPage<T extends { id: string }> {
   readonly deleteEntities = input.required<(ids: string[]) => Promise<unknown>>();
   readonly columns = input.required<TableColumn<T>[]>();
   readonly editPath = input.required<string>();
-  readonly entityName = input.required<string>();
+  readonly entityName = input.required<ActivityEntity>();
 
   protected readonly lazyRows = lazyRows<T>({
     loadPage: () => this.loadPage(),
@@ -32,6 +33,7 @@ export class EntityListPage<T extends { id: string }> {
 
   constructor() {
     inject(ActionMenuService).register({
+      entity: this.entityName,
       actions: () => ({
         create: { click: () => this.open([]), suggested: this.lazyRows.empty() },
       }),

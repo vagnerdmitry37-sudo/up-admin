@@ -3,14 +3,16 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL } from './api-base-url';
-import { HttpActivity, TrackedRequest } from './http-activity.service';
+import { ApiClient } from './api-client';
+import { Activity, HttpActivity } from './http-activity.service';
 import { httpActivityInterceptor } from './http-activity.interceptor';
 
 describe('httpActivityInterceptor', () => {
   let httpClient: HttpClient;
+  let apiClient: ApiClient;
   let httpTestingController: HttpTestingController;
   let service: HttpActivity;
-  let changes: TrackedRequest[];
+  let changes: Activity[];
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -21,6 +23,7 @@ describe('httpActivityInterceptor', () => {
       ],
     });
     httpClient = TestBed.inject(HttpClient);
+    apiClient = TestBed.inject(ApiClient);
     httpTestingController = TestBed.inject(HttpTestingController);
     service = TestBed.inject(HttpActivity);
     changes = [];
@@ -29,13 +32,21 @@ describe('httpActivityInterceptor', () => {
 
   afterEach(() => httpTestingController.verify());
 
-  it('shows a request as running until its response arrives, then reports it succeeded', async () => {
-    const response = firstValueFrom(httpClient.put('/api/products', {}, { params: { a: '1' } }));
+  it('shows a tagged request as running for its entity until the response arrives', async () => {
+    const response = firstValueFrom(
+      apiClient.forEntity('product').put('/api/products', {}, { params: { a: '1' } }),
+    );
 
-    expect(service.isRunning('PUT')).toBe(true);
-    expect(service.isRunning('GET')).toBe(false);
+    expect(service.isRunning({ entity: 'product', method: 'PUT' })).toBe(true);
+    expect(service.isRunning({ entity: 'order' })).toBe(false);
     expect(service.running()).toEqual([
-      expect.objectContaining({ method: 'PUT', url: '/api/products?a=1', status: 'running' }),
+      expect.objectContaining({
+        kind: 'request',
+        entity: 'product',
+        method: 'PUT',
+        url: '/api/products?a=1',
+        status: 'running',
+      }),
     ]);
 
     httpTestingController.expectOne('/api/products?a=1').flush({});
@@ -45,7 +56,7 @@ describe('httpActivityInterceptor', () => {
     expect(changes.map((change) => change.status)).toEqual(['running', 'succeeded']);
   });
 
-  it('reports a request that ends with an error as failed', async () => {
+  it('reports a request that ends with an error as failed and carries the error', async () => {
     const response = firstValueFrom(httpClient.delete('/api/products'));
     httpTestingController
       .expectOne('/api/products')
@@ -54,6 +65,7 @@ describe('httpActivityInterceptor', () => {
 
     expect(service.isRunning()).toBe(false);
     expect(changes.map((change) => change.status)).toEqual(['running', 'failed']);
+    expect(changes[1].error).toMatchObject({ status: 500 });
   });
 
   it('reports a request unsubscribed before its response as cancelled, once', () => {
@@ -67,30 +79,28 @@ describe('httpActivityInterceptor', () => {
     expect(changes.map((change) => change.status)).toEqual(['running', 'cancelled']);
   });
 
-  it('notifies on() subscribers only for the matching method and status', async () => {
-    const succeededPuts: TrackedRequest[] = [];
-    service.on('PUT', 'succeeded').subscribe((change) => succeededPuts.push(change));
+  it('notifies on() subscribers only for the matching entity and status', async () => {
+    const savedProducts: Activity[] = [];
+    service
+      .on({ entity: 'product', status: 'succeeded' })
+      .subscribe((change) => savedProducts.push(change));
 
-    const get = firstValueFrom(httpClient.get('/api/products'));
-    const put = firstValueFrom(httpClient.put('/api/products', {}));
-    httpTestingController.expectOne({ method: 'GET' }).flush([]);
-    httpTestingController.expectOne({ method: 'PUT' }).flush({});
-    await Promise.all([get, put]);
+    const order = firstValueFrom(apiClient.forEntity('order').put('/api/orders', {}));
+    const product = firstValueFrom(apiClient.forEntity('product').put('/api/products', {}));
+    httpTestingController.expectOne('/api/orders').flush({});
+    httpTestingController.expectOne('/api/products').flush({});
+    await Promise.all([order, product]);
 
-    expect(succeededPuts).toEqual([
-      expect.objectContaining({ method: 'PUT', status: 'succeeded' }),
+    expect(savedProducts).toEqual([
+      expect.objectContaining({ entity: 'product', method: 'PUT', status: 'succeeded' }),
     ]);
   });
 
-  it('does not track background auth requests but tracks login', () => {
-    httpClient.post('/api/auth/refresh', {}).subscribe();
+  it('does not track untracked requests', () => {
+    apiClient.forEntity('session').post('/api/auth/refresh', {}, { untracked: true }).subscribe();
+
     expect(service.isRunning()).toBe(false);
-
-    httpClient.post('/api/auth/login', {}).subscribe();
-    expect(service.running()).toEqual([expect.objectContaining({ url: '/api/auth/login' })]);
-
     httpTestingController.expectOne('/api/auth/refresh').flush({});
-    httpTestingController.expectOne('/api/auth/login').flush({});
-    expect(changes.map((change) => change.status)).toEqual(['running', 'succeeded']);
+    expect(changes).toEqual([]);
   });
 });
