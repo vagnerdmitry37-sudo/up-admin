@@ -43,6 +43,12 @@ export interface EntityWriter<T, V> {
   update: (changes: EntityChange<T, V>[]) => Promise<unknown>;
 }
 
+export interface EntityEditPart {
+  readonly entityId: () => string | undefined;
+  readonly dirty: () => boolean;
+  readonly save: (entityId: string) => Promise<unknown>;
+}
+
 @Component({
   selector: 'app-entity-edit-page',
   imports: [NgTemplateOutlet, EntityTabs],
@@ -62,6 +68,8 @@ export class EntityEditPage<T extends { id: string }, V> {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly forms = signal<readonly EntityForm[]>([]);
   private readonly changedForms = computed(() => this.forms().filter((form) => form.dirty()));
+  private readonly parts = signal<readonly EntityEditPart[]>([]);
+  private readonly changedParts = computed(() => this.parts().filter((part) => part.dirty()));
   private readonly openIds = computed(() => {
     const ids = this.ids();
     return ids ? parseRouteIds(ids) : undefined;
@@ -104,7 +112,10 @@ export class EntityEditPage<T extends { id: string }, V> {
     this.actionMenuService.register({
       entity: this.entityName,
       actions: () => ({
-        save: { click: () => this.save(), visible: this.changedForms().length > 0 },
+        save: {
+          click: () => this.save(),
+          visible: this.changedForms().length > 0 || this.changedParts().length > 0,
+        },
       }),
     });
   }
@@ -115,23 +126,29 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly disconnect = (entityForm: EntityForm) =>
     this.forms.update((forms) => forms.filter((form) => form !== entityForm));
 
+  readonly connectPart = (part: EntityEditPart) => this.parts.update((parts) => [...parts, part]);
+
+  readonly disconnectPart = (part: EntityEditPart) =>
+    this.parts.update((parts) => parts.filter((candidate) => candidate !== part));
+
   readonly submit = () => this.actionMenuService.run('save');
 
   private readonly save = async () => {
-    const changedForms = this.changedForms();
-    if (changedForms.length === 0) {
+    const changedParts = this.changedParts();
+    const formsToSave = this.ids() ? this.changedForms() : this.forms().slice(0, 1);
+    if (formsToSave.length === 0 && changedParts.length === 0) {
       return;
     }
-    const values = changedForms.map((form) => form.validValue());
+    const values = formsToSave.map((form) => form.validValue());
     const firstInvalid = values.findIndex((value) => value === undefined);
     if (firstInvalid !== -1) {
-      this.activeId.set(changedForms[firstInvalid].value()?.id);
+      this.activeId.set(formsToSave[firstInvalid].value()?.id);
       return;
     }
     if (this.ids()) {
-      await this.updateEntities(changedForms, values);
-    } else {
-      await this.createEntity(changedForms[0], values[0]);
+      await this.updateEntities(formsToSave, values, changedParts);
+    } else if (formsToSave[0]) {
+      await this.createEntity(formsToSave[0], values[0], changedParts);
     }
   };
 
@@ -141,7 +158,8 @@ export class EntityEditPage<T extends { id: string }, V> {
       return;
     }
     const form = this.forms().find((candidate) => candidate.value()?.id === tab.entity?.id);
-    if (form?.dirty()) {
+    const partChanged = this.changedParts().some((part) => part.entityId() === tab.entity?.id);
+    if (form?.dirty() || partChanged) {
       this.confirmationService.confirm({
         header: 'Discard changes',
         message: `Close ${this.tabLabel()(tab)} and discard its unsaved changes?`,
@@ -176,16 +194,27 @@ export class EntityEditPage<T extends { id: string }, V> {
     });
   };
 
-  private readonly createEntity = async (entityForm: EntityForm, value: V) => {
+  private readonly createEntity = async (
+    entityForm: EntityForm,
+    value: V,
+    changedParts: readonly EntityEditPart[],
+  ) => {
     const { id } = await this.writer().create(value);
     entityForm.form().markAsPristine();
+    if (changedParts.length > 0) {
+      await Promise.allSettled(changedParts.map((part) => part.save(id)));
+    }
     await this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { ids: joinRouteIds([id]) },
     });
   };
 
-  private readonly updateEntities = async (changedForms: readonly EntityForm[], values: V[]) => {
+  private readonly updateEntities = async (
+    changedForms: readonly EntityForm[],
+    values: V[],
+    changedParts: readonly EntityEditPart[],
+  ) => {
     if (!this.entities.hasValue()) {
       return;
     }
@@ -194,8 +223,16 @@ export class EntityEditPage<T extends { id: string }, V> {
       const entity = entities.find((candidate) => candidate.id === form.value()?.id);
       return entity ? [{ entity, value: values[index] }] : [];
     });
-    await this.writer().update(changes);
-    changedForms.forEach((form) => form.form().markAsPristine());
+    if (changes.length > 0) {
+      await this.writer().update(changes);
+      changedForms.forEach((form) => form.form().markAsPristine());
+    }
+    await Promise.all(
+      changedParts.flatMap((part) => {
+        const entityId = part.entityId();
+        return entityId ? [part.save(entityId)] : [];
+      }),
+    );
     this.entities.reload();
   };
 }

@@ -49,10 +49,13 @@ describe('ImageUpload', () => {
     await fixture.whenStable();
   };
 
-  it('shows nothing until the record has an id', async () => {
+  it('keeps images chosen before the record has an id without uploading them', async () => {
     const fixture = await render([], null);
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('p-fileupload')).toBeNull();
+    await chooseFiles(fixture, [new File(['a'], 'castle.jpg', { type: 'image/jpeg' })]);
+
+    expect(writer.upload).not.toHaveBeenCalled();
+    expect(cardNames(fixture)).toEqual(['castle.jpg', 'Add images']);
   });
 
   it('shows each image by file name, falls back to its position, and ends with the upload card', async () => {
@@ -61,14 +64,13 @@ describe('ImageUpload', () => {
     expect(cardNames(fixture)).toEqual(['bridge.jpg', 'Image 2', 'Add images']);
   });
 
-  it('uploads chosen files at once and adds the returned images before the upload card', async () => {
+  it('adds chosen files before the upload card and waits for Save to upload them', async () => {
     const fixture = await render([image('i1', 'bridge.jpg')]);
-    writer.upload.mockResolvedValue([image('i2', 'castle.jpg')]);
     const file = new File(['a'], 'castle.jpg', { type: 'image/jpeg' });
 
     await chooseFiles(fixture, [file]);
 
-    expect(writer.upload).toHaveBeenCalledWith('p1', [file]);
+    expect(writer.upload).not.toHaveBeenCalled();
     expect(cardNames(fixture)).toEqual(['bridge.jpg', 'castle.jpg', 'Add images']);
   });
 

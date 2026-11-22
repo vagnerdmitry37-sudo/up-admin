@@ -1,51 +1,49 @@
-@if (entityId()) {
-  <p-fileupload
-    name="files"
-    accept="image/jpeg,image/png,image/webp"
-    [multiple]="true"
-    [maxFileSize]="maxFileBytes"
-    invalidFileSizeMessageSummary="{0} is larger than 10 MB."
-    invalidFileSizeMessageDetail=""
-    invalidFileTypeMessageSummary="{0} is not a JPEG, PNG or WebP image."
-    invalidFileTypeMessageDetail=""
-    [customUpload]="true"
-    (onSelect)="upload()"
-  >
-    <ng-template #header />
+<p-fileupload
+  name="files"
+  accept="image/jpeg,image/png,image/webp"
+  [multiple]="true"
+  [maxFileSize]="maxFileBytes"
+  invalidFileSizeMessageSummary="{0} is larger than 10 MB."
+  invalidFileSizeMessageDetail=""
+  invalidFileTypeMessageSummary="{0} is not a JPEG, PNG or WebP image."
+  invalidFileTypeMessageDetail=""
+  [customUpload]="true"
+  (onSelect)="upload()"
+>
+  <ng-template #header />
 
-    <ng-template #content>
-      <ul
-        class="files"
-        cdkDropList
-        cdkDropListOrientation="mixed"
-        [cdkDropListSortPredicate]="keepsUploadCardLast"
-        (cdkDropListDropped)="reorder($event)"
-      >
-        @for (image of images(); track image.id; let index = $index) {
-          @let imageName = image.fileName || 'Image ' + (index + 1);
-          <li class="draggable" appMotion="slide" cdkDrag>
-            <button
-              type="button"
-              class="file selectable"
-              [class.selected]="isSelected(image)"
-              [attr.aria-pressed]="isSelected(image)"
-              (click)="toggle(image)"
-            >
-              <img class="thumbnail" [src]="image.url" [alt]="imageName" />
-              <span class="name" [title]="imageName">{{ imageName }}</span>
-            </button>
-            <span class="drag-handle" cdkDragHandle aria-hidden="true">
-              <i class="pi pi-arrows-alt"></i>
-            </span>
-          </li>
-        }
-        <li cdkDrag [cdkDragDisabled]="true">
-          <button type="button" class="file selectable upload-card" (click)="openFilePicker()">
-            <i class="pi pi-cloud-upload upload-icon" aria-hidden="true"></i>
-            <span class="upload-text">Add images</span>
+  <ng-template #content>
+    <ul
+      class="files"
+      cdkDropList
+      cdkDropListOrientation="mixed"
+      [cdkDropListSortPredicate]="keepsUploadCardLast"
+      (cdkDropListDropped)="reorder($event)"
+    >
+      @for (image of images(); track image.id; let index = $index) {
+        @let imageName = image.fileName || 'Image ' + (index + 1);
+        <li class="draggable" appMotion="slide" cdkDrag>
+          <button
+            type="button"
+            class="file selectable"
+            [class.selected]="isSelected(image)"
+            [attr.aria-pressed]="isSelected(image)"
+            (click)="toggle(image)"
+          >
+            <img class="thumbnail" [src]="image.url" [alt]="imageName" />
+            <span class="name" [title]="imageName">{{ imageName }}</span>
           </button>
+          <span class="drag-handle" cdkDragHandle aria-hidden="true">
+            <i class="pi pi-arrows-alt"></i>
+          </span>
         </li>
-      </ul>
-    </ng-template>
-  </p-fileupload>
-}
+      }
+      <li cdkDrag [cdkDragDisabled]="true">
+        <button type="button" class="file selectable upload-card" (click)="openFilePicker()">
+          <i class="pi pi-cloud-upload upload-icon" aria-hidden="true"></i>
+          <span class="upload-text">Add images</span>
+        </button>
+      </li>
+    </ul>
+  </ng-template>
+</p-fileupload>

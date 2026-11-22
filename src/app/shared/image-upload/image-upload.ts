@@ -8,6 +8,8 @@ import {
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  computed,
   inject,
   input,
   linkedSignal,
@@ -19,6 +21,7 @@ import { ActionMenuService } from '@core/action-menu.service';
 import { Image } from '@core/api/models';
 import { HttpActivity } from '@core/http-activity.service';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
+import { EntityEditPage, EntityEditPart } from '@shared/entity-edit-page/entity-edit-page';
 import { AppMotion } from '@shared/motion/motion';
 
 export interface ImageWriter {
@@ -26,6 +29,8 @@ export interface ImageWriter {
   delete: (imageIds: string[]) => Promise<unknown>;
   reorder: (entityId: string, imageIds: string[]) => Promise<Image[]>;
 }
+
+type GalleryImage = Pick<Image, 'id' | 'url' | 'fileName'> & { stagedFile?: File };
 
 const megabyte = 1024 * 1024;
 const maxFiles = 10;
@@ -46,16 +51,17 @@ export class ImageUpload {
   private readonly messageService = inject(AppMessageService);
   private readonly httpActivity = inject(HttpActivity);
   private readonly fileUpload = viewChild(FileUpload);
-  private readonly uploading = signal<File[]>([]);
+  private stagedCount = 0;
 
-  readonly images = linkedSignal<Image[]>(() => this.savedImages() ?? []);
+  readonly images = linkedSignal<GalleryImage[]>(() => this.savedImages() ?? []);
   readonly selection = signal<string[]>([]);
+  readonly dirty = computed(() => this.images().some((image) => image.stagedFile));
 
   protected readonly maxFileBytes = maxFileBytes;
 
-  protected readonly isSelected = (image: Image) => this.selection().includes(image.id);
+  protected readonly isSelected = (image: GalleryImage) => this.selection().includes(image.id);
 
-  protected readonly toggle = (image: Image) =>
+  protected readonly toggle = (image: GalleryImage) =>
     this.selection.update((selected) => toggled(selected, image.id));
 
   protected readonly openFilePicker = () => this.fileUpload()?.choose();
@@ -72,57 +78,59 @@ export class ImageUpload {
         },
       }),
     });
+    const part: EntityEditPart = { entityId: this.entityId, dirty: this.dirty, save: this.save };
+    const entityEditPage = inject(EntityEditPage, { optional: true });
+    entityEditPage?.connectPart(part);
+    inject(DestroyRef).onDestroy(() => entityEditPage?.disconnectPart(part));
   }
 
-  protected async upload(): Promise<void> {
+  protected upload(): void {
     const fileUpload = this.fileUpload();
-    const entityId = this.entityId();
-    if (!fileUpload || !entityId) {
+    if (!fileUpload) {
       return;
     }
     this.reportRejectedFiles(fileUpload);
-    const files = fileUpload.files.filter((file) => !this.uploading().includes(file));
+    const files = fileUpload.files;
+    fileUpload.files = [];
+    fileUpload.cd.markForCheck();
     if (files.length === 0) {
       return;
     }
-    if (files.length > maxFiles) {
-      this.showUploadError(`Choose up to ${maxFiles} images at a time.`);
-      fileUpload.files = fileUpload.files.filter((file) => !files.includes(file));
+    const stagedCount = this.images().filter((image) => image.stagedFile).length;
+    if (stagedCount + files.length > maxFiles) {
+      this.showUploadError(`Add up to ${maxFiles} images before saving.`);
       return;
     }
-    this.uploading.update((uploading) => [...uploading, ...files]);
-    try {
-      const created = await this.httpActivity.track(
-        { entity: 'image', operation: 'upload', source: 'image-upload' },
-        () => this.writer().upload(entityId, files),
-      );
-      this.images.update((images) => [...images, ...created]);
-    } finally {
-      this.uploading.update((uploading) => uploading.filter((file) => !files.includes(file)));
-      fileUpload.files = fileUpload.files.filter((file) => !files.includes(file));
-      fileUpload.cd.markForCheck();
-    }
+    this.images.update((images) => [
+      ...images,
+      ...files.map((file) => ({
+        id: `staged-${++this.stagedCount}`,
+        url: URL.createObjectURL(file),
+        fileName: file.name,
+        stagedFile: file,
+      })),
+    ]);
   }
 
-  protected async reorder({ previousIndex, currentIndex }: CdkDragDrop<Image[]>): Promise<void> {
+  protected async reorder({
+    previousIndex,
+    currentIndex,
+  }: CdkDragDrop<GalleryImage[]>): Promise<void> {
     const entityId = this.entityId();
-    if (!entityId || previousIndex === currentIndex) {
-      return;
-    }
     const previousOrder = this.images();
     const reordered = [...previousOrder];
     moveItemInArray(reordered, previousIndex, currentIndex);
     this.images.set(reordered);
+    const savedIds = (images: GalleryImage[]) =>
+      images.filter((image) => !image.stagedFile).map((image) => image.id);
+    if (!entityId || savedIds(reordered).join() === savedIds(previousOrder).join()) {
+      return;
+    }
     try {
-      const saved = await this.httpActivity.track(
+      await this.httpActivity.track(
         { entity: 'image', operation: 'reorder', source: 'image-upload' },
-        () =>
-          this.writer().reorder(
-            entityId,
-            reordered.map((image) => image.id),
-          ),
+        () => this.writer().reorder(entityId, savedIds(reordered)),
       );
-      this.images.set(saved);
     } catch (error) {
       this.images.set(previousOrder);
       throw error;
@@ -140,8 +148,42 @@ export class ImageUpload {
   private readonly showUploadError = (detail: string) =>
     this.messageService.error('Image not added', detail);
 
+  private readonly save = async (entityId: string) => {
+    const gallery = this.images();
+    const staged = gallery.filter((image) => image.stagedFile);
+    if (staged.length === 0) {
+      return;
+    }
+    const created = await this.httpActivity.track(
+      { entity: 'image', operation: 'upload', source: 'image-upload' },
+      () =>
+        this.writer().upload(
+          entityId,
+          staged.flatMap((image) => image.stagedFile ?? []),
+        ),
+    );
+    const order = gallery.map((image) =>
+      image.stagedFile ? created[staged.indexOf(image)].id : image.id,
+    );
+    const uploadOrder = [
+      ...gallery.filter((image) => !image.stagedFile).map((image) => image.id),
+      ...created.map((image) => image.id),
+    ];
+    if (order.join() !== uploadOrder.join()) {
+      await this.httpActivity.track(
+        { entity: 'image', operation: 'reorder', source: 'image-upload' },
+        () => this.writer().reorder(entityId, order),
+      );
+    }
+  };
+
   private readonly delete = async (imageIds: string[]) => {
-    await this.writer().delete(imageIds);
+    const savedIds = this.images()
+      .filter((image) => imageIds.includes(image.id) && !image.stagedFile)
+      .map((image) => image.id);
+    if (savedIds.length > 0) {
+      await this.writer().delete(savedIds);
+    }
     this.images.update((images) => images.filter((image) => !imageIds.includes(image.id)));
     this.selection.update((selection) => selection.filter((id) => !imageIds.includes(id)));
   };
