@@ -1,21 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { HttpActivity } from '@core/http-activity.service';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Menu } from '@openng/optimus-ui/menu';
-import { ProgressRing } from '@shared/progress-ring/progress-ring';
 
 @Component({
   selector: 'app-nav-menu',
-  imports: [ButtonDirective, ButtonIcon, Menu, ProgressRing],
+  imports: [ButtonDirective, ButtonIcon, Menu],
   templateUrl: './nav-menu.html',
   styleUrl: './nav-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavMenu {
-  private readonly httpActivity = inject(HttpActivity);
   protected readonly open = signal(false);
-  protected readonly busy = computed(() => this.httpActivity.isRunning({ kind: 'request' }));
   protected readonly items: MenuItem[] = [
     { label: 'Orders', icon: OpenngIcons.RECEIPT, routerLink: '/orders' },
     { label: 'Customers', icon: OpenngIcons.USERS, routerLink: '/customers' },

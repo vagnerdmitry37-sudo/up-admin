@@ -13,7 +13,7 @@ Apply these rules to every component, template and stylesheet you write or chang
 
 The app's UI library is **Optimus UI** (`@openng/optimus-ui`, docs: https://optimus.openng.org). Build components from it.
 
-- **Library first.** Before writing a custom button, menu, dialog, table, form control, toolbar and so on, look for the Optimus component: check the docs or `node_modules/@openng/optimus-ui/types/`. Write a custom element only when Optimus has nothing that fits, and say so in your reply.
+- **Library first.** Before writing a custom button, menu, dialog, table, form control, toolbar and so on, look for the Optimus component: check the docs or `node_modules/@openng/optimus-ui/types/`. Write a custom element only when Optimus has nothing that fits, and say so in your reply. The same goes for features of a component already in use (loading mask, empty message, selection, positioning): use the built-in one with its default look, as the docs page shows it, instead of building or restyling your own.
 - **No other UI or icon libraries.** Do not add Angular Material, Bootstrap, PrimeNG, `primeicons`, Font Awesome or similar.
 - **Imports.** Import each component from its own entry point, for example `Button` from `@openng/optimus-ui/button` and `Menu` from `@openng/optimus-ui/menu`. Put it in the component's `imports` array.
 - **Theme.** Colors and component look come from the `NoirPreset` in `src/app/core/noir-preset.ts` (based on Aura). Change a library component's look for the whole app through the preset's `components` section, not with global CSS overrides. For one component, override its `--p-*` CSS variable in the component's `.scss`.
@@ -71,9 +71,7 @@ Every list of records is `<app-data-table>` from `@shared/data-table/data-table`
 a raw `p-table`. It renders the Optimus table with multiple selection (tapping a row toggles it; no checkboxes, no Ctrl key). Inputs:
 `[rows]`, `[columns]` (`TableColumn<T>[]`: `header`, `value: (row) => string | number`, optional
 `align: 'end'` for numbers and money), `dataKey` (default `id`) and `loading`; two-way
-`[(selection)]` (an array of rows; actions that work on one row check `length === 1`). While data loads, render the table with `[loading]="resource.isLoading()"`: it shows
-five rows of Optimus `p-skeleton` placeholders that can't be selected, never a blank page; decide between the table and the empty state
-only after loading. The page
+`[(selection)]` (an array of rows; actions that work on one row check `length === 1`). While data loads, bind `[loading]` to an `HttpActivity.isRunning(...)` check for that data's GET requests: the table shows Optimus's built-in loading mask and spinner, never a blank page; render the table during the first load and decide between the table and the empty state only after loading. The page
 owns everything specific: its column list, value formatting (for example `formatNumber` with
 `LOCALE_ID`), the empty state and what a selected row enables in the edit menu.
 

@@ -43,6 +43,7 @@ Before building something new, look for an existing piece to copy: an existing p
 
 - Read the files you will change, and the closest similar file, **once and in parallel**. Do not re-read a file you just edited.
 - Search narrowly (`Grep` for a symbol, `Glob` for a file name) instead of listing folders.
+- **Check Optimus before building anything** (see "Optimus UI first" in `CLAUDE.md`): open the component's page on https://optimus.openng.org and look for a built-in feature that already does what is asked. Never re-implement or restyle a built-in feature on a guess.
 - For library APIs, read the `.d.ts` in `node_modules/@openng/optimus-ui/types/` (inputs, outputs, templates) before guessing. Read the `.mjs` in `fesm2022/` only when behavior is unclear.
 - Stop investigating once you can name the change and how you will verify it.
 - Ask the user only when the answer changes product behavior, architecture or safety. Otherwise choose the conventional option and mention it.

@@ -20,6 +20,7 @@ const rowsFrom = (count: number): Row[] =>
       [rows]="rows()"
       [columns]="columns"
       [lazy]="lazy()"
+      [loading]="loading()"
       (lazyLoad)="ranges.push($event)"
     />
   `,
@@ -27,6 +28,7 @@ const rowsFrom = (count: number): Row[] =>
 class Host {
   readonly rows = signal<(Row | undefined)[]>(rowsFrom(3));
   readonly lazy = signal(true);
+  readonly loading = signal(false);
   readonly columns: TableColumn<Row>[] = [{ header: 'Name', value: (row) => row.name }];
   readonly ranges: TableRange[] = [];
 }
@@ -64,6 +66,17 @@ describe('DataTable', () => {
     await fixture.whenStable();
 
     expect(tableHost().style.height).toBe(`${121 * 49}px`);
+  });
+
+  it('shows the loading mask over an empty table and keeps one row of room for it', async () => {
+    const { fixture, host, tableHost } = await render();
+
+    host.rows.set([]);
+    host.loading.set(true);
+    await fixture.whenStable();
+
+    expect(tableHost().querySelector('.p-datatable-mask')).not.toBeNull();
+    expect(tableHost().style.height).toBe(`${2 * 49}px`);
   });
 
   it('leaves a table that is not lazy at its natural height', async () => {

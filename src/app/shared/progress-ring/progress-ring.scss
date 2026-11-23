@@ -1,10 +1,6 @@
 :host {
   --app-progress-ring-color: var(--p-primary-color);
   --app-progress-ring-track-color: var(--p-content-border-color);
-  --p-progressspinner-color-one: var(--app-progress-ring-color);
-  --p-progressspinner-color-two: var(--app-progress-ring-color);
-  --p-progressspinner-color-three: var(--app-progress-ring-color);
-  --p-progressspinner-color-four: var(--app-progress-ring-color);
 
   position: absolute;
   inset: -8.14%;
@@ -12,15 +8,12 @@
   pointer-events: none;
 }
 
-.progress-ring-layer {
+.progress-ring-meter {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.progress-ring-meter {
   transform: rotate(-90deg);
 }
 

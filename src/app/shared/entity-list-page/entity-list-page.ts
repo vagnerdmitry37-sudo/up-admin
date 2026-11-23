@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppMessageService } from '@core/app-message.service';
 import { ActionMenuService } from '@core/action-menu.service';
-import { ActivityEntity } from '@core/http-activity.service';
+import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader, lazyRows } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
@@ -18,6 +18,7 @@ import { joinRouteIds } from '@shared/route-ids/route-ids';
 export class EntityListPage<T extends { id: string }> {
   private readonly router = inject(Router);
   private readonly messageService = inject(AppMessageService);
+  private readonly httpActivity = inject(HttpActivity);
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
   readonly deleteEntities = input.required<(ids: string[]) => Promise<unknown>>();
@@ -30,6 +31,9 @@ export class EntityListPage<T extends { id: string }> {
     onFirstPageError: () => this.showLoadError(),
   });
   protected readonly selection = signal<T[]>([]);
+  protected readonly loading = computed(() =>
+    this.httpActivity.isRunning({ kind: 'request', entity: this.entityName(), method: 'GET' }),
+  );
 
   constructor() {
     inject(ActionMenuService).register({

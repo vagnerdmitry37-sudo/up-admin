@@ -41,6 +41,7 @@ export class DataTable<T extends object> {
   readonly columns = input.required<TableColumn<T>[]>();
   readonly dataKey = input('id');
   readonly lazy = input(false);
+  readonly loading = input(false);
   readonly selection = model<T[]>([]);
   readonly lazyLoad = output<TableRange>();
 
@@ -49,7 +50,8 @@ export class DataTable<T extends object> {
   protected readonly fixedTableLayout = { 'table-layout': 'fixed', width: '100%' };
   protected readonly contentHeight = computed(() => {
     const headerAndFooterRows = this.footerTemplate() ? 2 : 1;
-    return (this.rows().length + headerAndFooterRows) * ROW_HEIGHT;
+    const bodyRows = Math.max(this.rows().length, this.loading() ? 1 : 0);
+    return (bodyRows + headerAndFooterRows) * ROW_HEIGHT;
   });
   protected readonly trackRow = (index: number, row: T | undefined) => row ?? index;
 

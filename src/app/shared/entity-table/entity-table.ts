@@ -14,6 +14,7 @@ export class EntityTable<T extends { id: string }> {
   readonly rows = input.required<(T | undefined)[]>();
   readonly columns = input.required<TableColumn<T>[]>();
   readonly lazy = input(false);
+  readonly loading = input(false);
   readonly entity = input.required<ActivityEntity>();
   readonly deleteRows = input.required<(ids: string[]) => Promise<unknown>>();
   readonly selection = model<T[]>([]);

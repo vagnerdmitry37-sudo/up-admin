@@ -6,6 +6,7 @@
   [selection]="selection()"
   (selectionChange)="selection.set($event)"
   [lazy]="lazy()"
+  [loading]="loading()"
   [scrollable]="lazy()"
   scrollHeight="flex"
   [virtualScroll]="lazy()"
