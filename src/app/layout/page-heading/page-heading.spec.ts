@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { PageHeading, PageHeadingData } from './page-heading';
+import { AppRouteData } from '../../app.routes';
+import { PageHeading } from './page-heading';
 
 @Component({ template: '' })
 class EmptyPage {}
@@ -25,12 +26,12 @@ describe('PageHeading', () => {
         provideRouter([
           {
             path: 'products',
-            data: { heading: 'Products' } satisfies PageHeadingData,
+            data: { heading: 'Products' } satisfies AppRouteData,
             component: EmptyPage,
           },
           {
             path: 'edit-products-page',
-            data: { heading: 'Products', editPage: true } satisfies PageHeadingData,
+            data: { heading: 'Products', editPage: true } satisfies AppRouteData,
             component: EmptyPage,
           },
           { path: '**', component: EmptyPage },
@@ -47,29 +48,17 @@ describe('PageHeading', () => {
     expect(text()).toBe('Products');
   });
 
-  it('shows New on an edit page opened without ids', async () => {
+  it('shows Editor on an edit page whatever records are open', async () => {
     const { navigate, text } = await render();
 
     await navigate('/edit-products-page');
-
-    expect(text()).toBe('Products / New');
-  });
-
-  it('shows Edit on an edit page opened with ids', async () => {
-    const { navigate, text } = await render();
+    expect(text()).toBe('Products / Editor');
 
     await navigate('/edit-products-page?ids=1,2');
+    expect(text()).toBe('Products / Editor');
 
-    expect(text()).toBe('Products / Edit');
-  });
-
-  it('switches from New to Edit when a created record reopens with its id', async () => {
-    const { navigate, text } = await render();
-    await navigate('/edit-products-page');
-
-    await navigate('/edit-products-page?ids=7');
-
-    expect(text()).toBe('Products / Edit');
+    await navigate('/edit-products-page?ids=new-1,7');
+    expect(text()).toBe('Products / Editor');
   });
 
   it('shows no heading on a route without one', async () => {

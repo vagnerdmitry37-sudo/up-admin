@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
+import { ENTITY_TAB_ID, EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
 import { distinctUntilChanged, map, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -23,6 +23,8 @@ import { distinctUntilChanged, map, startWith, switchMap } from 'rxjs';
 export class EntityForm implements OnInit, OnDestroy {
   readonly form = input.required<FormGroup>();
   readonly value = input<{ id: string }>();
+
+  readonly tabId = inject(ENTITY_TAB_ID, { optional: true }) ?? undefined;
 
   private readonly entityEditPage = inject(EntityEditPage, { optional: true });
 

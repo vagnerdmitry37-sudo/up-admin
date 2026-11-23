@@ -2,11 +2,14 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  InjectionToken,
+  Injector,
   TemplateRef,
   computed,
   contentChild,
   inject,
   input,
+  linkedSignal,
   signal,
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -16,11 +19,22 @@ import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import type { EntityForm } from '@shared/entity-form/entity-form';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
-import { joinRouteIds, parseRouteIds } from '@shared/route-ids/route-ids';
+import {
+  firstNewEntityId,
+  isNewEntityId,
+  joinRouteIds,
+  nextNewEntityId,
+  parseRouteIds,
+} from '@shared/route-ids/route-ids';
 import { Observable } from 'rxjs';
 
-const containsAll = (loaded: readonly string[] | undefined, next: readonly string[] | undefined) =>
-  loaded && next ? next.every((id) => loaded.includes(id)) : loaded === next;
+const containsAll = (loaded: readonly string[], next: readonly string[]) =>
+  next.every((id) => loaded.includes(id));
+
+const isNewTab = (tabId: string | undefined): tabId is string =>
+  tabId !== undefined && isNewEntityId(tabId);
+
+export const ENTITY_TAB_ID = new InjectionToken<string>('ENTITY_TAB_ID');
 
 export interface EntityEditContext<T> {
   $implicit: T | undefined;
@@ -30,8 +44,6 @@ export interface EntityTab<T> {
   id: string;
   entity: T | undefined;
 }
-
-const newEntityTabId = 'new';
 
 export interface EntityChange<T, V> {
   entity: T;
@@ -44,9 +56,14 @@ export interface EntityWriter<T, V> {
 }
 
 export interface EntityEditPart {
-  readonly entityId: () => string | undefined;
+  readonly tabId: string | undefined;
   readonly dirty: () => boolean;
   readonly save: (entityId: string) => Promise<unknown>;
+}
+
+interface FormToSave<V> {
+  form: EntityForm;
+  value: V;
 }
 
 @Component({
@@ -65,16 +82,19 @@ export class EntityEditPage<T extends { id: string }, V> {
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly injector = inject(Injector);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly tabInjectors = new Map<string, Injector>();
   private readonly forms = signal<readonly EntityForm[]>([]);
   private readonly changedForms = computed(() => this.forms().filter((form) => form.dirty()));
   private readonly parts = signal<readonly EntityEditPart[]>([]);
   private readonly changedParts = computed(() => this.parts().filter((part) => part.dirty()));
   private readonly openIds = computed(() => {
     const ids = this.ids();
-    return ids ? parseRouteIds(ids) : undefined;
+    return ids ? parseRouteIds(ids) : [firstNewEntityId];
   });
-  private readonly loadedIds = computed(() => this.openIds(), { equal: containsAll });
+  private readonly savedIds = computed(() => this.openIds().filter((id) => !isNewEntityId(id)));
+  private readonly loadedIds = computed(() => this.savedIds(), { equal: containsAll });
 
   private readonly actionMenuService = inject(ActionMenuService);
   private readonly httpActivity = inject(HttpActivity);
@@ -86,21 +106,31 @@ export class EntityEditPage<T extends { id: string }, V> {
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityEditContext<T>>>(TemplateRef);
   protected readonly entities = rxResource({
-    params: () => this.loadedIds(),
+    params: () => {
+      const ids = this.loadedIds();
+      return ids.length > 0 ? ids : undefined;
+    },
     stream: ({ params }) => this.load()(params),
   });
-  protected readonly openEntities = computed(() => {
-    if (!this.entities.hasValue()) {
+  private readonly loadedEntities = linkedSignal<T[] | undefined, T[] | undefined>({
+    source: () => (this.entities.hasValue() ? this.entities.value() : undefined),
+    computation: (next, previous) => next ?? previous?.value,
+  });
+  private readonly createdIds = signal<ReadonlySet<string>>(new Set());
+  protected readonly tabs = computed<EntityTab<T>[] | undefined>(() => {
+    const entities = this.loadedEntities();
+    const createdIds = this.createdIds();
+    const awaitsLoadedRecords = this.savedIds().some((id) => !createdIds.has(id));
+    if (!entities && awaitsLoadedRecords) {
       return undefined;
     }
-    const openIds = this.openIds() ?? [];
-    return this.entities.value().filter((entity) => openIds.includes(entity.id));
-  });
-  protected readonly tabs = computed<EntityTab<T>[] | undefined>(() => {
-    if (!this.ids()) {
-      return [{ id: newEntityTabId, entity: undefined }];
-    }
-    return this.openEntities()?.map((entity) => ({ id: entity.id, entity }));
+    return this.openIds().flatMap((id): EntityTab<T>[] => {
+      const entity = entities?.find((candidate) => candidate.id === id);
+      if (entity) {
+        return [{ id, entity }];
+      }
+      return isNewEntityId(id) || createdIds.has(id) ? [{ id, entity: undefined }] : [];
+    });
   });
   protected readonly tabLabel = computed(() => {
     const label = this.label();
@@ -112,6 +142,7 @@ export class EntityEditPage<T extends { id: string }, V> {
     this.actionMenuService.register({
       entity: this.entityName,
       actions: () => ({
+        create: { click: () => this.addNewTab() },
         save: {
           click: () => this.save(),
           visible: this.changedForms().length > 0 || this.changedParts().length > 0,
@@ -133,23 +164,110 @@ export class EntityEditPage<T extends { id: string }, V> {
 
   readonly submit = () => this.actionMenuService.run('save');
 
+  protected readonly tabInjector = (tabId: string) => {
+    const existing = this.tabInjectors.get(tabId);
+    if (existing) {
+      return existing;
+    }
+    const created = Injector.create({
+      providers: [{ provide: ENTITY_TAB_ID, useValue: tabId }],
+      parent: this.injector,
+    });
+    this.tabInjectors.set(tabId, created);
+    return created;
+  };
+
+  private readonly showIds = (ids: readonly string[]) =>
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { ids: joinRouteIds(ids) },
+      replaceUrl: true,
+    });
+
+  private readonly addNewTab = async () => {
+    const openIds = this.openIds();
+    const newId = nextNewEntityId(openIds);
+    await this.showIds([...openIds, newId]);
+    this.activeId.set(newId);
+  };
+
+  private readonly changedPartsOf = (tabId: string | undefined) =>
+    this.changedParts().filter((part) => part.tabId === tabId);
+
   private readonly save = async () => {
-    const changedParts = this.changedParts();
-    const formsToSave = this.ids() ? this.changedForms() : this.forms().slice(0, 1);
-    if (formsToSave.length === 0 && changedParts.length === 0) {
+    const formsToSave = this.forms().filter(
+      (form) =>
+        form.dirty() || (isNewTab(form.tabId) && this.changedPartsOf(form.tabId).length > 0),
+    );
+    if (formsToSave.length === 0 && this.changedParts().length === 0) {
       return;
     }
     const values = formsToSave.map((form) => form.validValue());
     const firstInvalid = values.findIndex((value) => value === undefined);
     if (firstInvalid !== -1) {
-      this.activeId.set(formsToSave[firstInvalid].value()?.id);
+      this.activeId.set(formsToSave[firstInvalid].tabId);
       return;
     }
-    if (this.ids()) {
-      await this.updateEntities(formsToSave, values, changedParts);
-    } else if (formsToSave[0]) {
-      await this.createEntity(formsToSave[0], values[0], changedParts);
+    const validForms = formsToSave.map((form, index) => ({ form, value: values[index] as V }));
+    const createdIds = new Map<string, string>();
+    try {
+      await this.updateEntities(validForms.filter(({ form }) => !isNewTab(form.tabId)));
+      await this.createEntities(
+        validForms.filter(({ form }) => isNewTab(form.tabId)),
+        createdIds,
+      );
+    } finally {
+      if (createdIds.size > 0) {
+        await this.replaceCreatedIds(createdIds);
+      } else {
+        this.entities.reload();
+      }
     }
+  };
+
+  private readonly createEntities = async (
+    newForms: readonly FormToSave<V>[],
+    createdIds: Map<string, string>,
+  ) => {
+    for (const { form, value } of newForms) {
+      const tabId = form.tabId as string;
+      const { id } = await this.writer().create(value);
+      createdIds.set(tabId, id);
+      form.form().markAsPristine();
+      await Promise.allSettled(this.changedPartsOf(tabId).map((part) => part.save(id)));
+    }
+  };
+
+  private readonly replaceCreatedIds = async (createdIds: ReadonlyMap<string, string>) => {
+    const activeId = this.activeId();
+    this.createdIds.set(new Set(createdIds.values()));
+    await this.showIds(this.openIds().map((id) => createdIds.get(id) ?? id));
+    this.activeId.set((activeId && createdIds.get(activeId)) ?? activeId);
+    this.pruneTabInjectors();
+  };
+
+  private readonly pruneTabInjectors = () => {
+    const openIds = this.openIds();
+    [...this.tabInjectors.keys()]
+      .filter((tabId) => !openIds.includes(tabId))
+      .forEach((tabId) => this.tabInjectors.delete(tabId));
+  };
+
+  private readonly updateEntities = async (changedForms: readonly FormToSave<V>[]) => {
+    const entities = this.loadedEntities() ?? [];
+    const changes = changedForms.flatMap(({ form, value }) => {
+      const entity = entities.find((candidate) => candidate.id === form.tabId);
+      return entity ? [{ entity, value }] : [];
+    });
+    if (changes.length > 0) {
+      await this.writer().update(changes);
+      changedForms.forEach(({ form }) => form.form().markAsPristine());
+    }
+    await Promise.all(
+      this.changedParts().flatMap((part) =>
+        part.tabId && !isNewEntityId(part.tabId) ? [part.save(part.tabId)] : [],
+      ),
+    );
   };
 
   protected readonly close = async (id: string) => {
@@ -157,9 +275,8 @@ export class EntityEditPage<T extends { id: string }, V> {
     if (!tab) {
       return;
     }
-    const form = this.forms().find((candidate) => candidate.value()?.id === tab.entity?.id);
-    const partChanged = this.changedParts().some((part) => part.entityId() === tab.entity?.id);
-    if (form?.dirty() || partChanged) {
+    const form = this.forms().find((candidate) => candidate.tabId === id);
+    if (form?.dirty() || this.changedPartsOf(id).length > 0) {
       this.confirmationService.confirm({
         header: 'Discard changes',
         message: `Close ${this.tabLabel()(tab)} and discard its unsaved changes?`,
@@ -187,52 +304,7 @@ export class EntityEditPage<T extends { id: string }, V> {
       const closedIndex = openIds.indexOf(id);
       this.activeId.set(remainingIds[Math.min(closedIndex, remainingIds.length - 1)]);
     }
-    await this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { ids: joinRouteIds(remainingIds) },
-      replaceUrl: true,
-    });
-  };
-
-  private readonly createEntity = async (
-    entityForm: EntityForm,
-    value: V,
-    changedParts: readonly EntityEditPart[],
-  ) => {
-    const { id } = await this.writer().create(value);
-    entityForm.form().markAsPristine();
-    if (changedParts.length > 0) {
-      await Promise.allSettled(changedParts.map((part) => part.save(id)));
-    }
-    await this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { ids: joinRouteIds([id]) },
-    });
-  };
-
-  private readonly updateEntities = async (
-    changedForms: readonly EntityForm[],
-    values: V[],
-    changedParts: readonly EntityEditPart[],
-  ) => {
-    if (!this.entities.hasValue()) {
-      return;
-    }
-    const entities = this.entities.value();
-    const changes = changedForms.flatMap((form, index) => {
-      const entity = entities.find((candidate) => candidate.id === form.value()?.id);
-      return entity ? [{ entity, value: values[index] }] : [];
-    });
-    if (changes.length > 0) {
-      await this.writer().update(changes);
-      changedForms.forEach((form) => form.form().markAsPristine());
-    }
-    await Promise.all(
-      changedParts.flatMap((part) => {
-        const entityId = part.entityId();
-        return entityId ? [part.save(entityId)] : [];
-      }),
-    );
-    this.entities.reload();
+    await this.showIds(remainingIds);
+    this.pruneTabInjectors();
   };
 }

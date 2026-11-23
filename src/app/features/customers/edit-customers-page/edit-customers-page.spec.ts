@@ -51,8 +51,9 @@ describe('EditCustomersPage', () => {
     const fixture = TestBed.createComponent(EditCustomersPage);
     fixture.componentRef.setInput('ids', ids);
     TestBed.tick();
-    if (ids) {
-      expectLoad(ids.split(',')).flush(customers);
+    const savedIds = ids?.split(',').filter((id) => !id.startsWith('new-')) ?? [];
+    if (savedIds.length > 0) {
+      expectLoad(savedIds).flush(customers);
     }
     await fixture.whenStable();
     return fixture;
@@ -108,7 +109,7 @@ describe('EditCustomersPage', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ name: 'Ada', email: 'ada@example.com', phone: '+123' });
     request.flush(customer('c9', 'Ada'));
-    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
 
     expect(navigate).toHaveBeenCalledWith(
       [],
@@ -192,5 +193,103 @@ describe('EditCustomersPage', () => {
     httpTestingController.expectNone((request) => request.method === 'PUT');
     const selected = tabs(fixture).find((tab) => tab.getAttribute('aria-selected') === 'true');
     expect(selected?.textContent?.trim()).toBe('Grace');
+  });
+
+  const tabLabels = (fixture: ComponentFixture<EditCustomersPage>) =>
+    tabs(fixture).map((tab) => tab.textContent?.trim());
+
+  const selectedTabLabel = (fixture: ComponentFixture<EditCustomersPage>) =>
+    tabs(fixture)
+      .find((tab) => tab.getAttribute('aria-selected') === 'true')
+      ?.textContent?.trim();
+
+  const lastNavigatedIds = () => navigate.mock.lastCall?.[1]?.queryParams?.ids;
+
+  const fillNewCustomer = async (fixture: ComponentFixture<EditCustomersPage>, nth: number) => {
+    await openTab(fixture, 'New customer');
+    await type(fixture, 'Name', 'Grace', nth);
+    await type(fixture, 'Email', 'grace@example.com', nth);
+    await type(fixture, 'Phone', '+200', nth);
+  };
+
+  it('adds a New customer tab beside the open customers on Create and shows it without reloading them', async () => {
+    const fixture = await render('c1', [customer('c1', 'Ada')]);
+
+    actionMenuService.run('create');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(lastNavigatedIds()).toBe('c1,new-1');
+    fixture.componentRef.setInput('ids', 'c1,new-1');
+    await fixture.whenStable();
+
+    expect(tabLabels(fixture)).toEqual(['Ada', 'New customer']);
+    expect(selectedTabLabel(fixture)).toBe('New customer');
+    httpTestingController.expectNone('/api/customers/by-ids');
+  });
+
+  it('updates the changed customer, creates the new one and keeps its tab in place while it loads', async () => {
+    const first = customer('c1', 'Ada');
+    const fixture = await render('c1,new-1', [first]);
+    await type(fixture, 'Name', 'Ada Lovelace', 0);
+    await fillNewCustomer(fixture, 1);
+
+    await save(fixture);
+    httpTestingController
+      .expectOne((request) => request.method === 'PUT' && request.url === '/api/customers')
+      .flush([{ ...first, name: 'Ada Lovelace' }]);
+    await new Promise((resolve) => setTimeout(resolve));
+    const create = httpTestingController.expectOne(
+      (request) => request.method === 'POST' && request.url === '/api/customers',
+    );
+    expect(create.request.body).toEqual({
+      name: 'Grace',
+      email: 'grace@example.com',
+      phone: '+200',
+    });
+    create.flush(customer('c9', 'Grace'));
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(lastNavigatedIds()).toBe('c1,c9');
+    fixture.componentRef.setInput('ids', 'c1,c9');
+    TestBed.tick();
+    expect(tabLabels(fixture)).toEqual(['Ada', 'New customer']);
+    expect(selectedTabLabel(fixture)).toBe('New customer');
+
+    expectLoad(['c1', 'c9']).flush([{ ...first, name: 'Ada Lovelace' }, customer('c9', 'Grace')]);
+    await fixture.whenStable();
+    expect(tabLabels(fixture)).toEqual(['Ada Lovelace', 'Grace']);
+    expect(selectedTabLabel(fixture)).toBe('Grace');
+  });
+
+  it('reloads the updated customers when creating the new one fails, keeping the new tab', async () => {
+    const first = customer('c1', 'Ada');
+    const fixture = await render('c1,new-1', [first]);
+    await type(fixture, 'Name', 'Ada Lovelace', 0);
+    await fillNewCustomer(fixture, 1);
+
+    const saving = actionMenuService.run('save');
+    await new Promise((resolve) => setTimeout(resolve));
+    httpTestingController
+      .expectOne((request) => request.method === 'PUT' && request.url === '/api/customers')
+      .flush([{ ...first, name: 'Ada Lovelace' }]);
+    await new Promise((resolve) => setTimeout(resolve));
+    httpTestingController
+      .expectOne((request) => request.method === 'POST' && request.url === '/api/customers')
+      .flush(null, { status: 500, statusText: 'Server Error' });
+    await expect(saving).rejects.toBeDefined();
+    TestBed.tick();
+
+    expectLoad(['c1']).flush([{ ...first, name: 'Ada Lovelace' }]);
+    await fixture.whenStable();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(tabLabels(fixture)).toEqual(['Ada Lovelace', 'New customer']);
+    expect(actionMenuService.actions().save).toBeDefined();
+  });
+
+  it('sends nothing when Save runs with no changes', async () => {
+    await render('c1', [customer('c1', 'Ada')]);
+
+    await actionMenuService.run('save');
+
+    httpTestingController.expectNone(() => true);
   });
 });

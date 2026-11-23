@@ -95,7 +95,7 @@ describe('EditOrdersPage', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ customerId: 'c1', items: [] });
     request.flush(order('o9', customer('c1', 'Ada')));
-    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(navigate).toHaveBeenCalledWith(
       [],
       expect.objectContaining({ queryParams: { ids: 'o9' } }),

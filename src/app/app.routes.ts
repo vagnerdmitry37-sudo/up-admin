@@ -1,9 +1,18 @@
-import { Routes } from '@angular/router';
+import { Route } from '@angular/router';
 import { authGuard } from '@features/auth/auth.guard';
 import { guestGuard } from '@features/auth/guest.guard';
-import { PageHeadingData } from '@layout/page-heading/page-heading';
 
-export const routes: Routes = [
+export interface AppRouteData {
+  heading: string;
+  editPage?: boolean;
+}
+
+interface AppRoute extends Route {
+  data?: Partial<AppRouteData>;
+  children?: AppRoute[];
+}
+
+export const routes: AppRoute[] = [
   {
     path: 'login',
     title: 'Log in · UP',
@@ -23,14 +32,14 @@ export const routes: Routes = [
       {
         path: 'orders',
         title: 'Orders · UP',
-        data: { heading: 'Orders' } satisfies PageHeadingData,
+        data: { heading: 'Orders' },
         loadComponent: () =>
           import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
       },
       {
         path: 'edit-orders-page',
         title: 'Edit orders · UP',
-        data: { heading: 'Orders', editPage: true } satisfies PageHeadingData,
+        data: { heading: 'Orders', editPage: true },
         loadComponent: () =>
           import('@features/orders/edit-orders-page/edit-orders-page').then(
             (m) => m.EditOrdersPage,
@@ -39,7 +48,7 @@ export const routes: Routes = [
       {
         path: 'edit-order-items-page/:orderId',
         title: 'Edit order items · UP',
-        data: { heading: 'Order items', editPage: true } satisfies PageHeadingData,
+        data: { heading: 'Order items', editPage: true },
         loadComponent: () =>
           import('@features/orders/edit-order-items-page/edit-order-items-page').then(
             (m) => m.EditOrderItemsPage,
@@ -48,14 +57,14 @@ export const routes: Routes = [
       {
         path: 'customers',
         title: 'Customers · UP',
-        data: { heading: 'Customers' } satisfies PageHeadingData,
+        data: { heading: 'Customers' },
         loadComponent: () =>
           import('@features/customers/customers-page/customers-page').then((m) => m.CustomersPage),
       },
       {
         path: 'edit-customers-page',
         title: 'Edit customers · UP',
-        data: { heading: 'Customers', editPage: true } satisfies PageHeadingData,
+        data: { heading: 'Customers', editPage: true },
         loadComponent: () =>
           import('@features/customers/edit-customers-page/edit-customers-page').then(
             (m) => m.EditCustomersPage,
@@ -64,14 +73,14 @@ export const routes: Routes = [
       {
         path: 'products',
         title: 'Products · UP',
-        data: { heading: 'Products' } satisfies PageHeadingData,
+        data: { heading: 'Products' },
         loadComponent: () =>
           import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
       },
       {
         path: 'edit-products-page',
         title: 'Edit products · UP',
-        data: { heading: 'Products', editPage: true } satisfies PageHeadingData,
+        data: { heading: 'Products', editPage: true },
         loadComponent: () =>
           import('@features/products/edit-products-page/edit-products-page').then(
             (m) => m.EditProductsPage,

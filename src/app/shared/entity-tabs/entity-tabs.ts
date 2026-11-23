@@ -3,11 +3,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   TemplateRef,
+  afterRenderEffect,
   computed,
   contentChild,
   input,
   model,
   output,
+  viewChild,
+  viewChildren,
 } from '@angular/core';
 import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
@@ -37,6 +40,17 @@ export class EntityTabs<T extends { id: string }> {
     const active = this.active();
     return entities.some((entity) => entity.id === active) ? active : entities[0]?.id;
   });
+  private readonly tabList = viewChild.required(TabList);
+  private readonly tabs = viewChildren(Tab);
+
+  constructor() {
+    afterRenderEffect(() => {
+      const shownTab = this.tabs().find((tab) => tab.active());
+      shownTab?.scrollInView(shownTab.el.nativeElement);
+      this.tabList().updateButtonState();
+    });
+  }
+
   protected readonly show = (id: string | number | undefined) => this.active.set(id?.toString());
 
   protected readonly close = (id: string, event: Event) => {

@@ -260,7 +260,7 @@ describe('EditOrderItemsPage', () => {
       notes: 'Child seat',
     });
     request.flush(orderItem('i9', 'Hotel Pupp'));
-    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
     expect(navigate).toHaveBeenCalledWith(
       [],
       expect.objectContaining({ queryParams: { ids: 'i9' } }),

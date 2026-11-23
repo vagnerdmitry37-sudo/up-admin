@@ -1,12 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs';
-
-export interface PageHeadingData {
-  heading: string;
-  editPage?: boolean;
-}
+import { filter, map, startWith } from 'rxjs';
+import { AppRouteData } from '../../app.routes';
 
 const deepestRoute = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
   route.firstChild ? deepestRoute(route.firstChild) : route;
@@ -19,18 +15,17 @@ const deepestRoute = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
 })
 export class PageHeading {
   private readonly router = inject(Router);
-  private readonly navigationEnd = toSignal(
-    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)),
+  private readonly routeData = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      startWith(undefined),
+      map(() => deepestRoute(this.router.routerState.snapshot.root).data as Partial<AppRouteData>),
+    ),
+    { requireSync: true },
   );
 
   protected readonly heading = computed(() => {
-    this.navigationEnd();
-    const route = deepestRoute(this.router.routerState.snapshot.root);
-    const data = route.data as Partial<PageHeadingData>;
-    if (!data.heading) {
-      return undefined;
-    }
-    const editingLabel = route.queryParamMap.has('ids') ? 'Edit' : 'New';
-    return { title: data.heading, action: data.editPage ? editingLabel : undefined };
+    const { heading, editPage } = this.routeData();
+    return heading ? { title: heading, action: editPage ? 'Editor' : undefined } : undefined;
   });
 }

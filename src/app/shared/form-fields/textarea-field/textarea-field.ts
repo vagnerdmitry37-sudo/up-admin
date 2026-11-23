@@ -4,14 +4,17 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  afterRenderEffect,
   inject,
   input,
   viewChild,
 } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Textarea } from '@openng/optimus-ui/textarea';
 import { FieldFrame } from '../field-frame/field-frame';
 import { FormField, formFieldHost } from '../form-field';
+import { startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-textarea-field',
@@ -27,8 +30,20 @@ export class TextareaField {
 
   private readonly textarea = viewChild.required(Textarea);
   private readonly textareaElement = viewChild.required(Textarea, { read: ElementRef });
+  private readonly value = toSignal(
+    toObservable(this.field.control).pipe(
+      switchMap((control) => control.valueChanges.pipe(startWith(control.value))),
+    ),
+  );
 
   constructor() {
+    afterRenderEffect({
+      mixedReadWrite: () => {
+        this.value();
+        this.rows();
+        this.textarea().resize();
+      },
+    });
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       let lastWidth = 0;

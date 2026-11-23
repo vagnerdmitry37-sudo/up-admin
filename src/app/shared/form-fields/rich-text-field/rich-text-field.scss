@@ -1,4 +1,7 @@
 app-rich-text-field {
+  --rich-text-toolbar-row-height: 24px;
+  --rich-text-content-min-height: 10rem;
+
   display: block;
   min-width: 0;
 
@@ -6,12 +9,29 @@ app-rich-text-field {
     padding-block-start: var(--p-iftalabel-input-padding-top);
   }
 
+  .p-editor-toolbar:not(.ql-toolbar) {
+    background: transparent;
+    padding: var(--p-iftalabel-input-padding-top) var(--p-form-field-padding-x) 0;
+  }
+
+  .p-editor-toolbar:not(.ql-toolbar) .ql-formats {
+    display: inline-block;
+    height: var(--rich-text-toolbar-row-height);
+    overflow: hidden;
+    vertical-align: middle;
+    visibility: hidden;
+  }
+
+  .p-editor-content:not(.ql-container) {
+    min-height: var(--rich-text-content-min-height);
+  }
+
   .p-iftalabel:has(.ql-editor:focus) label {
     color: var(--p-iftalabel-focus-color);
   }
 
   .ql-editor {
-    min-height: 10rem;
+    min-height: var(--rich-text-content-min-height);
     overflow-wrap: anywhere;
   }
 

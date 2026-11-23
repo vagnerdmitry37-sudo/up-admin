@@ -21,7 +21,11 @@ import { ActionMenuService } from '@core/action-menu.service';
 import { Image } from '@core/api/models';
 import { HttpActivity } from '@core/http-activity.service';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
-import { EntityEditPage, EntityEditPart } from '@shared/entity-edit-page/entity-edit-page';
+import {
+  ENTITY_TAB_ID,
+  EntityEditPage,
+  EntityEditPart,
+} from '@shared/entity-edit-page/entity-edit-page';
 import { AppMotion } from '@shared/motion/motion';
 
 export interface ImageWriter {
@@ -78,7 +82,11 @@ export class ImageUpload {
         },
       }),
     });
-    const part: EntityEditPart = { entityId: this.entityId, dirty: this.dirty, save: this.save };
+    const part: EntityEditPart = {
+      tabId: inject(ENTITY_TAB_ID, { optional: true }) ?? undefined,
+      dirty: this.dirty,
+      save: this.save,
+    };
     const entityEditPage = inject(EntityEditPage, { optional: true });
     entityEditPage?.connectPart(part);
     inject(DestroyRef).onDestroy(() => entityEditPage?.disconnectPart(part));
