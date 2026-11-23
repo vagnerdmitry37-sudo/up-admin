@@ -9,7 +9,7 @@ import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field
 import { EntityForm } from '@shared/entity-form/entity-form';
 import { OrdersService } from '../orders.service';
 
-export type OrderItemProduct = Pick<Product, 'id' | 'name' | 'typeLabel'>;
+export type OrderItemProduct = Pick<Product, 'id' | 'name' | 'type'>;
 
 export interface OrderItemFormValue {
   product: OrderItemProduct;
@@ -32,7 +32,7 @@ export class OrderItemForm {
 
   protected readonly searchProducts = inject(OrdersService).searchProducts;
   protected readonly productLabel = (product: OrderItemProduct) =>
-    `${product.name} · ${product.typeLabel}`;
+    `${product.name} · ${product.type}`;
   protected readonly formValue = computed(() => {
     const orderItem = this.orderItem();
     return orderItem
@@ -41,7 +41,7 @@ export class OrderItemForm {
           product: {
             id: orderItem.productId,
             name: orderItem.productName,
-            typeLabel: orderItem.productTypeLabel,
+            type: orderItem.productType,
           },
           startsAt: new Date(orderItem.startsAt),
         }

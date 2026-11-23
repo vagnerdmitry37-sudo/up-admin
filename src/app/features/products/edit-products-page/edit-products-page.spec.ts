@@ -5,70 +5,19 @@ import { FormGroup } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
-import { ProductDetails, ProductTypeDefinition } from '@core/api/models';
+import { ProductDetails } from '@core/api/models';
 import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { EntityForm } from '@shared/entity-form/entity-form';
 import { EditProductsPage } from './edit-products-page';
 
-const productTypes: ProductTypeDefinition[] = [
-  {
-    type: 'GroupExcursion',
-    label: 'Group excursion',
-    priceLabel: 'per person',
-    attributes: [
-      {
-        key: 'durationHours',
-        label: 'Duration',
-        kind: 'WholeNumber',
-        required: true,
-        min: 1,
-        maxLength: null,
-      },
-      {
-        key: 'meetingPoint',
-        label: 'Meeting point',
-        kind: 'Text',
-        required: false,
-        min: null,
-        maxLength: 10,
-      },
-    ],
-  },
-  {
-    type: 'IndividualTransfer',
-    label: 'Individual transfer',
-    priceLabel: 'per car',
-    attributes: [
-      {
-        key: 'durationHours',
-        label: 'Duration',
-        kind: 'WholeNumber',
-        required: true,
-        min: 1,
-        maxLength: null,
-      },
-      {
-        key: 'vehicle',
-        label: 'Vehicle',
-        kind: 'Text',
-        required: true,
-        min: null,
-        maxLength: null,
-      },
-    ],
-  },
-];
-
 const savedProduct: ProductDetails = {
   id: 'p1',
   type: 'GroupExcursion',
-  typeLabel: 'Group excursion',
   name: 'Old town walk',
   seoDescription: 'Walk',
   shortDescription: '',
   price: 25,
-  attributes: { durationHours: 3, meetingPoint: 'Square' },
   images: [],
 };
 
@@ -97,7 +46,6 @@ describe('EditProductsPage', () => {
     const fixture = TestBed.createComponent(EditProductsPage);
     fixture.componentRef.setInput('ids', ids);
     TestBed.tick();
-    httpTestingController.expectOne('/api/product-types').flush(productTypes);
     if (ids) {
       httpTestingController
         .expectOne((request) => request.url === '/api/products/by-ids')
@@ -123,57 +71,10 @@ describe('EditProductsPage', () => {
     await fixture.whenStable();
   };
 
-  const attributeLabels = (fixture: ComponentFixture<EditProductsPage>) =>
-    [
-      ...(fixture.nativeElement as HTMLElement).querySelectorAll(
-        'app-product-attributes-fields label',
-      ),
-    ].map((label) => label.textContent?.trim());
-
   const save = async () => {
     TestBed.inject(ActionMenuService).run('save');
     await new Promise((resolve) => setTimeout(resolve));
   };
-
-  it('shows the attribute fields of the product type with their saved values', async () => {
-    const fixture = await render('p1', [savedProduct]);
-
-    expect(attributeLabels(fixture)).toEqual(['Duration', 'Meeting point']);
-    expect(productForm(fixture).getRawValue().attributes).toEqual({
-      durationHours: 3,
-      meetingPoint: 'Square',
-    });
-  });
-
-  it('keeps the attributes both types share when the type changes and drops the others', async () => {
-    const fixture = await render('p1', [savedProduct]);
-
-    await edit(fixture, (form) => form.controls['type'].setValue('IndividualTransfer'));
-
-    expect(attributeLabels(fixture)).toEqual(['Duration', 'Vehicle']);
-    expect(productForm(fixture).getRawValue().attributes).toEqual({
-      durationHours: 3,
-      vehicle: null,
-    });
-  });
-
-  it('checks the attributes against the rules of the type and sends nothing while they break them', async () => {
-    const fixture = await render('p1', [savedProduct]);
-
-    await edit(fixture, (form) =>
-      form.controls['attributes'].setValue({ durationHours: 0, meetingPoint: 'Central station' }),
-    );
-    await save();
-    await fixture.whenStable();
-
-    httpTestingController.expectNone((request) => request.method === 'PUT');
-    const errors = [
-      ...(fixture.nativeElement as HTMLElement).querySelectorAll(
-        'app-product-attributes-fields .error',
-      ),
-    ].map((error) => error.textContent?.trim());
-    expect(errors).toEqual(['Enter 1 or more.', 'Use 10 characters or fewer.']);
-  });
 
   it('creates a product as a one-item list and reopens the page with the new id', async () => {
     const fixture = await render();
@@ -184,7 +85,6 @@ describe('EditProductsPage', () => {
         name: 'Airport transfer',
         seoDescription: 'Transfer',
         price: 40,
-        attributes: { durationHours: 1, vehicle: 'Van' },
       }),
     );
     await save();
@@ -198,7 +98,6 @@ describe('EditProductsPage', () => {
         shortDescription: '',
         seoDescription: 'Transfer',
         price: 40,
-        attributes: { durationHours: 1, vehicle: 'Van' },
       },
     ]);
     request.flush([{ ...savedProduct, id: 'p9' }]);
@@ -225,7 +124,6 @@ describe('EditProductsPage', () => {
         shortDescription: '',
         seoDescription: 'Walk',
         price: 30,
-        attributes: { durationHours: 3, meetingPoint: 'Square' },
       },
     ]);
   });

@@ -17,7 +17,6 @@ export class EditProductsPage {
   private readonly productsService = inject(ProductsService);
 
   protected readonly loadProducts = this.productsService.get;
-  protected readonly productTypes = this.productsService.productTypes;
   protected readonly productName = (product: ProductDetails) => product.name;
   protected readonly productWriter: EntityWriter<ProductDetails, ProductFormValue> = {
     create: async (product) => {

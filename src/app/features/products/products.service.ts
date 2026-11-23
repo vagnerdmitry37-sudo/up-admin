@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApiClient } from '@core/api-client';
 import { API_BASE_URL } from '@core/api-base-url';
 import {
@@ -7,7 +7,6 @@ import {
   Product,
   ProductDetails,
   ProductsPageResponse,
-  ProductTypeDefinition,
   UpdateImageOrderRequest,
   UpdateProductRequest,
 } from '@core/api/models';
@@ -17,17 +16,9 @@ import { firstValueFrom } from 'rxjs';
 export class ProductsService {
   private readonly api = inject(ApiClient).forEntity('product');
   private readonly imageApi = inject(ApiClient).forEntity('image');
-  private readonly productTypeApi = inject(ApiClient).forEntity('product type');
   private readonly apiBaseUrl = inject(API_BASE_URL);
   private readonly url = `${this.apiBaseUrl}/products`;
   private readonly imagesUrl = `${this.apiBaseUrl}/images`;
-  private readonly productTypesResource = this.productTypeApi.resource<ProductTypeDefinition[]>(
-    () => `${this.apiBaseUrl}/product-types`,
-  );
-
-  readonly productTypes = computed(() =>
-    this.productTypesResource.hasValue() ? this.productTypesResource.value() : [],
-  );
 
   list = (first: number, rows: number) =>
     this.api.get<ProductsPageResponse>(this.url, { params: { first, rows } });

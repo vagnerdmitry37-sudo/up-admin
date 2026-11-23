@@ -7,7 +7,7 @@
   listPath="/products"
 >
   <ng-template let-product>
-    <app-product-form [product]="product" [productTypes]="productTypes()" />
+    <app-product-form [product]="product" />
     <app-image-upload
       [entityId]="product?.id"
       [savedImages]="product?.images"

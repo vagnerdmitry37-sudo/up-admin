@@ -2,7 +2,7 @@
   <app-select-field
     label="Type"
     [control]="form.controls.type"
-    [options]="typeOptions()"
+    [options]="typeOptions"
     [messages]="{ required: 'Select a type.' }"
   />
 
@@ -12,13 +12,6 @@
     [min]="0"
     [fractionDigits]="2"
     [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
-  />
-
-  <app-product-attributes-fields
-    [control]="attributes"
-    [type]="selectedType()"
-    [productTypes]="productTypes()"
-    [product]="product()"
   />
 
   <app-text-field

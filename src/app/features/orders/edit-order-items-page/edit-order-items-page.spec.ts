@@ -15,9 +15,7 @@ const orderItem = (id: string, pickupAddress: string): OrderItem =>
     id,
     productId: 'p1',
     productType: 'GroupExcursion',
-    productTypeLabel: 'Group excursion',
     productName: `Product ${id}`,
-    productAttributes: {},
     unitPrice: 40,
     startsAt: '2026-12-01T09:00:00.000Z',
     passengers: 2,
@@ -242,7 +240,7 @@ describe('EditOrderItemsPage', () => {
     const fixture = await render();
 
     await edit(fixture, {
-      product: { id: 'p7', name: 'Prague by night', typeLabel: 'Group excursion' },
+      product: { id: 'p7', name: 'Prague by night', type: 'GroupExcursion' },
       startsAt: new Date('2026-12-24T18:30:00.000Z'),
       passengers: 3,
       pickupAddress: 'Hotel Pupp',

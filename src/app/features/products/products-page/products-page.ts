@@ -17,7 +17,7 @@ export class ProductsPage {
   protected readonly deleteEntities = this.productsService.delete;
   protected readonly columns: TableColumn<Product>[] = [
     { header: 'Name', value: (product) => product.name },
-    { header: 'Type', value: (product) => product.typeLabel },
+    { header: 'Type', value: (product) => product.type },
     { header: 'Price', value: (product) => product.price, align: 'end' },
   ];
 }

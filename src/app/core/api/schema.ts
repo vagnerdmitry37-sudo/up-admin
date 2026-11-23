@@ -90,43 +90,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/product-types': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'text/plain': components['schemas']['ProductTypeResponse'][];
-            'application/json': components['schemas']['ProductTypeResponse'][];
-            'text/json': components['schemas']['ProductTypeResponse'][];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/products': {
     parameters: {
       query?: never;
@@ -1898,18 +1861,6 @@ export interface components {
       /** Format: date-time */
       expiresAt: string;
     };
-    AttributeDefinitionResponse: {
-      key: string;
-      label: string;
-      kind: components['schemas']['AttributeKind'];
-      required: boolean;
-      /** Format: int32 */
-      maxLength: null | number;
-      /** Format: int32 */
-      min: null | number;
-    };
-    /** @enum {unknown} */
-    AttributeKind: 'Text' | 'WholeNumber';
     CreateCustomerRequest: {
       name: string;
       email: string;
@@ -1937,7 +1888,6 @@ export interface components {
       seoDescription: string;
       /** Format: double */
       price: number;
-      attributes: components['schemas']['JsonElement'];
       /** @default  */
       shortDescription: string;
     };
@@ -2001,9 +1951,7 @@ export interface components {
       /** Format: uuid */
       productId: string;
       productType: components['schemas']['ProductType'];
-      productTypeLabel: string;
       productName: string;
-      productAttributes: components['schemas']['JsonElement'];
       /** Format: double */
       unitPrice: number;
       /** Format: date-time */
@@ -2046,26 +1994,22 @@ export interface components {
       /** Format: uuid */
       id: string;
       type: components['schemas']['ProductType'];
-      typeLabel: string;
       name: string;
       seoDescription: string;
       shortDescription: string;
       /** Format: double */
       price: number;
-      attributes: components['schemas']['JsonElement'];
       images: components['schemas']['ImageResponse'][];
     };
     ProductResponse: {
       /** Format: uuid */
       id: string;
       type: components['schemas']['ProductType'];
-      typeLabel: string;
       name: string;
       seoDescription: string;
       shortDescription: string;
       /** Format: double */
       price: number;
-      attributes: components['schemas']['JsonElement'];
     };
     /** @enum {unknown} */
     ProductSortField: 'Name' | 'Type' | 'Price' | null;
@@ -2076,12 +2020,6 @@ export interface components {
     };
     /** @enum {unknown} */
     ProductType: 'GroupExcursion' | 'IndividualExcursion' | 'IndividualTransfer' | 'GroupTransfer';
-    ProductTypeResponse: {
-      type: components['schemas']['ProductType'];
-      label: string;
-      priceLabel: string;
-      attributes: components['schemas']['AttributeDefinitionResponse'][];
-    };
     RegisterRequest: {
       email: string;
       password: string;
@@ -2126,7 +2064,6 @@ export interface components {
       seoDescription: string;
       /** Format: double */
       price: number;
-      attributes: components['schemas']['JsonElement'];
       /** @default  */
       shortDescription: string;
     };
