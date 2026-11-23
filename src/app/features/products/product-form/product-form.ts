@@ -9,7 +9,6 @@ import {
 } from '@core/api/models';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
-import { RichTextField } from '@shared/form-fields/rich-text-field/rich-text-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
 import { EntityForm } from '@shared/entity-form/entity-form';
@@ -25,7 +24,6 @@ export type ProductFormValue = CreateProductRequest;
   imports: [
     NumberField,
     ProductAttributesFields,
-    RichTextField,
     SelectField,
     TextField,
     TextareaField,
@@ -48,7 +46,6 @@ export class ProductForm {
     type: this.formBuilder.control<ProductType | null>(null, Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],
     shortDescription: ['', [Validators.maxLength(200)]],
-    description: ['', [Validators.maxLength(20000)]],
     seoDescription: ['', [Validators.required, Validators.maxLength(160)]],
     price: this.formBuilder.control<number>(0, [Validators.required, Validators.min(0)]),
     attributes: this.attributes,

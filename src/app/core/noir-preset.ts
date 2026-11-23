@@ -145,58 +145,5 @@ export const NoirPreset = definePreset(Aura, {
         }
       `,
     },
-    editor: {
-      css: `
-        .p-editor {
-          border: 1px solid var(--p-form-field-border-color);
-          border-radius: var(--p-form-field-border-radius);
-          background: var(--p-form-field-background);
-          box-shadow: var(--p-form-field-shadow);
-          transition: border-color var(--p-form-field-transition-duration);
-        }
-        .p-editor:hover {
-          border-color: var(--p-form-field-hover-border-color);
-        }
-        .p-editor:focus-within {
-          border-color: var(--p-form-field-focus-border-color);
-        }
-        .p-editor.p-invalid {
-          border-color: var(--p-form-field-invalid-border-color);
-        }
-        .p-editor .p-editor-toolbar.ql-snow {
-          border: none;
-          background: transparent;
-          padding-block-end: 0;
-          padding-inline: var(--p-form-field-padding-x);
-          font-family: inherit;
-        }
-        .p-editor .ql-snow .ql-picker {
-          font-family: inherit;
-          font-size: 1rem;
-          font-weight: inherit;
-        }
-        .p-editor .ql-formats:first-child .ql-picker-label {
-          padding-inline-start: 0;
-        }
-        .p-editor .p-editor-content.ql-snow {
-          border: none;
-          font-family: inherit;
-          font-size: 1rem;
-        }
-        .p-editor .p-editor-content .ql-editor {
-          background: transparent;
-          color: var(--p-form-field-color);
-          line-height: inherit;
-          padding-block: var(--p-form-field-padding-y) var(--p-iftalabel-input-padding-bottom);
-          padding-inline: var(--p-form-field-padding-x);
-        }
-        .p-editor .ql-editor li[data-list='bullet'] {
-          counter-increment: none;
-        }
-        .p-editor .ql-editor li[data-list='bullet']::before {
-          content: '\\2022';
-        }
-      `,
-    },
   },
 });
