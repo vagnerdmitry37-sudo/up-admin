@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { OpenngIcons } from '@openng/optimus-ui/api';
+import { Action } from '@shared/actions/action-test.service';
 import { ConfirmedAction } from '@shared/actions/confirmed-action/confirmed-action';
 
 @Component({
@@ -9,6 +10,8 @@ import { ConfirmedAction } from '@shared/actions/confirmed-action/confirmed-acti
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SaveAction {
+  readonly action = input.required<Action>();
+
   protected readonly label = 'Save';
   protected readonly icon = OpenngIcons.SAVE;
 }

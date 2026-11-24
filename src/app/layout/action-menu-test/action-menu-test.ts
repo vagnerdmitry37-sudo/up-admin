@@ -5,7 +5,11 @@ import { CreateAction } from '@shared/actions/create-action/create-action';
 import { EditAction } from '@shared/actions/edit-action/edit-action';
 import { SaveAction } from '@shared/actions/save-action/save-action';
 import { DeleteAction } from '@shared/actions/delete-action/delete-action';
-import { ActionTestService } from '@shared/actions/action-test.service';
+import { ActionName, ActionTestService } from '@shared/actions/action-test.service';
+
+interface ActionSlot {
+  name: ActionName;
+}
 
 @Component({
   selector: 'app-action-menu-test',
@@ -15,5 +19,14 @@ import { ActionTestService } from '@shared/actions/action-test.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionMenuTest {
-  protected readonly actions = inject(ActionTestService).actions.asReadonly();
+  private readonly actions = inject(ActionTestService).actions;
+
+  protected readonly slots: ActionSlot[] = [
+    { name: 'create' },
+    { name: 'edit' },
+    { name: 'save' },
+    { name: 'delete' },
+  ];
+
+  protected readonly actionOf = (name: ActionName) => this.actions()[name];
 }

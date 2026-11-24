@@ -1,17 +1,40 @@
-import { Injectable, signal } from '@angular/core';
-import { MenuItem } from '@openng/optimus-ui/api';
+import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 
-export type ActionNames = 'create' | 'edit' | 'save' | 'delete';
+export type ActionName = 'create' | 'edit' | 'save' | 'delete';
 
-export interface ActionMenuItem extends MenuItem {
-  name: ActionNames
+export interface Action {
+  run: () => unknown;
 }
+
+export type Actions = Record<ActionName, Action | null>;
 
 @Injectable({ providedIn: 'root' })
 export class ActionTestService {
-  readonly actions = signal<ActionMenuItem[]>([]);
+  private readonly registeredActions = signal<Actions>({
+    create: null,
+    edit: null,
+    save: null,
+    delete: null,
+  });
 
-  register(items: ActionMenuItem[]): void {
-    this.actions.set(items);
+  readonly actions = this.registeredActions.asReadonly();
+
+  register(actions: Partial<Actions>): void {
+    this.registeredActions.update((current) => ({ ...current, ...actions }));
+    this.clearOnDestroy(inject(DestroyRef), actions);
+  }
+
+  private clearOnDestroy(destroyRef: DestroyRef, registeredActions: Partial<Actions>): void {
+    destroyRef.onDestroy(() =>
+      this.registeredActions.update(
+        (current) =>
+          Object.fromEntries(
+            Object.entries(current).map(([name, action]) => [
+              name,
+              action === registeredActions[name as ActionName] ? null : action,
+            ]),
+          ) as Actions,
+      ),
+    );
   }
 }

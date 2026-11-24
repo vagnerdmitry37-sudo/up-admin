@@ -44,12 +44,9 @@ export class EntityListPage<T extends { id: string }> {
       }),
     });
 
-    inject(ActionTestService).register([
-      { name: 'create' },
-      { name: 'edit' },
-      { name: 'save' },
-      { name: 'delete' },
-    ]);
+    inject(ActionTestService).register({
+      create: { run: () => this.open([]) },
+    });
   }
 
   protected readonly open = (ids: string[]) =>

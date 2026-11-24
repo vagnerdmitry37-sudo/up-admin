@@ -1,6 +1,6 @@
 <p-speeddial
   appMotion="scale"
-  [model]="actions()"
+  [model]="slots"
   type="quarter-circle"
   direction="up-left"
   [radius]="80"
@@ -9,19 +9,22 @@
   [hideOnClickOutside]="false"
   ariaLabel="Edit actions"
 >
-  <ng-template #item let-action>
-    @switch (action.name) {
-      @case ('create') {
-        <app-create-action />
-      }
-      @case ('edit') {
-        <app-edit-action />
-      }
-      @case ('delete') {
-        <app-delete-action />
-      }
-      @case ('save') {
-        <app-save-action />
+  <ng-template #item let-slot>
+    @let action = actionOf(slot.name);
+    @if (action) {
+      @switch (slot.name) {
+        @case ('create') {
+          <app-create-action [action]="action" />
+        }
+        @case ('edit') {
+          <app-edit-action [action]="action" />
+        }
+        @case ('delete') {
+          <app-delete-action [action]="action" />
+        }
+        @case ('save') {
+          <app-save-action [action]="action" />
+        }
       }
     }
   </ng-template>
