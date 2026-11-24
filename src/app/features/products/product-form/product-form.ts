@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { CreateProductRequest, Product, ProductType } from '@core/api/models';
+import { ReferenceDataService } from '@core/reference-data.service';
 import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
@@ -8,13 +9,6 @@ import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field
 import { EntityForm } from '@shared/entity-form/entity-form';
 
 export type ProductFormValue = CreateProductRequest;
-
-const productTypes: ProductType[] = [
-  'GroupExcursion',
-  'IndividualExcursion',
-  'IndividualTransfer',
-  'GroupTransfer',
-];
 
 @Component({
   selector: 'app-product-form',
@@ -27,7 +21,7 @@ export class ProductForm {
 
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  protected readonly typeOptions = productTypes.map((type) => ({ label: type, value: type }));
+  protected readonly productTypes = inject(ReferenceDataService).productTypes;
   protected readonly form = this.formBuilder.group({
     type: this.formBuilder.control<ProductType | null>(null, Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],

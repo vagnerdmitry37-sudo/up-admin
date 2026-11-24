@@ -5,11 +5,20 @@ import { FormGroup } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
-import { ProductDetails } from '@core/api/models';
+import { ProductDetails, ReferenceData } from '@core/api/models';
 import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { EntityForm } from '@shared/entity-form/entity-form';
+import { SelectField } from '@shared/form-fields/select-field/select-field';
 import { EditProductsPage } from './edit-products-page';
+
+const referenceData: ReferenceData = {
+  productTypes: [
+    { value: 'GroupExcursion', label: 'Group excursion' },
+    { value: 'IndividualTransfer', label: 'Individual transfer' },
+  ],
+  orderStatuses: [],
+};
 
 const savedProduct: ProductDetails = {
   id: 'p1',
@@ -50,7 +59,10 @@ describe('EditProductsPage', () => {
       httpTestingController
         .expectOne((request) => request.url === '/api/products/by-ids')
         .flush(products);
+      await new Promise((resolve) => setTimeout(resolve));
     }
+    TestBed.tick();
+    httpTestingController.expectOne('/api/reference-data').flush(referenceData);
     await fixture.whenStable();
     return fixture;
   };
@@ -75,6 +87,13 @@ describe('EditProductsPage', () => {
     TestBed.inject(ActionMenuService).run('save');
     await new Promise((resolve) => setTimeout(resolve));
   };
+
+  it('offers the product types from the API with their readable labels', async () => {
+    const fixture = await render();
+
+    const typeField = fixture.debugElement.query(By.directive(SelectField)).componentInstance;
+    expect(typeField.options()).toEqual(referenceData.productTypes);
+  });
 
   it('creates a product as a one-item list and reopens the page with the new id', async () => {
     const fixture = await render();
