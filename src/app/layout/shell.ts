@@ -7,10 +7,11 @@ import { Toolbar } from '@openng/optimus-ui/toolbar';
 import { ActionMenu } from './action-menu/action-menu';
 import { NavMenu } from './nav-menu/nav-menu';
 import { PageHeading } from './page-heading/page-heading';
+import { ActionMenuTest } from './action-menu-test/action-menu-test';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, Toolbar, NavMenu, PageHeading, ActionMenu, ConfirmDialog, Toast],
+  imports: [RouterOutlet, Toolbar, NavMenu, PageHeading, ActionMenu, ConfirmDialog, Toast, ActionMenuTest],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,12 @@
+<button
+  type="button"
+  pButton
+  pRipple
+  severity="secondary"
+  [rounded]="true"
+  size="small"
+  [icon]="icon()"
+  [attr.aria-label]="label()"
+  (click)="pressed.emit()"
+></button>
+<ng-content />

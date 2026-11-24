@@ -1,0 +1,28 @@
+<p-speeddial
+  appMotion="scale"
+  [model]="actions()"
+  type="quarter-circle"
+  direction="up-left"
+  [radius]="80"
+  [style]="{ position: 'absolute', right: 0, bottom: 0 }"
+  [visible]="true"
+  [hideOnClickOutside]="false"
+  ariaLabel="Edit actions"
+>
+  <ng-template #item let-action>
+    @switch (action.name) {
+      @case ('create') {
+        <app-create-action />
+      }
+      @case ('edit') {
+        <app-edit-action />
+      }
+      @case ('delete') {
+        <app-delete-action />
+      }
+      @case ('save') {
+        <app-save-action />
+      }
+    }
+  </ng-template>
+</p-speeddial>

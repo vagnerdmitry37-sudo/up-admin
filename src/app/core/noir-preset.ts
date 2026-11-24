@@ -115,6 +115,26 @@ export const NoirPreset = definePreset(Aura, {
         }
       `,
     },
+    progressspinner: {
+      colorScheme: {
+        light: {
+          root: {
+            colorOne: '{primary.color}',
+            colorTwo: '{primary.color}',
+            colorThree: '{primary.color}',
+            colorFour: '{primary.color}',
+          },
+        },
+        dark: {
+          root: {
+            colorOne: '{primary.color}',
+            colorTwo: '{primary.color}',
+            colorThree: '{primary.color}',
+            colorFour: '{primary.color}',
+          },
+        },
+      },
+    },
     toast: {
       css: `
         .p-toast {

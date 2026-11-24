@@ -7,12 +7,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { MenuAction, ActionMenuService } from '@core/action-menu.service';
+import { ActionStatus, MenuAction, ActionMenuService } from '@core/action-menu.service';
 import { ActionTrigger, ActionTriggerKind } from '@shared/action-trigger/action-trigger';
 import { MenuItem, OpenngIcons } from '@openng/optimus-ui/api';
-import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
+import { ButtonDirective } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
+import { ProgressSpinner } from '@openng/optimus-ui/progressspinner';
 import { ProgressRing } from '@shared/progress-ring/progress-ring';
 import { AppMotion } from '@shared/motion/motion';
 
@@ -29,6 +30,17 @@ const ACTIONS: Record<MenuAction, ActionDefinition> = {
   delete: { label: 'Delete', icon: OpenngIcons.TRASH, trigger: 'hold' },
 };
 
+interface StatusDefinition {
+  icon: string | undefined;
+  labelSuffix: string;
+}
+
+const STATUSES: Record<ActionStatus, StatusDefinition> = {
+  running: { icon: undefined, labelSuffix: 'in progress' },
+  succeeded: { icon: OpenngIcons.CHECK, labelSuffix: 'done' },
+  failed: { icon: OpenngIcons.TIMES, labelSuffix: 'failed' },
+};
+
 const ACTION_ORDER = Object.keys(ACTIONS) as MenuAction[];
 
 interface ActionMenuItem {
@@ -42,7 +54,15 @@ const SUGGESTED_CLASS = 'action-menu-suggested';
 
 @Component({
   selector: 'app-action-menu',
-  imports: [SpeedDial, ButtonDirective, ButtonIcon, Ripple, AppMotion, ActionTrigger, ProgressRing],
+  imports: [
+    SpeedDial,
+    ButtonDirective,
+    Ripple,
+    AppMotion,
+    ActionTrigger,
+    ProgressRing,
+    ProgressSpinner,
+  ],
   host: { '[class.suggesting]': 'suggested().length > 0 && !open()' },
   templateUrl: './action-menu.html',
   styleUrl: './action-menu.scss',
@@ -89,6 +109,21 @@ export class ActionMenu {
   protected toggle = () => this.open.update((open) => !open);
 
   protected triggerOf = (action: MenuAction) => ACTIONS[action].trigger;
+
+  protected statusOf = (action: MenuAction) => this.actionMenuService.status()[action];
+
+  protected iconOf = (item: MenuItem) => {
+    const action = item.id as MenuAction;
+    const status = this.statusOf(action);
+    const leavingResult = item.visible ? undefined : this.actionMenuService.lastResult()[action];
+    const shownStatus = status ?? leavingResult;
+    return (shownStatus && STATUSES[shownStatus].icon) ?? item.icon ?? '';
+  };
+
+  protected labelOf = (item: MenuItem) => {
+    const status = this.statusOf(item.id as MenuAction);
+    return status ? `${item.label} ${STATUSES[status].labelSuffix}` : item.label;
+  };
 
   protected runAction = (action: MenuAction) => this.actionMenuService.run(action);
 

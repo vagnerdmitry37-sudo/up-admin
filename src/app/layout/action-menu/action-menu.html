@@ -22,16 +22,18 @@
           severity="secondary"
           [rounded]="true"
           size="small"
-          [attr.aria-label]="item.label"
+          [attr.aria-label]="labelOf(item)"
+          [attr.aria-busy]="statusOf(item.id) === 'running'"
           [attr.tabindex]="open() ? 0 : null"
           [appActionTrigger]="triggerOf(item.id)"
           #trigger="actionTrigger"
+          [icon]="iconOf(item)"
           (triggered)="runAction(item.id)"
-        >
-          <span pButtonIcon [class]="item.icon"></span>
-        </button>
+        ></button>
         @if (trigger.holding()) {
           <app-progress-ring [value]="trigger.holdProgress()" />
+        } @else if (statusOf(item.id) === 'running') {
+          <p-progressspinner class="action-menu-spinner" strokeWidth="3" aria-hidden="true" />
         }
       </div>
     </ng-template>

@@ -13,6 +13,15 @@
   display: flex;
 }
 
+.action-menu-spinner {
+  position: absolute;
+  inset: -8.14%;
+  width: auto;
+  height: auto;
+  margin: 0;
+  pointer-events: none;
+}
+
 .action-trigger-hold {
   touch-action: none;
   user-select: none;

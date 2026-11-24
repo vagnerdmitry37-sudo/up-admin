@@ -7,6 +7,7 @@ import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader, lazyRows } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
+import { ActionTestService } from '@shared/actions/action-test.service';
 
 @Component({
   selector: 'app-entity-list-page',
@@ -42,6 +43,13 @@ export class EntityListPage<T extends { id: string }> {
         create: { click: () => this.open([]), suggested: this.lazyRows.empty() },
       }),
     });
+
+    inject(ActionTestService).register([
+      { name: 'create' },
+      { name: 'edit' },
+      { name: 'save' },
+      { name: 'delete' },
+    ]);
   }
 
   protected readonly open = (ids: string[]) =>
