@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { OrderItem } from '@core/api/models';
-import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
+import { EntityEditPage, EntityWriter } from '@shared/entity/entity-edit-page/entity-edit-page';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { map } from 'rxjs';
 import { OrderItemForm, OrderItemFormValue } from '../order-item-form/order-item-form';

@@ -7,7 +7,7 @@ import { API_BASE_URL } from '@core/api-base-url';
 import { Order, OrderItem } from '@core/api/models';
 import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
-import { EntityForm } from '@shared/entity-form/entity-form';
+import { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { EditOrderItemsPage } from './edit-order-items-page';
 
 const orderItem = (id: string, pickupAddress: string): OrderItem =>

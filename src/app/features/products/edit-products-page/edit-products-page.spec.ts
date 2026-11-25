@@ -8,7 +8,7 @@ import { API_BASE_URL } from '@core/api-base-url';
 import { ProductDetails, ReferenceData } from '@core/api/models';
 import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
-import { EntityForm } from '@shared/entity-form/entity-form';
+import { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
 import { EditProductsPage } from './edit-products-page';
 

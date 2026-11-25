@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Order } from '@core/api/models';
-import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
+import { EntityEditPage, EntityWriter } from '@shared/entity/entity-edit-page/entity-edit-page';
 import { OrderForm, OrderFormValue } from '../order-form/order-form';
 import { OrderItemsTable } from '../order-items-table/order-items-table';
 import { OrdersService } from '../orders.service';

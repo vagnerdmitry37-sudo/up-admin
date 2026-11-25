@@ -6,7 +6,7 @@ import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SearchField } from '@shared/form-fields/search-field/search-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
-import { EntityForm } from '@shared/entity-form/entity-form';
+import { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { OrdersService } from '../orders.service';
 
 export type OrderItemProduct = Pick<Product, 'id' | 'name' | 'type'>;

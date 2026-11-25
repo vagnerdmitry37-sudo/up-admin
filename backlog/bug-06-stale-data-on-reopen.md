@@ -1,7 +1,7 @@
 # Bug 6: Reopening a closed id shows stale data
 
 **Severity:** Low
-**Where:** `src/app/shared/entity-edit-page/entity-edit-page.ts` (`containsAll`, `loadedIds`)
+**Where:** `src/app/shared/entity/entity-edit-page/entity-edit-page.ts` (`containsAll`, `loadedIds`)
 
 ## Problem
 

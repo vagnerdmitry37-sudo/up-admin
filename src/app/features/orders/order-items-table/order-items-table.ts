@@ -9,13 +9,13 @@ import {
 import { Order, OrderItem } from '@core/api/models';
 import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader } from '@shared/data-table/lazy-rows';
-import { EntityListPage } from '@shared/entity-list-page/entity-list-page';
+import { EntityPage } from '@shared/entity/entity-page/entity-page';
 import { of } from 'rxjs';
 import { OrderItemsService } from '../order-items.service';
 
 @Component({
   selector: 'app-order-items-table',
-  imports: [EntityListPage],
+  imports: [EntityPage],
   templateUrl: './order-items-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

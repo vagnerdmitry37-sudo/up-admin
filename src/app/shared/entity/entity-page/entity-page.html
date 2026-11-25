@@ -14,8 +14,8 @@
     [entity]="entityName()"
     [deleteRows]="delete"
     (lazyLoad)="lazyRows.load($event)"
-    (create)="open($event)"
+    (create)="openEditPage($event)"
     [(selection)]="selection"
-    (edit)="open($event)"
+    (edit)="openEditPage($event)"
   />
 }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Customer } from '@core/api/models';
-import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
+import { EntityEditPage, EntityWriter } from '@shared/entity/entity-edit-page/entity-edit-page';
 import { CustomerForm, CustomerFormValue } from '../customer-form/customer-form';
 import { CustomersService } from '../customers.service';
 

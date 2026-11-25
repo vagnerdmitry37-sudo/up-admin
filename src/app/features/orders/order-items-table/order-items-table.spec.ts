@@ -7,7 +7,7 @@ import { API_BASE_URL } from '@core/api-base-url';
 import { Order, OrderItem } from '@core/api/models';
 import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
-import { EntityTable } from '@shared/entity-table/entity-table';
+import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { OrderItemsTable } from './order-items-table';
 
 const orderItem = (id: string): OrderItem =>

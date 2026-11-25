@@ -1,7 +1,7 @@
 # Bug 1: Typing during save is silently lost
 
 **Severity:** Medium
-**Where:** `src/app/shared/entity-edit-page/entity-edit-page.ts` (`updateEntities`), `src/app/shared/entity-form/entity-form.ts` (reset effect)
+**Where:** `src/app/shared/entity/entity-edit-page/entity-edit-page.ts` (`updateEntities`), `src/app/shared/entity/entity-form/entity-form.ts` (reset effect)
 
 ## Problem
 

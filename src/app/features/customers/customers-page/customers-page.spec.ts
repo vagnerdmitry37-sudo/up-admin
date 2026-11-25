@@ -8,7 +8,7 @@ import { Customer } from '@core/api/models';
 import { httpActivityInterceptor } from '@core/http-activity.interceptor';
 import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
-import { EntityTable } from '@shared/entity-table/entity-table';
+import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { CustomersPage } from './customers-page';
 
 const customer = (id: string): Customer => ({

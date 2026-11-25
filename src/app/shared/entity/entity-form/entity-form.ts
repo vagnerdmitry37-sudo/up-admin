@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ENTITY_TAB_ID, EntityEditPage } from '@shared/entity-edit-page/entity-edit-page';
+import { ENTITY_TAB_ID, EntityEditPage } from '@shared/entity/entity-edit-page/entity-edit-page';
 import { distinctUntilChanged, map, startWith, switchMap } from 'rxjs';
 
 @Component({

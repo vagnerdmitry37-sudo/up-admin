@@ -24,7 +24,7 @@ import {
   ENTITY_TAB_ID,
   EntityEditPage,
   EntityEditPart,
-} from '@shared/entity-edit-page/entity-edit-page';
+} from '@shared/entity/entity-edit-page/entity-edit-page';
 import { AppMotion } from '@shared/motion/motion';
 
 export interface ImageWriter {

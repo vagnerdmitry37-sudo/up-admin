@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { ProductDetails } from '@core/api/models';
-import { EntityEditPage, EntityWriter } from '@shared/entity-edit-page/entity-edit-page';
+import { EntityEditPage, EntityWriter } from '@shared/entity/entity-edit-page/entity-edit-page';
 import { ImageUpload, ImageWriter } from '@shared/image-upload/image-upload';
 import { ProductForm, ProductFormValue } from '../product-form/product-form';
 import { ProductsService } from '../products.service';

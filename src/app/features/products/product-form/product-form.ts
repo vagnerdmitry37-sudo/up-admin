@@ -6,7 +6,7 @@ import { NumberField } from '@shared/form-fields/number-field/number-field';
 import { SelectField } from '@shared/form-fields/select-field/select-field';
 import { TextField } from '@shared/form-fields/text-field/text-field';
 import { TextareaField } from '@shared/form-fields/textarea-field/textarea-field';
-import { EntityForm } from '@shared/entity-form/entity-form';
+import { EntityForm } from '@shared/entity/entity-form/entity-form';
 
 export type ProductFormValue = CreateProductRequest;
 

@@ -4,18 +4,18 @@ import { AppMessageService } from '@core/app-message.service';
 import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader, lazyRows } from '@shared/data-table/lazy-rows';
-import { EntityTable } from '@shared/entity-table/entity-table';
+import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { ActionService } from '@shared/actions/action.service';
 
 @Component({
-  selector: 'app-entity-list-page',
+  selector: 'app-entity-page',
   imports: [EntityTable],
-  templateUrl: './entity-list-page.html',
-  styleUrl: './entity-list-page.scss',
+  templateUrl: './entity-page.html',
+  styleUrl: './entity-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityListPage<T extends { id: string }> {
+export class EntityPage<T extends { id: string }> {
   private readonly router = inject(Router);
   private readonly messageService = inject(AppMessageService);
   private readonly httpActivity = inject(HttpActivity);
@@ -37,11 +37,11 @@ export class EntityListPage<T extends { id: string }> {
 
   constructor() {
     inject(ActionService).register({
-      create: { run: () => this.open([]) },
+      create: { run: () => this.openEditPage([]) },
     });
   }
 
-  protected readonly open = (ids: string[]) =>
+  protected readonly openEditPage = (ids: string[]) =>
     this.router.navigate([this.editPath()], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });

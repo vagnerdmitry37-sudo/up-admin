@@ -16,8 +16,8 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityEntity } from '@core/http-activity.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
-import type { EntityForm } from '@shared/entity-form/entity-form';
-import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
+import type { EntityForm } from '@shared/entity/entity-form/entity-form';
+import { EntityTabs } from '@shared/entity/entity-tabs/entity-tabs';
 import {
   firstNewEntityId,
   isNewEntityId,
