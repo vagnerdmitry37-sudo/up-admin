@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppMessageService } from '@core/app-message.service';
 import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
@@ -26,22 +26,25 @@ export class EntityPage<T extends { id: string }> {
   readonly editPath = input.required<string>();
   readonly entityName = input.required<ActivityEntity>();
 
+  readonly selection = model<T[]>([]);
   protected readonly lazyRows = lazyRows<T>({
     loadPage: () => this.loadPage(),
     onFirstPageError: () => this.showLoadError(),
   });
-  protected readonly selection = signal<T[]>([]);
   protected readonly loading = computed(() =>
     this.httpActivity.isRunning({ kind: 'request', entity: this.entityName(), method: 'GET' }),
   );
+  protected readonly selectedIds = computed(() => this.selection().map((row) => row.id));
 
   constructor() {
     inject(ActionService).register({
-      create: { run: () => this.openEditPage([]) },
+      edit: { run: () => this.openEditEntityPage(this.selectedIds()) },
+      create: { run: () => this.openEditEntityPage([]) },
+      delete: { run: () => this.delete(this.selectedIds()) },
     });
   }
 
-  protected readonly openEditPage = (ids: string[]) =>
+  protected readonly openEditEntityPage = (ids: string[]) =>
     this.router.navigate([this.editPath()], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });

@@ -11,11 +11,7 @@
     [columns]="columns()"
     [lazy]="true"
     [loading]="loading()"
-    [entity]="entityName()"
-    [deleteRows]="delete"
     (lazyLoad)="lazyRows.load($event)"
-    (create)="openEditPage($event)"
     [(selection)]="selection"
-    (edit)="openEditPage($event)"
   />
 }

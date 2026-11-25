@@ -16,6 +16,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityEntity } from '@core/http-activity.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
+import { ActionService } from '@shared/actions/action.service';
 import type { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { EntityTabs } from '@shared/entity/entity-tabs/entity-tabs';
 import {
@@ -79,6 +80,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly writer = input.required<EntityWriter<T, V>>();
   readonly listPath = input.required<string>();
 
+  private readonly actionService = inject(ActionService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly injector = inject(Injector);
@@ -130,6 +132,13 @@ export class EntityEditPage<T extends { id: string }, V> {
     const newEntityLabel = `New ${this.entityName()}`;
     return (tab: EntityTab<T>) => (tab.entity ? label(tab.entity) : newEntityLabel);
   });
+
+  constructor() {
+    this.actionService.register({
+      create: { run: () => this.addNewTab() },
+      save: { run: () => this.save() },
+    });
+  }
 
   readonly connect = (entityForm: EntityForm) =>
     this.forms.update((forms) => [...forms, entityForm]);
