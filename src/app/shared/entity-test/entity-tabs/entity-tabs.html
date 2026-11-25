@@ -1,18 +1,18 @@
-<p-tabs [value]="activeTap()" scrollable>
+<p-tabs [value]="shownId()" (valueChange)="show($event)" scrollable>
   <p-tablist>
-    @for (entity of entities(); track entity.id) {
-      <p-tab class="tab" [value]="entity.id">
-        <span class="tab-label" [title]="label()(entity)">{{ label()(entity) }}</span>
+    @for (tab of tabs(); track tab.id) {
+      <p-tab class="tab" [value]="tab.id">
+        <span class="tab-label" [title]="label()(tab)">{{ label()(tab) }}</span>
       </p-tab>
     }
   </p-tablist>
   <p-tabpanels>
-    @for (entity of entities(); track entity.id) {
-      <p-tabpanel [value]="entity.id" lazy>
+    @for (tab of tabs(); track tab.id) {
+      <p-tabpanel [value]="tab.id" lazy>
         <ng-template #content>
           <ng-container
             [ngTemplateOutlet]="template()"
-            [ngTemplateOutletContext]="{ $implicit: entity }"
+            [ngTemplateOutletContext]="{ $implicit: tab.entity }"
           />
         </ng-template>
       </p-tabpanel>

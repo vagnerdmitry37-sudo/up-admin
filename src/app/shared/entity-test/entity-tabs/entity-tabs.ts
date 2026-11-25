@@ -3,13 +3,22 @@ import {
   ChangeDetectionStrategy,
   Component,
   TemplateRef,
+  afterRenderEffect,
+  computed,
   input,
-  linkedSignal,
+  model,
+  viewChild,
+  viewChildren,
 } from '@angular/core';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
 
+export interface EntityTab<T> {
+  id: string;
+  entity: T | undefined;
+}
+
 export interface EntityTabContext<T> {
-  $implicit: T;
+  $implicit: T | undefined;
 }
 
 @Component({
@@ -19,13 +28,34 @@ export interface EntityTabContext<T> {
   styleUrl: './entity-tabs.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityTabs<T extends { id: string }> {
-  readonly entities = input.required<readonly T[]>();
-  readonly label = input.required<(entity: T) => string>();
+export class EntityTabs<T> {
+  readonly tabs = input.required<readonly EntityTab<T>[]>();
+  readonly label = input.required<(tab: EntityTab<T>) => string>();
   readonly template = input.required<TemplateRef<EntityTabContext<T>>>();
+  readonly active = model<string>();
 
-  protected readonly activeTap = linkedSignal({
-    source: this.entities,
-    computation: (entities) => entities[0]?.id,
+  protected readonly shownId = computed(() => {
+    const tabs = this.tabs();
+    const active = this.active();
+    return tabs.some((tab) => tab.id === active) ? active : tabs[0]?.id;
   });
+
+  private readonly tabList = viewChild.required(TabList);
+  private readonly tabComponents = viewChildren(Tab);
+
+  constructor() {
+    afterRenderEffect(() => {
+      this.scrollShownTabIntoView();
+      this.updateScrollButtons();
+    });
+  }
+
+  private readonly scrollShownTabIntoView = () => {
+    const shownTab = this.tabComponents().find((tab) => tab.active());
+    shownTab?.scrollInView(shownTab.el.nativeElement);
+  };
+
+  private readonly updateScrollButtons = () => this.tabList().updateButtonState();
+
+  protected readonly show = (id: string | number | undefined) => this.active.set(id?.toString());
 }

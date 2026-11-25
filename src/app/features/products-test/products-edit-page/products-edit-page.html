@@ -1,4 +1,9 @@
-<app-entity-edit-page [ids]="ids()" [load]="loadProducts" [label]="productName">
+<app-entity-edit-page
+  [ids]="ids()"
+  [load]="loadProducts"
+  [label]="productName"
+  entityName="product"
+>
   <ng-template let-product>
     <app-product-form [product]="product" />
   </ng-template>

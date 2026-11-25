@@ -1,15 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  OnInit,
   TemplateRef,
-  computed,
   contentChild,
+  inject,
   input,
 } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivityEntity } from '@core/http-activity.service';
+import { ActionService } from '@shared/actions/action.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { Observable } from 'rxjs';
-import { EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
+import { EntityTabList } from '../entity-tabs/entity-tab-list';
+import { EntityTab, EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
 
 @Component({
   selector: 'app-entity-edit-page',
@@ -17,26 +22,35 @@ import { EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
   templateUrl: './entity-edit-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityEditPage<T extends { id: string }> {
+export class EntityEditPage<T extends { id: string }> implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
   readonly label = input.required<(entity: T) => string>();
+  readonly entityName = input.required<ActivityEntity>();
 
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityTabContext<T>>>(TemplateRef);
+  protected readonly tabList = new EntityTabList<T>();
 
-  private readonly openIds = computed(() => {
+  protected readonly tabLabel = (tab: EntityTab<T>) =>
+    tab.entity ? this.label()(tab.entity) : `New ${this.entityName()}`;
+
+  constructor() {
+    inject(ActionService).register({
+      create: { run: () => this.tabList.addNew() },
+    });
+  }
+
+  ngOnInit() {
     const ids = this.ids();
-    return ids ? parseRouteIds(ids) : [];
-  });
-
-  protected readonly entities = rxResource({
-    params: () => {
-      const ids = this.openIds();
-      return ids.length > 0 ? ids : undefined;
-    },
-    stream: ({ params }) => this.load()(params),
-  });
-
-  protected readonly tabs = computed(() => (this.entities.hasValue() ? this.entities.value() : []));
+    if (!ids) {
+      this.tabList.addNew();
+      return;
+    }
+    this.load()(parseRouteIds(ids))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((entities) => this.tabList.addExisting(entities));
+  }
 }

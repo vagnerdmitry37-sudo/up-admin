@@ -1,1 +1,6 @@
-<app-entity-tabs [entities]="tabs()" [label]="label()" [template]="entityTemplate()" />
+<app-entity-tabs
+  [tabs]="tabList.tabs()"
+  [label]="tabLabel"
+  [template]="entityTemplate()"
+  [(active)]="tabList.activeId"
+/>
