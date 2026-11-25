@@ -11,6 +11,7 @@ export interface EntityTabList<T> {
   activeId: WritableSignal<string | undefined>;
   addExisting: (entities: readonly T[]) => void;
   addNew: () => void;
+  close: (id: string) => void;
 }
 
 export const entityTabList = <T extends { id: string }>({
@@ -39,5 +40,18 @@ export const entityTabList = <T extends { id: string }>({
     activeId.set(id);
   };
 
-  return { tabs: tabs.asReadonly(), activeId, addExisting, addNew };
+  const close = (id: string) => {
+    const current = tabs();
+    const closedIndex = current.findIndex((tab) => tab.id === id);
+    if (closedIndex === -1) {
+      return;
+    }
+    const remaining = current.filter((tab) => tab.id !== id);
+    if (activeId() === id) {
+      activeId.set((remaining[closedIndex] ?? remaining[closedIndex - 1])?.id);
+    }
+    tabs.set(remaining);
+  };
+
+  return { tabs: tabs.asReadonly(), activeId, addExisting, addNew, close };
 };

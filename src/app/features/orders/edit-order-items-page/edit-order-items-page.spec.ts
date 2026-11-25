@@ -167,7 +167,7 @@ describe('EditOrderItemsPage', () => {
     expect(tabLabels(fixture)).toEqual(['Product i1']);
     await closeTab(fixture, 'Product i1');
 
-    expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
+    expect(navigateByUrl).toHaveBeenCalledWith('/orders/editor?ids=o1', { replaceUrl: true });
   });
 
   it('shows a New order item tab when creating and returns to the order when it is closed', async () => {
@@ -179,7 +179,7 @@ describe('EditOrderItemsPage', () => {
     await closeTab(fixture, 'New order item');
 
     expect(confirm).not.toHaveBeenCalled();
-    expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
+    expect(navigateByUrl).toHaveBeenCalledWith('/orders/editor?ids=o1', { replaceUrl: true });
   });
 
   it('asks before cancelling a changed new item and leaves only on Discard', async () => {
@@ -196,7 +196,7 @@ describe('EditOrderItemsPage', () => {
     expect(navigateByUrl).not.toHaveBeenCalled();
 
     await confirm.mock.lastCall?.[0].accept?.();
-    expect(navigateByUrl).toHaveBeenCalledWith('/edit-orders-page?ids=o1', { replaceUrl: true });
+    expect(navigateByUrl).toHaveBeenCalledWith('/orders/editor?ids=o1', { replaceUrl: true });
   });
 
   it('asks before closing a tab with unsaved changes and closes it only on Discard', async () => {

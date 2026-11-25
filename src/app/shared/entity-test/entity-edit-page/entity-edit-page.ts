@@ -9,6 +9,7 @@ import {
   input,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityEntity } from '@core/http-activity.service';
 import { ActionService } from '@shared/actions/action.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
@@ -24,6 +25,8 @@ import { EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
 })
 export class EntityEditPage<T extends { id: string }> implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
@@ -53,4 +56,11 @@ export class EntityEditPage<T extends { id: string }> implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((entities) => this.tabList.addExisting(entities));
   }
+
+  protected readonly closeTab = (id: string) => {
+    this.tabList.close(id);
+    if (this.tabList.tabs().length === 0) {
+      this.router.navigate(['..'], { relativeTo: this.route, replaceUrl: true });
+    }
+  };
 }

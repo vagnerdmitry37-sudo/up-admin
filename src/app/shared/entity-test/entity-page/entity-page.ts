@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityEntity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { lazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
@@ -16,10 +16,10 @@ import { ActionService } from '@shared/actions/action.service';
 })
 export class EntityPage<T extends { id: string }> {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
   readonly columns = input.required<TableColumn<T>[]>();
-  readonly editPath = input.required<string>();
   readonly entityName = input.required<ActivityEntity>();
   readonly deleteEntities = input.required<(ids: string[]) => Promise<void>>();
 
@@ -44,7 +44,8 @@ export class EntityPage<T extends { id: string }> {
   };
 
   openEditEntityPage(ids: string[] = []) {
-    this.router.navigate([this.editPath()], {
+    this.router.navigate(['editor'], {
+      relativeTo: this.route,
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });
   }

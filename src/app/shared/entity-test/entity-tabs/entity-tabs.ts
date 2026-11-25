@@ -7,9 +7,11 @@ import {
   computed,
   input,
   model,
+  output,
   viewChild,
   viewChildren,
 } from '@angular/core';
+import { ButtonDirective, ButtonIcon } from '@openng/optimus-ui/button';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs';
 
 export interface EntityTab<T> {
@@ -24,7 +26,7 @@ export interface EntityTabContext<T> {
 
 @Component({
   selector: 'app-entity-tabs',
-  imports: [NgTemplateOutlet, Tabs, TabList, Tab, TabPanels, TabPanel],
+  imports: [NgTemplateOutlet, Tabs, TabList, Tab, TabPanels, TabPanel, ButtonDirective, ButtonIcon],
   templateUrl: './entity-tabs.html',
   styleUrl: './entity-tabs.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +35,7 @@ export class EntityTabs<T> {
   readonly tabs = input.required<readonly EntityTab<T>[]>();
   readonly template = input.required<TemplateRef<EntityTabContext<T>>>();
   readonly active = model<string>();
+  readonly closeTab = output<string>();
 
   protected readonly shownId = computed(() => {
     const tabs = this.tabs();
@@ -45,10 +48,13 @@ export class EntityTabs<T> {
 
   constructor() {
     afterRenderEffect(() => {
+      this.moveActiveBarUnderShownTab();
       this.scrollShownTabIntoView();
       this.updateScrollButtons();
     });
   }
+
+  private readonly moveActiveBarUnderShownTab = () => this.tabList().updateInkBar();
 
   private readonly scrollShownTabIntoView = () => {
     const shownTab = this.tabComponents().find((tab) => tab.active());
@@ -58,4 +64,9 @@ export class EntityTabs<T> {
   private readonly updateScrollButtons = () => this.tabList().updateButtonState();
 
   protected readonly show = (id: string | number | undefined) => this.active.set(id?.toString());
+
+  protected readonly close = (id: string, event: Event) => {
+    event.stopPropagation();
+    this.closeTab.emit(id);
+  };
 }

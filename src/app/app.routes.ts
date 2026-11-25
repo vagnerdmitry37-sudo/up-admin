@@ -31,19 +31,26 @@ export const routes: AppRoute[] = [
       },
       {
         path: 'orders',
-        title: 'Orders · UP',
         data: { heading: 'Orders' },
-        loadComponent: () =>
-          import('@features/orders-test/orders-page/orders-page').then((m) => m.OrdersPageTest),
-      },
-      {
-        path: 'edit-orders-page',
-        title: 'Edit orders · UP',
-        data: { heading: 'Orders', editPage: true },
-        loadComponent: () =>
-          import('@features/orders-test/orders-edit-page/orders-edit-page').then(
-            (m) => m.OrdersEditPage,
-          ),
+        children: [
+          {
+            path: '',
+            title: 'Orders · UP',
+            loadComponent: () =>
+              import('@features/orders-test/orders-page/orders-page').then(
+                (m) => m.OrdersPageTest,
+              ),
+          },
+          {
+            path: 'editor',
+            title: 'Edit orders · UP',
+            data: { editPage: true },
+            loadComponent: () =>
+              import('@features/orders-test/orders-edit-page/orders-edit-page').then(
+                (m) => m.OrdersEditPage,
+              ),
+          },
+        ],
       },
       {
         path: 'edit-order-items-page/:orderId',
@@ -56,35 +63,49 @@ export const routes: AppRoute[] = [
       },
       {
         path: 'customers',
-        title: 'Customers · UP',
         data: { heading: 'Customers' },
-        loadComponent: () =>
-          import('@features/customers/customers-page/customers-page').then((m) => m.CustomersPage),
-      },
-      {
-        path: 'edit-customers-page',
-        title: 'Edit customers · UP',
-        data: { heading: 'Customers', editPage: true },
-        loadComponent: () =>
-          import('@features/customers/edit-customers-page/edit-customers-page').then(
-            (m) => m.EditCustomersPage,
-          ),
+        children: [
+          {
+            path: '',
+            title: 'Customers · UP',
+            loadComponent: () =>
+              import('@features/customers/customers-page/customers-page').then(
+                (m) => m.CustomersPage,
+              ),
+          },
+          {
+            path: 'editor',
+            title: 'Edit customers · UP',
+            data: { editPage: true },
+            loadComponent: () =>
+              import('@features/customers/edit-customers-page/edit-customers-page').then(
+                (m) => m.EditCustomersPage,
+              ),
+          },
+        ],
       },
       {
         path: 'products',
-        title: 'Products · UP',
         data: { heading: 'Products' },
-        loadComponent: () =>
-          import('@features/products-test/products-page/products-page').then((m) => m.ProductsPageTest),
-      },
-      {
-        path: 'edit-products-page',
-        title: 'Edit products · UP',
-        data: { heading: 'Products', editPage: true },
-        loadComponent: () =>
-          import('@features/products-test/products-edit-page/products-edit-page').then(
-            (m) => m.ProductsEditPage,
-          ),
+        children: [
+          {
+            path: '',
+            title: 'Products · UP',
+            loadComponent: () =>
+              import('@features/products-test/products-page/products-page').then(
+                (m) => m.ProductsPageTest,
+              ),
+          },
+          {
+            path: 'editor',
+            title: 'Edit products · UP',
+            data: { editPage: true },
+            loadComponent: () =>
+              import('@features/products-test/products-edit-page/products-edit-page').then(
+                (m) => m.ProductsEditPage,
+              ),
+          },
+        ],
       },
       {
         path: '**',

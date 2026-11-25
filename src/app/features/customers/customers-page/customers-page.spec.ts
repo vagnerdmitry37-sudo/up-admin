@@ -110,7 +110,7 @@ describe('CustomersPage', () => {
 
     actionMenuService.run('create');
 
-    expect(navigate).toHaveBeenCalledWith(['/edit-customers-page'], { queryParams: undefined });
+    expect(navigate).toHaveBeenCalledWith(['/customers/editor'], { queryParams: undefined });
   });
 
   it('offers Edit only for a selection and opens the selected customers together', async () => {
@@ -120,7 +120,7 @@ describe('CustomersPage', () => {
     await select(fixture, [customer('c1'), customer('c3')]);
     actionMenuService.run('edit');
 
-    expect(navigate).toHaveBeenCalledWith(['/edit-customers-page'], {
+    expect(navigate).toHaveBeenCalledWith(['/customers/editor'], {
       queryParams: { ids: 'c1,c3' },
     });
   });

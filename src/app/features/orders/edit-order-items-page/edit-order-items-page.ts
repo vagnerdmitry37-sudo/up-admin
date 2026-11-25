@@ -35,7 +35,7 @@ export class EditOrderItemsPage {
         ),
       );
   protected readonly orderPath = computed(
-    () => `/edit-orders-page?ids=${joinRouteIds([this.orderId()])}`,
+    () => `/orders/editor?ids=${joinRouteIds([this.orderId()])}`,
   );
   protected readonly productName = (orderItem: OrderItem) => orderItem.productName;
   protected readonly orderItemWriter: EntityWriter<OrderItem, OrderItemFormValue> = {
