@@ -1,0 +1,9 @@
+<app-entity-form [form]="form" [value]="order()">
+  <app-search-field
+    label="Customer"
+    [control]="form.controls.customer"
+    [search]="searchCustomers"
+    [optionLabel]="customerLabel"
+    [messages]="{ required: 'Select a customer.' }"
+  />
+</app-entity-form>

@@ -1,0 +1,37 @@
+<app-entity-form [form]="form" [value]="product()">
+  <app-select-field
+    label="Type"
+    [control]="form.controls.type"
+    [options]="productTypes()"
+    [messages]="{ required: 'Select a type.' }"
+  />
+
+  <app-number-field
+    [label]="'Price'"
+    [control]="form.controls.price"
+    [min]="0"
+    [fractionDigits]="2"
+    [messages]="{ required: 'Enter 0 or more.', min: 'Enter 0 or more.' }"
+  />
+
+  <app-text-field
+    label="Name"
+    [control]="form.controls.name"
+    [messages]="{ required: 'Enter a name.', maxlength: 'Use 200 characters or fewer.' }"
+  />
+
+  <app-textarea-field
+    label="Short description"
+    [control]="form.controls.shortDescription"
+    [messages]="{ maxlength: 'Use 200 characters or fewer.' }"
+  />
+
+  <app-textarea-field
+    label="SEO description"
+    [control]="form.controls.seoDescription"
+    [messages]="{
+      required: 'Enter an SEO description.',
+      maxlength: 'Use 160 characters or fewer.',
+    }"
+  />
+</app-entity-form>

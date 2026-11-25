@@ -20,8 +20,8 @@ export class ProductForm {
   readonly product = input<Product>();
 
   private readonly formBuilder = inject(NonNullableFormBuilder);
-
   protected readonly productTypes = inject(ReferenceDataService).productTypes;
+  
   protected readonly form = this.formBuilder.group({
     type: this.formBuilder.control<ProductType | null>(null, Validators.required),
     name: ['', [Validators.required, Validators.maxLength(200)]],
