@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
 import { ActionMenuService } from '@core/action-menu.service';
 import { ActivityEntity } from '@core/http-activity.service';
+import { ActionTestService } from '@shared/actions/action-test.service';
 import { DataTable, TableColumn, TableRange } from '@shared/data-table/data-table';
 
 @Component({
@@ -35,6 +36,12 @@ export class EntityTable<T extends { id: string }> {
           delete: { click: () => this.deleteRows()(this.selectedIds()), visible: hasSelection },
         };
       },
+    });
+
+    inject(ActionTestService).register({
+      create: { run: () => this.create.emit(this.selectedIds()) },
+      edit: { run: () => this.edit.emit(this.selectedIds()) },
+      delete: { run: () => this.deleteRows()(this.selectedIds()) },
     });
   }
 }

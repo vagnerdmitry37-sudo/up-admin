@@ -4,14 +4,13 @@ import { SessionService } from '@core/session.service';
 import { ConfirmDialog } from '@openng/optimus-ui/confirmdialog';
 import { Toast } from '@openng/optimus-ui/toast';
 import { Toolbar } from '@openng/optimus-ui/toolbar';
-import { ActionMenu } from './action-menu/action-menu';
 import { NavMenu } from './nav-menu/nav-menu';
 import { PageHeading } from './page-heading/page-heading';
 import { ActionMenuTest } from './action-menu-test/action-menu-test';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, Toolbar, NavMenu, PageHeading, ActionMenu, ConfirmDialog, Toast, ActionMenuTest],
+  imports: [RouterOutlet, Toolbar, NavMenu, PageHeading, ConfirmDialog, Toast, ActionMenuTest],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
