@@ -27,10 +27,7 @@ export class EntityPage<T extends { id: string }> {
   readonly entityName = input.required<ActivityEntity>();
 
   readonly selection = model<T[]>([]);
-  protected readonly lazyRows = lazyRows<T>({
-    loadPage: () => this.loadPage(),
-    onFirstPageError: () => this.showLoadError(),
-  });
+  protected readonly lazyRows = lazyRows<T>(this.loadPage);
   protected readonly loading = computed(() =>
     this.httpActivity.isRunning({ kind: 'request', entity: this.entityName(), method: 'GET' }),
   );

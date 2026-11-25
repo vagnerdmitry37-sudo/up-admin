@@ -34,7 +34,7 @@ export const routes: AppRoute[] = [
         title: 'Orders · UP',
         data: { heading: 'Orders' },
         loadComponent: () =>
-          import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
+          import('@features/orders-test/orders-page/orders-page').then((m) => m.OrdersPageTest),
       },
       {
         path: 'edit-orders-page',
@@ -75,7 +75,7 @@ export const routes: AppRoute[] = [
         title: 'Products · UP',
         data: { heading: 'Products' },
         loadComponent: () =>
-          import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
+          import('@features/products-test/products-page/products-page').then((m) => m.ProductsPageTest),
       },
       {
         path: 'edit-products-page',

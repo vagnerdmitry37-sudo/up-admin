@@ -5,7 +5,7 @@ import { EntityPage } from '@shared/entity/entity-page/entity-page';
 import { ProductsService } from '../products.service';
 
 @Component({
-  selector: 'app-products-page',
+  selector: 'app-products-page-test',
   imports: [EntityPage],
   templateUrl: './products-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
