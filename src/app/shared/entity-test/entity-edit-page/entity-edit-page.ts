@@ -1,8 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  computed,
+  contentChild,
+  input,
+} from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { Observable } from 'rxjs';
-import { EntityTabs } from '../entity-tabs/entity-tabs';
+import { EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
 
 @Component({
   selector: 'app-entity-edit-page',
@@ -13,6 +20,10 @@ import { EntityTabs } from '../entity-tabs/entity-tabs';
 export class EntityEditPage<T extends { id: string }> {
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
+  readonly label = input.required<(entity: T) => string>();
+
+  protected readonly entityTemplate =
+    contentChild.required<TemplateRef<EntityTabContext<T>>>(TemplateRef);
 
   private readonly openIds = computed(() => {
     const ids = this.ids();

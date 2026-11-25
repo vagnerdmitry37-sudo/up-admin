@@ -25,18 +25,17 @@ export class EntityPage<T extends { id: string }> {
 
   readonly selection = model<T[]>([]);
   protected readonly lazyRows = lazyRows<T>(this.loadPage);
-  protected readonly selectedIds = computed(() => this.selection().map((row) => row.id));
+  protected readonly selectedIds = computed(() => this.selection().map(({ id }) => id));
 
   constructor() {
     inject(ActionService).register({
-      edit: { run: () => this.openEditEntityPage() },
+      edit: { run: () => this.openEditEntityPage(this.selectedIds()) },
       create: { run: () => this.openEditEntityPage() },
-      delete: { run: () => this.deleteSelected() },
+      delete: { run: () => this.deleteSelected(this.selectedIds()) },
     });
   }
 
-  async deleteSelected () {
-    const ids = this.selectedIds();
+  async deleteSelected (ids: string[]) {
     if (ids.length > 0) {
       await this.deleteEntities()(ids);
       this.selection.set([]);
@@ -44,8 +43,7 @@ export class EntityPage<T extends { id: string }> {
     }
   };
 
-  openEditEntityPage() {
-    const ids = this.selectedIds();
+  openEditEntityPage(ids: string[] = []) {
     this.router.navigate([this.editPath()], {
       queryParams: ids.length > 0 ? { ids: joinRouteIds(ids) } : undefined,
     });

@@ -1,1 +1,5 @@
-<app-entity-edit-page [ids]="ids()" [load]="loadOrders" />
+<app-entity-edit-page [ids]="ids()" [load]="loadOrders" [label]="orderNumber">
+  <ng-template let-order>
+    <app-order-form [order]="order" />
+  </ng-template>
+</app-entity-edit-page>
