@@ -2,7 +2,7 @@
   <app-entity-tabs
     [entities]="shownTabs"
     [label]="tabLabel()"
-    [closable]="!actionRunning()"
+    [closable]="true"
     [(active)]="activeId"
     (closeTab)="close($event)"
   >

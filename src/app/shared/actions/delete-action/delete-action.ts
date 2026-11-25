@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { OpenngIcons } from '@openng/optimus-ui/api';
-import { Action } from '@shared/actions/action-test.service';
+import { Action } from '@shared/actions/action.service';
 import { ConfirmedAction } from '@shared/actions/confirmed-action/confirmed-action';
 
 @Component({

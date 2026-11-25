@@ -9,7 +9,7 @@ export interface Action {
 export type Actions = Record<ActionName, Action | null>;
 
 @Injectable({ providedIn: 'root' })
-export class ActionTestService {
+export class ActionService {
   private readonly registeredActions = signal<Actions>({
     create: null,
     edit: null,

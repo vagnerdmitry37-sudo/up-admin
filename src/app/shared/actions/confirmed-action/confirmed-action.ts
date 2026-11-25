@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ActionButton } from '@shared/actions/action-button/action-button';
-import { Action } from '@shared/actions/action-test.service';
+import { Action } from '@shared/actions/action.service';
 
 @Component({
   selector: 'app-confirmed-action',

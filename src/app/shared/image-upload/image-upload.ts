@@ -17,7 +17,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { AppMessageService } from '@core/app-message.service';
-import { ActionMenuService } from '@core/action-menu.service';
 import { Image } from '@core/api/models';
 import { HttpActivity } from '@core/http-activity.service';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
@@ -73,15 +72,6 @@ export class ImageUpload {
   protected readonly keepsUploadCardLast = (index: number) => index < this.images().length;
 
   constructor() {
-    inject(ActionMenuService).register({
-      entity: () => 'image',
-      actions: () => ({
-        delete: {
-          click: () => this.delete(this.selection()),
-          visible: this.selection().length > 0,
-        },
-      }),
-    });
     const part: EntityEditPart = {
       tabId: inject(ENTITY_TAB_ID, { optional: true }) ?? undefined,
       dirty: this.dirty,

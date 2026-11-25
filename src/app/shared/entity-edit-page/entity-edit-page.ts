@@ -14,8 +14,7 @@ import {
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionMenuService } from '@core/action-menu.service';
-import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
+import { ActivityEntity } from '@core/http-activity.service';
 import { ConfirmationService, OpenngIcons } from '@openng/optimus-ui/api';
 import type { EntityForm } from '@shared/entity-form/entity-form';
 import { EntityTabs } from '@shared/entity-tabs/entity-tabs';
@@ -96,12 +95,6 @@ export class EntityEditPage<T extends { id: string }, V> {
   private readonly savedIds = computed(() => this.openIds().filter((id) => !isNewEntityId(id)));
   private readonly loadedIds = computed(() => this.savedIds(), { equal: containsAll });
 
-  private readonly actionMenuService = inject(ActionMenuService);
-  private readonly httpActivity = inject(HttpActivity);
-
-  protected readonly actionRunning = computed(() =>
-    this.httpActivity.isRunning({ source: 'action-menu' }),
-  );
   protected readonly activeId = signal<string | undefined>(undefined);
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityEditContext<T>>>(TemplateRef);
@@ -138,19 +131,6 @@ export class EntityEditPage<T extends { id: string }, V> {
     return (tab: EntityTab<T>) => (tab.entity ? label(tab.entity) : newEntityLabel);
   });
 
-  constructor() {
-    this.actionMenuService.register({
-      entity: this.entityName,
-      actions: () => ({
-        create: { click: () => this.addNewTab() },
-        save: {
-          click: () => this.save(),
-          visible: this.changedForms().length > 0 || this.changedParts().length > 0,
-        },
-      }),
-    });
-  }
-
   readonly connect = (entityForm: EntityForm) =>
     this.forms.update((forms) => [...forms, entityForm]);
 
@@ -162,7 +142,7 @@ export class EntityEditPage<T extends { id: string }, V> {
   readonly disconnectPart = (part: EntityEditPart) =>
     this.parts.update((parts) => parts.filter((candidate) => candidate !== part));
 
-  readonly submit = () => this.actionMenuService.run('save');
+  readonly submit = () => this.save();
 
   protected readonly tabInjector = (tabId: string) => {
     const existing = this.tabInjectors.get(tabId);

@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppMessageService } from '@core/app-message.service';
-import { ActionMenuService } from '@core/action-menu.service';
 import { ActivityEntity, HttpActivity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { RowsPageLoader, lazyRows } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity-table/entity-table';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
-import { ActionTestService } from '@shared/actions/action-test.service';
+import { ActionService } from '@shared/actions/action.service';
 
 @Component({
   selector: 'app-entity-list-page',
@@ -37,14 +36,7 @@ export class EntityListPage<T extends { id: string }> {
   );
 
   constructor() {
-    inject(ActionMenuService).register({
-      entity: this.entityName,
-      actions: () => ({
-        create: { click: () => this.open([]), suggested: this.lazyRows.empty() },
-      }),
-    });
-
-    inject(ActionTestService).register({
+    inject(ActionService).register({
       create: { run: () => this.open([]) },
     });
   }

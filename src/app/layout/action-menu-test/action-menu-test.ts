@@ -5,7 +5,7 @@ import { CreateAction } from '@shared/actions/create-action/create-action';
 import { EditAction } from '@shared/actions/edit-action/edit-action';
 import { SaveAction } from '@shared/actions/save-action/save-action';
 import { DeleteAction } from '@shared/actions/delete-action/delete-action';
-import { ActionName, ActionTestService } from '@shared/actions/action-test.service';
+import { ActionName, ActionService } from '@shared/actions/action.service';
 
 interface ActionSlot {
   name: ActionName;
@@ -19,7 +19,7 @@ interface ActionSlot {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionMenuTest {
-  private readonly actions = inject(ActionTestService).actions;
+  private readonly actions = inject(ActionService).actions;
 
   protected readonly slots: ActionSlot[] = [
     { name: 'create' },
