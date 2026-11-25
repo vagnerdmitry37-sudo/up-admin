@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { EntityEditPage } from '@shared/entity-test/entity-edit-page/entity-edit-page';
+import { ProductsService } from '../products.service';
 
 @Component({
   selector: 'app-products-edit-page',
@@ -8,5 +9,7 @@ import { EntityEditPage } from '@shared/entity-test/entity-edit-page/entity-edit
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsEditPage {
+  readonly ids = input<string>();
 
+  protected readonly loadProducts = inject(ProductsService).get;
 }

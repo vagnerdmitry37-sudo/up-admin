@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TabsModule } from '@openng/optimus-ui/tabs';
 
 @Component({
@@ -8,6 +8,6 @@ import { TabsModule } from '@openng/optimus-ui/tabs';
   styleUrl: './entity-tabs.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EntityTabs<T extends { id: string }> {
-  scrollableTabs: any[] = [];
+export class EntityTabs<T> {
+  tabs = input.required<any[]>();
 }
