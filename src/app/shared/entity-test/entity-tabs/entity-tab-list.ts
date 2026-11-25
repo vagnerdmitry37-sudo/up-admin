@@ -1,24 +1,43 @@
-import { signal } from '@angular/core';
-import { nextNewEntityId } from '@shared/route-ids/route-ids';
+import { Signal, WritableSignal, signal } from '@angular/core';
 import { EntityTab } from './entity-tabs';
 
-export class EntityTabList<T extends { id: string }> {
-  private readonly openTabs = signal<readonly EntityTab<T>[]>([]);
+export interface EntityTabListOptions<T> {
+  entityName: () => string;
+  entityLabel: (entity: T) => string;
+}
 
-  readonly tabs = this.openTabs.asReadonly();
-  readonly activeId = signal<string | undefined>(undefined);
+export interface EntityTabList<T> {
+  tabs: Signal<readonly EntityTab<T>[]>;
+  activeId: WritableSignal<string | undefined>;
+  addExisting: (entities: readonly T[]) => void;
+  addNew: () => void;
+}
 
-  readonly addExisting = (entities: readonly T[]) =>
-    this.openTabs.update((tabs) => [
-      ...tabs,
+export const entityTabList = <T extends { id: string }>({
+  entityName,
+  entityLabel,
+}: EntityTabListOptions<T>): EntityTabList<T> => {
+  const tabs = signal<readonly EntityTab<T>[]>([]);
+  const activeId = signal<string | undefined>(undefined);
+  let newTabCount = 0;
+
+  const addExisting = (entities: readonly T[]) =>
+    tabs.update((current) => [
+      ...current,
       ...entities
-        .filter((entity) => !tabs.some((tab) => tab.id === entity.id))
-        .map((entity) => ({ id: entity.id, entity })),
+        .filter((entity) => !current.some((tab) => tab.id === entity.id))
+        .map((entity) => ({ id: entity.id, label: entityLabel(entity), entity })),
     ]);
 
-  addNew() {
-    const id = nextNewEntityId(this.openTabs().map((tab) => tab.id));
-    this.openTabs.update((tabs) => [...tabs, { id, entity: undefined }]);
-    this.activeId.set(id);
-  }
-}
+  const addNew = () => {
+    newTabCount += 1;
+    const id = `new-${newTabCount}`;
+    tabs.update((current) => [
+      ...current,
+      { id, label: `New ${entityName()} ${newTabCount}`, entity: undefined },
+    ]);
+    activeId.set(id);
+  };
+
+  return { tabs: tabs.asReadonly(), activeId, addExisting, addNew };
+};

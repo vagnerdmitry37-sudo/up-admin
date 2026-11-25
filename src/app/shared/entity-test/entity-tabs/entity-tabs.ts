@@ -14,6 +14,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@openng/optimus-ui/tabs
 
 export interface EntityTab<T> {
   id: string;
+  label: string;
   entity: T | undefined;
 }
 
@@ -30,7 +31,6 @@ export interface EntityTabContext<T> {
 })
 export class EntityTabs<T> {
   readonly tabs = input.required<readonly EntityTab<T>[]>();
-  readonly label = input.required<(tab: EntityTab<T>) => string>();
   readonly template = input.required<TemplateRef<EntityTabContext<T>>>();
   readonly active = model<string>();
 

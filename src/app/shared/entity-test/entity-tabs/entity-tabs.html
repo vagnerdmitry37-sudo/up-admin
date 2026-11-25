@@ -2,7 +2,7 @@
   <p-tablist>
     @for (tab of tabs(); track tab.id) {
       <p-tab class="tab" [value]="tab.id">
-        <span class="tab-label" [title]="label()(tab)">{{ label()(tab) }}</span>
+        <span class="tab-label" [title]="tab.label">{{ tab.label }}</span>
       </p-tab>
     }
   </p-tablist>

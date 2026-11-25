@@ -13,8 +13,8 @@ import { ActivityEntity } from '@core/http-activity.service';
 import { ActionService } from '@shared/actions/action.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { Observable } from 'rxjs';
-import { EntityTabList } from '../entity-tabs/entity-tab-list';
-import { EntityTab, EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
+import { entityTabList } from '../entity-tabs/entity-tab-list';
+import { EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
 
 @Component({
   selector: 'app-entity-edit-page',
@@ -32,10 +32,10 @@ export class EntityEditPage<T extends { id: string }> implements OnInit {
 
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityTabContext<T>>>(TemplateRef);
-  protected readonly tabList = new EntityTabList<T>();
-
-  protected readonly tabLabel = (tab: EntityTab<T>) =>
-    tab.entity ? this.label()(tab.entity) : `New ${this.entityName()}`;
+  protected readonly tabList = entityTabList<T>({
+    entityName: () => this.entityName(),
+    entityLabel: (entity) => this.label()(entity),
+  });
 
   constructor() {
     inject(ActionService).register({
