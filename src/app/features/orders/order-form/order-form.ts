@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { Customer, Order } from '@core/api/models';
 import { SearchField } from '@shared/form-fields/search-field/search-field';
-import { EntityForm } from '@shared/entity-test/entity-form/entity-form';
+import { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { OrdersService } from '../orders.service';
 
 export interface OrderFormValue {

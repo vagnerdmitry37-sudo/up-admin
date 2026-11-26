@@ -37,16 +37,14 @@ export const routes: AppRoute[] = [
             path: '',
             title: 'Orders · UP',
             loadComponent: () =>
-              import('@features/orders-test/orders-page/orders-page').then(
-                (m) => m.OrdersPageTest,
-              ),
+              import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
           },
           {
             path: 'editor',
             title: 'Edit orders · UP',
             data: { editPage: true },
             loadComponent: () =>
-              import('@features/orders-test/orders-edit-page/orders-edit-page').then(
+              import('@features/orders/orders-edit-page/orders-edit-page').then(
                 (m) => m.OrdersEditPage,
               ),
           },
@@ -83,16 +81,14 @@ export const routes: AppRoute[] = [
             path: '',
             title: 'Products · UP',
             loadComponent: () =>
-              import('@features/products-test/products-page/products-page').then(
-                (m) => m.ProductsPageTest,
-              ),
+              import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
           },
           {
             path: 'editor',
             title: 'Edit products · UP',
             data: { editPage: true },
             loadComponent: () =>
-              import('@features/products-test/products-edit-page/products-edit-page').then(
+              import('@features/products/products-edit-page/products-edit-page').then(
                 (m) => m.ProductsEditPage,
               ),
           },

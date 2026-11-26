@@ -8,7 +8,7 @@ Example: the table loading spinner is `p-table` `[loading]`, which already centr
 
 ## Entity operations go only through the action menu
 
-Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-action-menu-test`, an Optimus speed dial), whose actions are registered with `ActionService.register` (`shared/actions/action.service.ts`). Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars.
+Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-action-menu`, an Optimus speed dial), whose actions are registered with `ActionService.register` (`shared/actions/action.service.ts`). Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars.
 
 ## Loading indicator on tables
 
@@ -34,7 +34,7 @@ Every failed API request is turned into one Optimus toast (`p-toast` in `Shell`,
 
 ## Entity features are mirrors: orders, products, customers
 
-`src/app/features/orders-test`, `src/app/features/products-test` and `src/app/features/customers` are the same feature built for three entities, on the shared components in `shared/entity-test`. They must stay structurally identical. Any change to one of them is applied to all three in the same change, unless the entity truly cannot support it; in that case say so explicitly to the user instead of silently diverging.
+`src/app/features/orders`, `src/app/features/products` and `src/app/features/customers` are the same feature built for three entities, on the shared components in `shared/entity`. They must stay structurally identical. Any change to one of them is applied to all three in the same change, unless the entity truly cannot support it; in that case say so explicitly to the user instead of silently diverging.
 
 ### Shared shape (`<entity>` = order | product | customer)
 
@@ -61,21 +61,21 @@ Selected IDs travel as the `ids` query param (`/products/editor?ids=1,2`), bound
 
 ### Known gaps between the three (close them, do not copy them)
 
-- The list page classes of orders and products still carry a `Test` suffix (`OrdersPageTest`, `ProductsPageTest`) and their folders a `-test` suffix; customers has neither.
+- None open.
 
 ### List page logic lives in `EntityPage`
 
-`shared/entity-test/entity-page` loads the table lazily (`lazyRows` over `loadPage`), shows an empty state that points to the Create action, and registers Create, Edit and Delete with `ActionService`. Create and Edit navigate to `editor` relative to the list route (Edit passes the selected ids as `?ids`); Delete calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table. Customers that still have orders are refused by the API with 409.
+`shared/entity/entity-page` loads the table lazily (`lazyRows` over `loadPage`), shows an empty state that points to the Create action, and registers Create, Edit and Delete with `ActionService`. Create and Edit navigate to `editor` relative to the list route (Edit passes the selected ids as `?ids`); Delete calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table. Customers that still have orders are refused by the API with 409.
 
 ### Edit page logic lives in `EntityEditPage`
 
-`shared/entity-test/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `entityName` and the form template.
+`shared/entity/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `entityName` and the form template.
 
-- With `ids`: loads the records once and shows one tab per record (`entityTabList` in `shared/entity-test/entity-tabs`), rendering the template with the record. Without `ids` it shows one new tab.
+- With `ids`: loads the records once and shows one tab per record (`entityTabList` in `shared/entity/entity-tabs`), rendering the template with the record. Without `ids` it shows one new tab.
 - Create is registered with `ActionService` and adds a "New `<entityName>` N" tab, rendered with `undefined`, so the form is empty.
 - Each tab has a close button (×) that is focusable only on the shown tab. Closing the shown tab shows its right neighbour, or the left one if it was last; closing the last tab navigates back to the list (`..`, with `replaceUrl`).
 - Every tab has the same fixed width (12rem), with a longer name cut by an ellipsis and shown in full as the label's `title`. `EntityTabs` runs an `afterRenderEffect` that moves the ink bar, scrolls the shown tab into view and updates the ‹ › scroll buttons, because Optimus's `TabList` does not do that when a tab is shown by code.
-- `EntityForm` (`shared/entity-test/entity-form`) takes the form group and the record as `value`, and resets the form whenever the value changes.
+- `EntityForm` (`shared/entity/entity-form`) takes the form group and the record as `value`, and resets the form whenever the value changes.
 
 ### Form fields never read layout while rendering
 
@@ -93,4 +93,4 @@ Optimus inputs (`p-iftalabel` labels, input borders) have CSS transitions, so if
 - A new record shows the gallery from the start, so images can be added together with the other fields; Save creates the record first and then uploads them. A failed image upload does not undo the create: the request error toast shows, the record reopens without those images, and the user adds them again.
 - Each card shows the image's original `fileName` (stored by the API on upload). Images uploaded before the API stored names have an empty `fileName` and show "Image N" (their position) instead.
 
-To add images to an entity, give its service the three image calls (`ProductsService` in `products-test` has them) and pass a writer built from them.
+To add images to an entity, give its service the three image calls (`ProductsService` in `products` has them) and pass a writer built from them.

@@ -12,13 +12,13 @@ interface ActionSlot {
 }
 
 @Component({
-  selector: 'app-action-menu-test',
+  selector: 'app-action-menu',
   imports: [SpeedDial, AppMotion, CreateAction, EditAction, DeleteAction, SaveAction],
-  templateUrl: './action-menu-test.html',
-  styleUrl: './action-menu-test.scss',
+  templateUrl: './action-menu.html',
+  styleUrl: './action-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActionMenuTest {
+export class ActionMenu {
   private readonly actions = inject(ActionService).actions;
 
   protected readonly slots: ActionSlot[] = [

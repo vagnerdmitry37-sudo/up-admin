@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ActivityEntity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { lazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
-import { EntityTable } from '@shared/entity-test/entity-table/entity-table';
+import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { ActionService } from '@shared/actions/action.service';
 

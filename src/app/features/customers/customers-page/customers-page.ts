@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Customer } from '@core/api/models';
 import { TableColumn } from '@shared/data-table/data-table';
-import { EntityPage } from '@shared/entity-test/entity-page/entity-page';
+import { EntityPage } from '@shared/entity/entity-page/entity-page';
 import { CustomersService } from '../customers.service';
 
 @Component({
