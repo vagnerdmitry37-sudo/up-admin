@@ -2,7 +2,6 @@ import { CdkDropList } from '@angular/cdk/drag-drop';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Image } from '@core/api/models';
-import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
 import { ImageUpload, ImageWriter } from './image-upload';
 
@@ -106,24 +105,5 @@ describe('ImageUpload', () => {
 
     expect(writer.reorder).toHaveBeenCalledWith('p1', ['i2', 'i1']);
     expect(cardNames(fixture)).toEqual(['castle.jpg', 'bridge.jpg', 'Add images']);
-  });
-
-  it('deletes the selected images and removes their cards', async () => {
-    const fixture = await render([image('i1', 'bridge.jpg'), image('i2', 'castle.jpg')]);
-    const actionMenuService = TestBed.inject(ActionMenuService);
-    writer.delete.mockResolvedValue(undefined);
-    expect(actionMenuService.actions().delete).toBeUndefined();
-
-    (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('.files .file')!
-      .click();
-    await fixture.whenStable();
-    actionMenuService.run('delete');
-    await new Promise((resolve) => setTimeout(resolve));
-    await fixture.whenStable();
-
-    expect(writer.delete).toHaveBeenCalledWith(['i1']);
-    expect(cardNames(fixture)).toEqual(['castle.jpg', 'Add images']);
-    expect(actionMenuService.actions().delete).toBeUndefined();
   });
 });

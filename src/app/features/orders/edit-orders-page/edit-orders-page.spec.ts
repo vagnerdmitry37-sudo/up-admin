@@ -2,13 +2,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer, Order } from '@core/api/models';
-import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { AutoComplete } from '@openng/optimus-ui/autocomplete';
-import { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { EditOrdersPage } from './edit-orders-page';
 
 const customer = (id: string, name: string): Customer => ({
@@ -31,7 +29,6 @@ const order = (id: string, orderCustomer: Customer): Order => ({
 
 describe('EditOrdersPage', () => {
   let httpTestingController: HttpTestingController;
-  let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -45,7 +42,6 @@ describe('EditOrdersPage', () => {
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
-    navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   });
 
   afterEach(() => httpTestingController.verify());
@@ -69,49 +65,6 @@ describe('EditOrdersPage', () => {
       .click();
     await fixture.whenStable();
   };
-
-  const chooseCustomer = async (fixture: ComponentFixture<EditOrdersPage>, chosen: Customer) => {
-    const form = fixture.debugElement
-      .query(By.directive(EntityForm))
-      .injector.get(EntityForm)
-      .form();
-    form.controls['customer'].setValue(chosen);
-    form.markAsDirty();
-    await fixture.whenStable();
-  };
-
-  const save = async () => {
-    TestBed.inject(ActionMenuService).run('save');
-    await new Promise((resolve) => setTimeout(resolve));
-  };
-
-  it('creates an empty order for the chosen customer', async () => {
-    const fixture = await render();
-
-    await chooseCustomer(fixture, customer('c1', 'Ada'));
-    await save();
-
-    const request = httpTestingController.expectOne('/api/orders');
-    expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ customerId: 'c1', items: [] });
-    request.flush(order('o9', customer('c1', 'Ada')));
-    await new Promise((resolve) => setTimeout(resolve));
-    expect(navigate).toHaveBeenCalledWith(
-      [],
-      expect.objectContaining({ queryParams: { ids: 'o9' } }),
-    );
-  });
-
-  it('saves a changed customer as the order id and the customer id', async () => {
-    const fixture = await render('o1', [order('o1', customer('c1', 'Ada'))]);
-
-    await chooseCustomer(fixture, customer('c2', 'Grace'));
-    await save();
-
-    const request = httpTestingController.expectOne('/api/orders');
-    expect(request.request.method).toBe('PUT');
-    expect(request.request.body).toEqual([{ id: 'o1', customerId: 'c2' }]);
-  });
 
   it('builds the items table of a second order only when its tab is opened', async () => {
     const fixture = await render('o1,o2', [

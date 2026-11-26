@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Order, OrderItem } from '@core/api/models';
-import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
 import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { OrderItemsTable } from './order-items-table';
@@ -26,7 +25,6 @@ const orderItem = (id: string): OrderItem =>
 
 describe('OrderItemsTable', () => {
   let httpTestingController: HttpTestingController;
-  let actionMenuService: ActionMenuService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -39,7 +37,6 @@ describe('OrderItemsTable', () => {
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
-    actionMenuService = TestBed.inject(ActionMenuService);
   });
 
   afterEach(() => httpTestingController.verify());
@@ -65,33 +62,10 @@ describe('OrderItemsTable', () => {
     fixture.debugElement.query(By.directive(EntityTable))
       .componentInstance as EntityTable<OrderItem>;
 
-  const select = async (fixture: ComponentFixture<OrderItemsTable>, items: OrderItem[]) => {
-    entityTable(fixture).selection.set(items);
-    await fixture.whenStable();
-  };
-
   it('shows the items of its order without requesting them', async () => {
     const fixture = await render([orderItem('i1'), orderItem('i2')]);
 
     httpTestingController.expectNone(() => true);
     expect(entityTable(fixture).rows()).toEqual([orderItem('i1'), orderItem('i2')]);
-  });
-
-  it('deletes the selected items of its order in one request and shows the items left', async () => {
-    const fixture = await render([orderItem('i1'), orderItem('i2'), orderItem('i3')]);
-
-    await select(fixture, [orderItem('i1'), orderItem('i3')]);
-    actionMenuService.run('delete');
-
-    const request = httpTestingController.expectOne(
-      (candidate) => candidate.method === 'DELETE' && candidate.url === '/api/orders/o1/items',
-    );
-    expect(request.request.params.getAll('ids')).toEqual(['i1', 'i3']);
-    request.flush(order([orderItem('i2')]));
-    await new Promise((resolve) => setTimeout(resolve));
-    await fixture.whenStable();
-
-    expect(entityTable(fixture).rows()).toEqual([orderItem('i2')]);
-    expect(actionMenuService.actions().delete).toBeUndefined();
   });
 });

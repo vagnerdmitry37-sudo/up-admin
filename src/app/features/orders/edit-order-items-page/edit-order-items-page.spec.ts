@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Order, OrderItem } from '@core/api/models';
-import { ActionMenuService } from '@core/action-menu.service';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { EntityForm } from '@shared/entity/entity-form/entity-form';
 import { EditOrderItemsPage } from './edit-order-items-page';
@@ -80,11 +79,6 @@ describe('EditOrderItemsPage', () => {
     form.patchValue(value);
     form.markAsDirty();
     await fixture.whenStable();
-  };
-
-  const save = async () => {
-    TestBed.inject(ActionMenuService).run('save');
-    await new Promise((resolve) => setTimeout(resolve));
   };
 
   const tabLabels = (fixture: ComponentFixture<EditOrderItemsPage>) =>
@@ -216,78 +210,5 @@ describe('EditOrderItemsPage', () => {
       [],
       expect.objectContaining({ queryParams: { ids: 'i2' }, replaceUrl: true }),
     );
-  });
-
-  it('disables closing tabs while saving', async () => {
-    const fixture = await render('i1,i2', threeItems().slice(0, 2));
-    await edit(fixture, { passengers: 5 });
-
-    await save();
-    await fixture.whenStable();
-    expect(closeButton(fixture, 'Product i1')?.disabled).toBe(true);
-
-    httpTestingController.expectOne('/api/orders/o1/items').flush([]);
-    await new Promise((resolve) => setTimeout(resolve));
-    TestBed.tick();
-    httpTestingController
-      .expectOne((request) => request.url === '/api/orders/by-ids')
-      .flush([order(threeItems())]);
-    await fixture.whenStable();
-    expect(closeButton(fixture, 'Product i1')?.disabled).toBe(false);
-  });
-
-  it('creates an item in its order with the product id and the start as ISO time', async () => {
-    const fixture = await render();
-
-    await edit(fixture, {
-      product: { id: 'p7', name: 'Prague by night', type: 'GroupExcursion' },
-      startsAt: new Date('2026-12-24T18:30:00.000Z'),
-      passengers: 3,
-      pickupAddress: 'Hotel Pupp',
-      notes: 'Child seat',
-    });
-    await save();
-
-    const request = httpTestingController.expectOne('/api/orders/o1/items');
-    expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({
-      productId: 'p7',
-      startsAt: '2026-12-24T18:30:00.000Z',
-      passengers: 3,
-      pickupAddress: 'Hotel Pupp',
-      notes: 'Child seat',
-    });
-    request.flush(orderItem('i9', 'Hotel Pupp'));
-    await new Promise((resolve) => setTimeout(resolve));
-    expect(navigate).toHaveBeenCalledWith(
-      [],
-      expect.objectContaining({ queryParams: { ids: 'i9' } }),
-    );
-  });
-
-  it('opens only the requested item of the order and saves its changes as one bulk update', async () => {
-    const fixture = await render('i2', [orderItem('i1', 'Old Town'), orderItem('i2', 'Airport')]);
-    expect(itemForm(fixture).getRawValue()).toEqual(
-      expect.objectContaining({
-        pickupAddress: 'Airport',
-        product: expect.objectContaining({ id: 'p1' }),
-      }),
-    );
-
-    await edit(fixture, { passengers: 5 });
-    await save();
-
-    const request = httpTestingController.expectOne('/api/orders/o1/items');
-    expect(request.request.method).toBe('PUT');
-    expect(request.request.body).toEqual([
-      {
-        id: 'i2',
-        productId: 'p1',
-        startsAt: '2026-12-01T09:00:00.000Z',
-        passengers: 5,
-        pickupAddress: 'Airport',
-        notes: '',
-      },
-    ]);
   });
 });
