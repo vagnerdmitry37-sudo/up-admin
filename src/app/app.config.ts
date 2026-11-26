@@ -13,7 +13,7 @@ import { httpActivityInterceptor } from '@core/http-activity.interceptor';
 import { provideRequestErrorToasts } from '@core/request-error-toasts';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
-import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
+import { MessageService } from '@openng/optimus-ui/api';
 import { provideOptimus } from '@openng/optimus-ui/config';
 import { routes } from './app.routes';
 
@@ -24,7 +24,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([httpActivityInterceptor, authInterceptor])),
     provideOptimus({ theme: { preset: NoirPreset } }),
-    ConfirmationService,
     MessageService,
     provideRequestErrorToasts(),
     provideAppInitializer(() => inject(SessionService).restore()),

@@ -2,9 +2,7 @@
   [ids]="ids()"
   [load]="loadCustomers"
   [label]="customerName"
-  [writer]="customerWriter"
   entityName="customer"
-  listPath="/customers"
 >
   <ng-template let-customer>
     <app-customer-form [customer]="customer" />

@@ -53,15 +53,6 @@ export const routes: AppRoute[] = [
         ],
       },
       {
-        path: 'edit-order-items-page/:orderId',
-        title: 'Edit order items · UP',
-        data: { heading: 'Order items', editPage: true },
-        loadComponent: () =>
-          import('@features/orders/edit-order-items-page/edit-order-items-page').then(
-            (m) => m.EditOrderItemsPage,
-          ),
-      },
-      {
         path: 'customers',
         data: { heading: 'Customers' },
         children: [
@@ -78,8 +69,8 @@ export const routes: AppRoute[] = [
             title: 'Edit customers · UP',
             data: { editPage: true },
             loadComponent: () =>
-              import('@features/customers/edit-customers-page/edit-customers-page').then(
-                (m) => m.EditCustomersPage,
+              import('@features/customers/customers-edit-page/customers-edit-page').then(
+                (m) => m.CustomersEditPage,
               ),
           },
         ],
