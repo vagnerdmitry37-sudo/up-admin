@@ -4,12 +4,11 @@ import { SessionService } from '@core/session.service';
 import { Toast } from '@openng/optimus-ui/toast';
 import { Toolbar } from '@openng/optimus-ui/toolbar';
 import { NavMenu } from './nav-menu/nav-menu';
-import { PageHeading } from './page-heading/page-heading';
 import { ActionMenu } from './action-menu/action-menu';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, Toolbar, NavMenu, PageHeading, Toast, ActionMenu],
+  imports: [RouterOutlet, Toolbar, NavMenu, Toast, ActionMenu],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

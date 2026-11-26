@@ -1,8 +1,0 @@
-@for (heading of headings(); track $index; let first = $first) {
-  @if (first) {
-    <span class="title">{{ heading }}</span>
-  } @else {
-    <span class="separator" aria-hidden="true">/</span>
-    <span class="part">{{ heading }}</span>
-  }
-}
