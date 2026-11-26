@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { AppRouteData } from '../../app.routes';
+import { AppRouteData } from '@core/app-route';
 
 const deepestRoute = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
   route.firstChild ? deepestRoute(route.firstChild) : route;

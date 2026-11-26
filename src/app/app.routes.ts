@@ -1,16 +1,6 @@
-import { Route } from '@angular/router';
+import { AppRoute } from '@core/app-route';
 import { authGuard } from '@features/auth/auth.guard';
 import { guestGuard } from '@features/auth/guest.guard';
-
-export interface AppRouteData {
-  heading: string;
-  editPage?: boolean;
-}
-
-interface AppRoute extends Route {
-  data?: Partial<AppRouteData>;
-  children?: AppRoute[];
-}
 
 export const routes: AppRoute[] = [
   {
@@ -32,67 +22,17 @@ export const routes: AppRoute[] = [
       {
         path: 'orders',
         data: { heading: 'Orders' },
-        children: [
-          {
-            path: '',
-            title: 'Orders · UP',
-            loadComponent: () =>
-              import('@features/orders/orders-page/orders-page').then((m) => m.OrdersPage),
-          },
-          {
-            path: 'editor',
-            title: 'Edit orders · UP',
-            data: { editPage: true },
-            loadComponent: () =>
-              import('@features/orders/orders-edit-page/orders-edit-page').then(
-                (m) => m.OrdersEditPage,
-              ),
-          },
-        ],
+        loadChildren: () => import('@features/orders/orders.routes'),
       },
       {
         path: 'customers',
         data: { heading: 'Customers' },
-        children: [
-          {
-            path: '',
-            title: 'Customers · UP',
-            loadComponent: () =>
-              import('@features/customers/customers-page/customers-page').then(
-                (m) => m.CustomersPage,
-              ),
-          },
-          {
-            path: 'editor',
-            title: 'Edit customers · UP',
-            data: { editPage: true },
-            loadComponent: () =>
-              import('@features/customers/customers-edit-page/customers-edit-page').then(
-                (m) => m.CustomersEditPage,
-              ),
-          },
-        ],
+        loadChildren: () => import('@features/customers/customers.routes'),
       },
       {
         path: 'products',
         data: { heading: 'Products' },
-        children: [
-          {
-            path: '',
-            title: 'Products · UP',
-            loadComponent: () =>
-              import('@features/products/products-page/products-page').then((m) => m.ProductsPage),
-          },
-          {
-            path: 'editor',
-            title: 'Edit products · UP',
-            data: { editPage: true },
-            loadComponent: () =>
-              import('@features/products/products-edit-page/products-edit-page').then(
-                (m) => m.ProductsEditPage,
-              ),
-          },
-        ],
+        loadChildren: () => import('@features/products/products.routes'),
       },
       {
         path: '**',

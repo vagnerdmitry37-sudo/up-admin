@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { AppRouteData } from '../../app.routes';
+import { AppRouteData } from '@core/app-route';
 import { PageHeading } from './page-heading';
 
 @Component({ template: '' })
