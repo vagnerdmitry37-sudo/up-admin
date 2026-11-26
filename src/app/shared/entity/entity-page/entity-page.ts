@@ -26,13 +26,20 @@ export class EntityPage<T extends { id: string }> {
   readonly selection = model<T[]>([]);
   protected readonly lazyRows = lazyRows<T>(this.loadPage);
   protected readonly selectedIds = computed(() => this.selection().map(({ id }) => id));
+  private readonly nothingSelected = computed(() => this.selectedIds().length === 0);
 
   constructor() {
-    inject(ActionService).register({
-      edit: { run: () => this.openEditEntityPage(this.selectedIds()) },
+    inject(ActionService).register(() => ({
+      edit: {
+        run: () => this.openEditEntityPage(this.selectedIds()),
+        disabled: this.nothingSelected,
+      },
       create: { run: () => this.openEditEntityPage() },
-      delete: { run: () => this.deleteSelected(this.selectedIds()) },
-    });
+      delete: {
+        run: () => this.deleteSelected(this.selectedIds()),
+        disabled: this.nothingSelected,
+      },
+    }));
   }
 
   async deleteSelected(ids: string[]) {

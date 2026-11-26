@@ -1,1 +1,6 @@
-<app-action-button [label]="label()" [icon]="icon()" (pressed)="action().run()" />
+<app-action-button
+  [label]="label()"
+  [icon]="icon()"
+  [disabled]="action().disabled?.() ?? false"
+  (pressed)="action().run()"
+/>

@@ -12,6 +12,7 @@ import { AppErrorHandler } from '@core/app-error-handler';
 import { authInterceptor } from '@core/auth.interceptor';
 import { httpActivityInterceptor } from '@core/http-activity.interceptor';
 import { provideRequestErrorToasts } from '@core/request-error-toasts';
+import { provideBackAction } from '@core/back-action';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
 import { MessageService } from '@openng/optimus-ui/api';
@@ -28,6 +29,7 @@ export const appConfig: ApplicationConfig = {
     provideOptimus({ theme: { preset: NoirPreset } }),
     MessageService,
     provideRequestErrorToasts(),
+    provideBackAction(),
     provideAppInitializer(() => inject(SessionService).restore()),
   ],
 };

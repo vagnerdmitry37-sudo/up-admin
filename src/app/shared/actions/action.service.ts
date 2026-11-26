@@ -1,41 +1,28 @@
-import { DestroyRef, Injectable, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 
 export type ActionName = 'create' | 'edit' | 'save' | 'delete' | 'back';
 
 export interface Action {
   run: () => unknown;
+  disabled?: () => boolean;
 }
 
-export type Actions = Record<ActionName, Action | null>;
+export type Actions = Partial<Record<ActionName, Action | null>>;
+
+export type ActionLayer = () => Actions;
 
 @Injectable({ providedIn: 'root' })
 export class ActionService {
-  private readonly registeredActions = signal<Actions>({
-    create: null,
-    edit: null,
-    save: null,
-    delete: null,
-    back: null,
-  });
+  private readonly layers = signal<ActionLayer[]>([]);
 
-  readonly actions = this.registeredActions.asReadonly();
+  readonly actions = computed<Actions>(() =>
+    Object.assign({}, ...this.layers().map((layer) => layer())),
+  );
 
-  register(actions: Partial<Actions>): void {
-    this.registeredActions.update((current) => ({ ...current, ...actions }));
-    this.clearOnDestroy(inject(DestroyRef), actions);
-  }
-
-  private clearOnDestroy(destroyRef: DestroyRef, registeredActions: Partial<Actions>): void {
-    destroyRef.onDestroy(() =>
-      this.registeredActions.update(
-        (current) =>
-          Object.fromEntries(
-            Object.entries(current).map(([name, action]) => [
-              name,
-              action === registeredActions[name as ActionName] ? null : action,
-            ]),
-          ) as Actions,
-      ),
+  register(layer: ActionLayer): void {
+    this.layers.update((layers) => [...layers, layer]);
+    inject(DestroyRef).onDestroy(() =>
+      this.layers.update((layers) => layers.filter((registered) => registered !== layer)),
     );
   }
 }

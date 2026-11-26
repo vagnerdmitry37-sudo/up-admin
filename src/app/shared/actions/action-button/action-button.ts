@@ -12,6 +12,7 @@ import { Ripple } from '@openng/optimus-ui/ripple';
 export class ActionButton {
   readonly label = input.required<string>();
   readonly icon = input.required<string>();
+  readonly disabled = input(false);
 
   readonly pressed = output<void>();
 }

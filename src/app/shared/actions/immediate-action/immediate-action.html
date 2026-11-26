@@ -1,1 +1,6 @@
-<app-action-button [label]="label()" [icon]="icon()" (pressed)="handleClick()" />
+<app-action-button
+  [label]="label()"
+  [icon]="icon()"
+  [disabled]="action().disabled?.() ?? false"
+  (pressed)="handleClick()"
+/>

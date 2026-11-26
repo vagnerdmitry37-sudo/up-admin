@@ -41,10 +41,9 @@ export class EntityEditPage<T extends { id: string }> implements OnInit {
   });
 
   constructor() {
-    inject(ActionService).register({
+    inject(ActionService).register(() => ({
       create: { run: () => this.tabList.addNew() },
-      back: { run: () => this.router.navigate(['..'], { relativeTo: this.route }) },
-    });
+    }));
   }
 
   ngOnInit() {
