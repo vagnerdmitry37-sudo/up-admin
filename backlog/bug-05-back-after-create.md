@@ -1,7 +1,7 @@
 # Bug 5: Back after Create returns to an empty form
 
 **Severity:** Low
-**Where:** `src/app/shared/entity-edit-page/entity-edit-page.ts` (`createEntity`)
+**Where:** `src/app/shared/entity/entity-edit-page/entity-edit-page.ts` (`createEntity`)
 
 ## Problem
 

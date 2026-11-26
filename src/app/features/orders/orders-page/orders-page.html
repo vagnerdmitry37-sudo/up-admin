@@ -1,7 +1,6 @@
-<app-entity-list-page
-  [loadPage]="loadPage"
-  [deleteEntities]="deleteEntities"
-  [columns]="columns"
-  editPath="/edit-orders-page"
+<app-entity-page
   entityName="order"
+  [columns]="columns"
+  [loadPage]="ordersService.list"
+  [deleteEntities]="ordersService.delete"
 />

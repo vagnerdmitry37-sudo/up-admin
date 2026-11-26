@@ -8,7 +8,6 @@ import {
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   computed,
   inject,
   input,
@@ -17,15 +16,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { AppMessageService } from '@core/app-message.service';
-import { ActionMenuService } from '@core/action-menu.service';
 import { Image } from '@core/api/models';
 import { HttpActivity } from '@core/http-activity.service';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
-import {
-  ENTITY_TAB_ID,
-  EntityEditPage,
-  EntityEditPart,
-} from '@shared/entity-edit-page/entity-edit-page';
 import { AppMotion } from '@shared/motion/motion';
 
 export interface ImageWriter {
@@ -71,26 +64,6 @@ export class ImageUpload {
   protected readonly openFilePicker = () => this.fileUpload()?.choose();
 
   protected readonly keepsUploadCardLast = (index: number) => index < this.images().length;
-
-  constructor() {
-    inject(ActionMenuService).register({
-      entity: () => 'image',
-      actions: () => ({
-        delete: {
-          click: () => this.delete(this.selection()),
-          visible: this.selection().length > 0,
-        },
-      }),
-    });
-    const part: EntityEditPart = {
-      tabId: inject(ENTITY_TAB_ID, { optional: true }) ?? undefined,
-      dirty: this.dirty,
-      save: this.save,
-    };
-    const entityEditPage = inject(EntityEditPage, { optional: true });
-    entityEditPage?.connectPart(part);
-    inject(DestroyRef).onDestroy(() => entityEditPage?.disconnectPart(part));
-  }
 
   protected upload(): void {
     const fileUpload = this.fileUpload();
@@ -156,7 +129,7 @@ export class ImageUpload {
   private readonly showUploadError = (detail: string) =>
     this.messageService.error('Image not added', detail);
 
-  private readonly save = async (entityId: string) => {
+  readonly save = async (entityId: string) => {
     const gallery = this.images();
     const staged = gallery.filter((image) => image.stagedFile);
     if (staged.length === 0) {

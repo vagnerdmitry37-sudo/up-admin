@@ -2,13 +2,12 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Router, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
 import { httpActivityInterceptor } from '@core/http-activity.interceptor';
-import { ActionMenuService } from '@core/action-menu.service';
 import { MessageService } from '@openng/optimus-ui/api';
-import { EntityTable } from '@shared/entity-table/entity-table';
+import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { CustomersPage } from './customers-page';
 
 const customer = (id: string): Customer => ({
@@ -21,8 +20,6 @@ const customer = (id: string): Customer => ({
 
 describe('CustomersPage', () => {
   let httpTestingController: HttpTestingController;
-  let actionMenuService: ActionMenuService;
-  let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -35,8 +32,6 @@ describe('CustomersPage', () => {
       ],
     });
     httpTestingController = TestBed.inject(HttpTestingController);
-    actionMenuService = TestBed.inject(ActionMenuService);
-    navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   });
 
   afterEach(() => httpTestingController.verify());
@@ -50,30 +45,8 @@ describe('CustomersPage', () => {
         request.params.get('rows') === '50',
     );
 
-  const render = async (customers: Customer[]) => {
-    const fixture = TestBed.createComponent(CustomersPage);
-    fixture.detectChanges();
-    expectFirstPage().flush({ items: customers, totalRecords: customers.length });
-    await fixture.whenStable();
-    return fixture;
-  };
-
-  const select = async (fixture: ComponentFixture<CustomersPage>, customers: Customer[]) => {
-    const table = fixture.debugElement.query(By.directive(EntityTable))
-      .componentInstance as EntityTable<Customer>;
-    table.selection.set(customers);
-    await fixture.whenStable();
-  };
-
   const text = (fixture: ComponentFixture<CustomersPage>) =>
     (fixture.nativeElement as HTMLElement).textContent;
-
-  it('points to the suggested Create action when there are no customers yet', async () => {
-    const fixture = await render([]);
-
-    expect(text(fixture)).toContain('No customers yet');
-    expect(actionMenuService.suggested()).toEqual(['create']);
-  });
 
   it('shows the table with its loading spinner until the first customers arrive', async () => {
     const fixture = TestBed.createComponent(CustomersPage);
@@ -103,43 +76,5 @@ describe('CustomersPage', () => {
     );
     expect(text(fixture)).not.toContain('No customers yet');
     expect(fixture.debugElement.query(By.directive(EntityTable))).not.toBeNull();
-  });
-
-  it('opens an empty edit page from Create', async () => {
-    await render([customer('c1')]);
-
-    actionMenuService.run('create');
-
-    expect(navigate).toHaveBeenCalledWith(['/edit-customers-page'], { queryParams: undefined });
-  });
-
-  it('offers Edit only for a selection and opens the selected customers together', async () => {
-    const fixture = await render([customer('c1'), customer('c2'), customer('c3')]);
-    expect(actionMenuService.actions().edit).toBeUndefined();
-
-    await select(fixture, [customer('c1'), customer('c3')]);
-    actionMenuService.run('edit');
-
-    expect(navigate).toHaveBeenCalledWith(['/edit-customers-page'], {
-      queryParams: { ids: 'c1,c3' },
-    });
-  });
-
-  it('deletes the selected customers in one request and reloads the list', async () => {
-    const fixture = await render([customer('c1'), customer('c2'), customer('c3')]);
-
-    await select(fixture, [customer('c1'), customer('c2')]);
-    actionMenuService.run('delete');
-
-    const request = httpTestingController.expectOne(
-      (candidate) => candidate.method === 'DELETE' && candidate.url === '/api/customers',
-    );
-    expect(request.request.params.getAll('ids')).toEqual(['c1', 'c2']);
-    request.flush(null);
-    await new Promise((resolve) => setTimeout(resolve));
-    expectFirstPage().flush({ items: [customer('c3')], totalRecords: 1 });
-    await fixture.whenStable();
-
-    expect(actionMenuService.actions().delete).toBeUndefined();
   });
 });

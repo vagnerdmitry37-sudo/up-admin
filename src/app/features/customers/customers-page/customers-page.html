@@ -1,7 +1,6 @@
-<app-entity-list-page
-  [loadPage]="loadPage"
-  [deleteEntities]="deleteEntities"
-  [columns]="columns"
-  editPath="/edit-customers-page"
+<app-entity-page
   entityName="customer"
+  [columns]="columns"
+  [loadPage]="customersService.list"
+  [deleteEntities]="customersService.delete"
 />

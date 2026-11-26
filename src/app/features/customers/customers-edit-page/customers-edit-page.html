@@ -1,0 +1,10 @@
+<app-entity-edit-page
+  [ids]="ids()"
+  [load]="loadCustomers"
+  [label]="customerName"
+  entityName="customer"
+>
+  <ng-template let-customer>
+    <app-customer-form [customer]="customer" />
+  </ng-template>
+</app-entity-edit-page>

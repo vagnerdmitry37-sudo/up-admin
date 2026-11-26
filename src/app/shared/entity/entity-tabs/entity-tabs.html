@@ -1,0 +1,36 @@
+<p-tabs [value]="shownId()" (valueChange)="show($event)" scrollable>
+  <p-tablist>
+    @for (tab of tabs(); track tab.id) {
+      <p-tab class="tab" [value]="tab.id">
+        <span class="tab-label" [title]="tab.label">{{ tab.label }}</span>
+        <button
+          pButton
+          type="button"
+          class="close"
+          [text]="true"
+          severity="secondary"
+          [rounded]="true"
+          [attr.aria-label]="'Close ' + tab.label"
+          [attr.tabindex]="tab.id === shownId() ? 0 : -1"
+          (click)="close(tab.id, $event)"
+          (keydown.enter)="$event.stopPropagation()"
+          (keydown.space)="$event.stopPropagation()"
+        >
+          <i class="pi pi-times" aria-hidden="true" pButtonIcon></i>
+        </button>
+      </p-tab>
+    }
+  </p-tablist>
+  <p-tabpanels>
+    @for (tab of tabs(); track tab.id) {
+      <p-tabpanel [value]="tab.id" lazy>
+        <ng-template #content>
+          <ng-container
+            [ngTemplateOutlet]="template()"
+            [ngTemplateOutletContext]="{ $implicit: tab.entity }"
+          />
+        </ng-template>
+      </p-tabpanel>
+    }
+  </p-tabpanels>
+</p-tabs>

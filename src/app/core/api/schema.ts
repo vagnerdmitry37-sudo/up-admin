@@ -90,6 +90,43 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/reference-data': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'text/plain': components['schemas']['ReferenceDataResponse'];
+            'application/json': components['schemas']['ReferenceDataResponse'];
+            'text/json': components['schemas']['ReferenceDataResponse'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/products': {
     parameters: {
       query?: never;
@@ -1982,6 +2019,10 @@ export interface components {
     };
     /** @enum {unknown} */
     OrderStatus: 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+    OrderStatusOption: {
+      value: components['schemas']['OrderStatus'];
+      label: string;
+    };
     ProblemDetails: {
       type?: null | string;
       title?: null | string;
@@ -2020,6 +2061,14 @@ export interface components {
     };
     /** @enum {unknown} */
     ProductType: 'GroupExcursion' | 'IndividualExcursion' | 'IndividualTransfer' | 'GroupTransfer';
+    ProductTypeOption: {
+      value: components['schemas']['ProductType'];
+      label: string;
+    };
+    ReferenceDataResponse: {
+      productTypes: components['schemas']['ProductTypeOption'][];
+      orderStatuses: components['schemas']['OrderStatusOption'][];
+    };
     RegisterRequest: {
       email: string;
       password: string;

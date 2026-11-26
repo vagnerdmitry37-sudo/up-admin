@@ -2,7 +2,7 @@
   <app-select-field
     label="Type"
     [control]="form.controls.type"
-    [options]="typeOptions"
+    [options]="productTypes()"
     [messages]="{ required: 'Select a type.' }"
   />
 

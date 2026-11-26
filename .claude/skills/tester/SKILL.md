@@ -19,7 +19,7 @@ Run the `reviewer` skill on the same scope before writing tests. Its findings de
 
 A test earns its place only when it would catch a regression that matters. Before writing one, name that regression in one sentence; if you cannot, skip the test.
 
-- **Test:** logic with branches or state (lazy loading, selection, action-menu actions), what the user sees in main flows and empty states, requests sent (URL, params, body), and every bug that was fixed.
+- **Test:** logic with branches or state (lazy loading, selection, action menu actions), what the user sees in main flows and empty states, requests sent (URL, params, body), and every bug that was fixed.
 - **Skip:** presentational components with no logic (a heading and a message), services that only forward to `HttpClient`, Angular or Optimus behaviour, and logic already covered through another spec (a shared class tested through the page that uses it needs no separate spec).
 - One test per behaviour. Several asserts in one test are fine when they describe one outcome.
 - Fewer, stronger tests beat many shallow ones. Say in the report what you deliberately left untested.
@@ -33,8 +33,8 @@ A test earns its place only when it would catch a regression that matters. Befor
   - **HTTP:** `provideHttpClient()`, `provideHttpClientTesting()`, `{ provide: API_BASE_URL, useValue: '/api' }`; answer requests with `httpTestingController.expectOne(...).flush(...)`; `afterEach(() => httpTestingController.verify())`.
   - **Pages that load on start:** `TestBed.tick()`, then answer every request the page makes (for example products and images on the edit page), then `await fixture.whenStable()`. Awaiting `whenStable()` before answering hangs.
   - **Routing:** `provideRouter([])` and `vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true)`.
-  - **Edit menu:** read `TestBed.inject(ActionMenuService).actions()` and trigger with `run('save' | 'delete' | …)`; wait with `await new Promise((resolve) => setTimeout(resolve))` after a run that sends requests.
-  - **Naming:** injected things keep their class name in lowerCamelCase (`httpTestingController`, `actionMenuService`); in a service's own spec the subject is `service`.
+  - **Edit menu:** read `TestBed.inject(ActionService).actions()` and trigger an action with `actions().save?.run()`; wait with `await new Promise((resolve) => setTimeout(resolve))` after a run that sends requests.
+  - **Naming:** injected things keep their class name in lowerCamelCase (`httpTestingController`, `actionService`); in a service's own spec the subject is `service`.
   - **Choosing files in the image uploader (jsdom):** stub `URL.createObjectURL = vi.fn(() => 'blob:preview')`, then on `input[type="file"]` use `Object.defineProperty(input, 'files', { value: [new File(['a'], 'photo.jpg', { type: 'image/jpeg' })] })`, dispatch `new Event('change')`, then `fixture.detectChanges()` and `await fixture.whenStable()`. Fake a large file with `Object.defineProperty(file, 'size', { value: 11 * 1024 * 1024 })`.
   - **Opening the file picker:** spy on the hidden input with `vi.spyOn(input, 'click').mockImplementation(() => undefined)`.
   - `src/test-setup.ts` stubs browser APIs jsdom lacks (`ResizeObserver` for Optimus Tabs).

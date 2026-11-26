@@ -1,7 +1,7 @@
 # Bug 2: Layout jumps after Create
 
 **Severity:** Medium
-**Where:** `src/app/shared/entity-edit-page/entity-edit-page.ts` (`createEntity`, `tabs`)
+**Where:** `src/app/shared/entity/entity-edit-page/entity-edit-page.ts` (`createEntity`, `tabs`)
 
 ## Problem
 

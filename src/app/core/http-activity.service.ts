@@ -9,9 +9,9 @@ export type ActivityStatus = 'running' | 'succeeded' | 'failed' | 'cancelled';
 export type FinishedStatus = Exclude<ActivityStatus, 'running'>;
 
 export type ActivityEntity =
-  'product' | 'order' | 'order item' | 'customer' | 'image' | 'product type' | 'session';
+  'product' | 'order' | 'order item' | 'customer' | 'image' | 'reference data' | 'session';
 
-export type ActivitySource = 'action-menu' | 'image-upload';
+export type ActivitySource = 'image-upload';
 
 export interface RequestTag {
   readonly entity?: ActivityEntity;

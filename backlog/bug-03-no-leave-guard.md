@@ -1,7 +1,7 @@
 # Bug 3: No unsaved-changes guard when leaving the page
 
 **Severity:** Medium (already there before the review)
-**Where:** Edit routes in `src/app/app.routes.ts`, `src/app/shared/entity-edit-page/entity-edit-page.ts`
+**Where:** Edit routes in `src/app/app.routes.ts`, `src/app/shared/entity/entity-edit-page/entity-edit-page.ts`
 
 ## Problem
 

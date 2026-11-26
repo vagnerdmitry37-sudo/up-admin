@@ -1,7 +1,7 @@
 # Bug 4: Unsent forms marked as saved
 
 **Severity:** Low
-**Where:** `src/app/shared/entity-edit-page/entity-edit-page.ts` (`updateEntities`)
+**Where:** `src/app/shared/entity/entity-edit-page/entity-edit-page.ts` (`updateEntities`)
 
 ## Problem
 

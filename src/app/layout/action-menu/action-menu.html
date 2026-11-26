@@ -1,39 +1,29 @@
-@if (hasActions()) {
-  <p-speeddial
-    appMotion="scale"
-    [model]="items()"
-    type="quarter-circle"
-    direction="up-left"
-    [radius]="80"
-    [style]="{ position: 'absolute', right: 0, bottom: 0 }"
-    [visible]="open()"
-    [hideOnClickOutside]="false"
-    ariaLabel="Edit actions"
-    (onClick)="toggle()"
-    (onHide)="keepOpen()"
-  >
-    <ng-template #item let-item>
-      <div class="action-menu-action">
-        <button
-          type="button"
-          pButton
-          pRipple
-          class="p-speeddial-action"
-          severity="secondary"
-          [rounded]="true"
-          size="small"
-          [attr.aria-label]="item.label"
-          [attr.tabindex]="open() ? 0 : null"
-          [appActionTrigger]="triggerOf(item.id)"
-          #trigger="actionTrigger"
-          (triggered)="runAction(item.id)"
-        >
-          <span pButtonIcon [class]="item.icon"></span>
-        </button>
-        @if (trigger.holding()) {
-          <app-progress-ring [value]="trigger.holdProgress()" />
+<app-speed-menu
+  [items]="slots"
+  direction="up-left"
+  label="Edit actions"
+  [icon]="actionsVisible() ? closeIcon : openIcon"
+  [expanded]="actionsVisible()"
+  [actionsVisible]="actionsVisible()"
+  (pressed)="toggle()"
+>
+  <ng-template #item let-slot>
+    @let action = actionOf(slot.name);
+    @if (action) {
+      @switch (slot.name) {
+        @case ('create') {
+          <app-create-action [action]="action" />
         }
-      </div>
-    </ng-template>
-  </p-speeddial>
-}
+        @case ('edit') {
+          <app-edit-action [action]="action" />
+        }
+        @case ('delete') {
+          <app-delete-action [action]="action" />
+        }
+        @case ('save') {
+          <app-save-action [action]="action" />
+        }
+      }
+    }
+  </ng-template>
+</app-speed-menu>

@@ -1,0 +1,6 @@
+<app-entity-tabs
+  [tabs]="tabList.tabs()"
+  [template]="entityTemplate()"
+  [(active)]="tabList.activeId"
+  (closeTab)="closeTab($event)"
+/>
