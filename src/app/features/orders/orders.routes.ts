@@ -1,15 +1,13 @@
-import { AppRoute } from '@core/app-route';
+import { Routes } from '@angular/router';
 
-const routes: AppRoute[] = [
+const routes: Routes = [
   {
     path: '',
-    title: 'Orders · UP',
     loadComponent: () => import('./orders-page/orders-page').then((m) => m.OrdersPage),
   },
   {
     path: 'editor',
-    title: 'Edit orders · UP',
-    data: { editPage: true },
+    title: 'Editor',
     loadComponent: () =>
       import('./orders-edit-page/orders-edit-page').then((m) => m.OrdersEditPage),
   },

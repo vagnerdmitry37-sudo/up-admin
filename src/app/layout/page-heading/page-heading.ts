@@ -1,11 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { AppRouteData } from '@core/app-route';
-
-const deepestRoute = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
-  route.firstChild ? deepestRoute(route.firstChild) : route;
+import { routeTitles } from '@core/route-titles';
 
 @Component({
   selector: 'app-page-heading',
@@ -15,17 +12,13 @@ const deepestRoute = (route: ActivatedRouteSnapshot): ActivatedRouteSnapshot =>
 })
 export class PageHeading {
   private readonly router = inject(Router);
-  private readonly routeData = toSignal(
+
+  protected readonly headings = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       startWith(undefined),
-      map(() => deepestRoute(this.router.routerState.snapshot.root).data as Partial<AppRouteData>),
+      map(() => routeTitles(this.router.routerState.snapshot.root)),
     ),
     { requireSync: true },
   );
-
-  protected readonly heading = computed(() => {
-    const { heading, editPage } = this.routeData();
-    return heading ? { title: heading, action: editPage ? 'Editor' : undefined } : undefined;
-  });
 }

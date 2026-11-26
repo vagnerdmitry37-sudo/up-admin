@@ -35,13 +35,13 @@ export class EntityPage<T extends { id: string }> {
     });
   }
 
-  async deleteSelected (ids: string[]) {
+  async deleteSelected(ids: string[]) {
     if (ids.length > 0) {
       await this.deleteEntities()(ids);
       this.selection.set([]);
       this.lazyRows.reload();
     }
-  };
+  }
 
   openEditEntityPage(ids: string[] = []) {
     this.router.navigate(['editor'], {

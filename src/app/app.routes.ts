@@ -1,11 +1,11 @@
-import { AppRoute } from '@core/app-route';
+import { Routes } from '@angular/router';
 import { authGuard } from '@features/auth/auth.guard';
 import { guestGuard } from '@features/auth/guest.guard';
 
-export const routes: AppRoute[] = [
+export const routes: Routes = [
   {
     path: 'login',
-    title: 'Log in · UP',
+    title: 'Log in',
     canMatch: [guestGuard],
     loadComponent: () => import('@features/auth/login-page/login-page').then((m) => m.LoginPage),
   },
@@ -21,22 +21,22 @@ export const routes: AppRoute[] = [
       },
       {
         path: 'orders',
-        data: { heading: 'Orders' },
+        title: 'Orders',
         loadChildren: () => import('@features/orders/orders.routes'),
       },
       {
         path: 'customers',
-        data: { heading: 'Customers' },
+        title: 'Customers',
         loadChildren: () => import('@features/customers/customers.routes'),
       },
       {
         path: 'products',
-        data: { heading: 'Products' },
+        title: 'Products',
         loadChildren: () => import('@features/products/products.routes'),
       },
       {
         path: '**',
-        title: 'Page not found · UP',
+        title: 'Page not found',
         loadComponent: () =>
           import('@features/not-found/not-found-page').then((m) => m.NotFoundPage),
       },

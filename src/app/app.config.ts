@@ -6,7 +6,8 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
+import { AppTitleStrategy } from '@core/app-title-strategy';
 import { AppErrorHandler } from '@core/app-error-handler';
 import { authInterceptor } from '@core/auth.interceptor';
 import { httpActivityInterceptor } from '@core/http-activity.interceptor';
@@ -22,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     { provide: ErrorHandler, useClass: AppErrorHandler },
     provideRouter(routes, withComponentInputBinding()),
+    { provide: TitleStrategy, useClass: AppTitleStrategy },
     provideHttpClient(withInterceptors([httpActivityInterceptor, authInterceptor])),
     provideOptimus({ theme: { preset: NoirPreset } }),
     MessageService,

@@ -105,6 +105,6 @@ export const lazyRows = <T>(loadPage: () => RowsPageLoader<T>): LazyRows<T> => {
     empty: computed(() => rows()?.length === 0 && !firstPageFailed()),
     load,
     reload,
-    loading
+    loading,
   };
 };

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { AppRouteData } from '@core/app-route';
 import { PageHeading } from './page-heading';
 
 @Component({ template: '' })
@@ -26,13 +25,15 @@ describe('PageHeading', () => {
         provideRouter([
           {
             path: 'products',
-            data: { heading: 'Products' } satisfies AppRouteData,
-            component: EmptyPage,
-          },
-          {
-            path: 'edit-products-page',
-            data: { heading: 'Products', editPage: true } satisfies AppRouteData,
-            component: EmptyPage,
+            title: 'Products',
+            children: [
+              { path: '', component: EmptyPage },
+              {
+                path: 'editor',
+                title: 'Editor',
+                component: EmptyPage,
+              },
+            ],
           },
           { path: '**', component: EmptyPage },
         ]),
@@ -40,7 +41,7 @@ describe('PageHeading', () => {
     });
   });
 
-  it('shows the heading of a list page without an action', async () => {
+  it('shows only the parent heading on a list page', async () => {
     const { navigate, text } = await render();
 
     await navigate('/products');
@@ -48,16 +49,16 @@ describe('PageHeading', () => {
     expect(text()).toBe('Products');
   });
 
-  it('shows Editor on an edit page whatever records are open', async () => {
+  it('joins the parent and child headings on an edit page whatever records are open', async () => {
     const { navigate, text } = await render();
 
-    await navigate('/edit-products-page');
+    await navigate('/products/editor');
     expect(text()).toBe('Products / Editor');
 
-    await navigate('/edit-products-page?ids=1,2');
+    await navigate('/products/editor?ids=1,2');
     expect(text()).toBe('Products / Editor');
 
-    await navigate('/edit-products-page?ids=new-1,7');
+    await navigate('/products/editor?ids=new-1,7');
     expect(text()).toBe('Products / Editor');
   });
 
