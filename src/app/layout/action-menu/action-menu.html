@@ -1,13 +1,11 @@
-<p-speeddial
-  appMotion="scale"
-  [model]="slots"
-  type="quarter-circle"
+<app-speed-menu
+  [items]="slots"
   direction="up-left"
-  [radius]="80"
-  [style]="{ position: 'absolute', right: 0, bottom: 0 }"
-  [hideOnClickOutside]="false"
-  [visible]="true"
-  ariaLabel="Edit actions"
+  label="Edit actions"
+  [icon]="actionsVisible() ? closeIcon : openIcon"
+  [expanded]="actionsVisible()"
+  [actionsVisible]="actionsVisible()"
+  (pressed)="toggle()"
 >
   <ng-template #item let-slot>
     @let action = actionOf(slot.name);
@@ -28,4 +26,4 @@
       }
     }
   </ng-template>
-</p-speeddial>
+</app-speed-menu>

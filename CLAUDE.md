@@ -6,6 +6,17 @@ Before writing any custom component, logic, styling or workaround, check whether
 
 Example: the table loading spinner is `p-table` `[loading]`, which already centres the spinner on the table. A pass-through override that moved the mask was added on a guess, without checking the docs, and was removed.
 
+Search in this order before writing a new component or new logic, and stop at the first that fits: (1) this file and the existing app code (`shared/`, `layout/`, a similar page); (2) the Optimus docs page; (3) the Optimus source in `node_modules/@openng/optimus-ui/fesm2022/openng-optimus-ui-<component>.mjs`, which holds the component's template, inputs, outputs, templates (`#button`, `#item`, …) and the maths behind its layout. The docs pages render their example code in the browser, so a plain fetch shows only the prose; read the source when you need the details.
+
+## Footer menus
+
+The footer has two menus, both drawn by `SpeedMenu` (`shared/speed-menu`, `app-speed-menu`). It wraps Optimus's `p-speeddial` as a `quarter-circle` with `radius` 80 (https://optimus.openng.org/speeddial#quartercircle), so both menus' trigger button and actions look and move the same, and only their icons and direction differ. `SpeedMenu` takes `items`, `direction`, `label`, `icon`, `expanded` and `actionsVisible`, emits `pressed` when its trigger is clicked, and draws each item with the `#item` template the menu passes in. It knows nothing about what the trigger does.
+
+- **Action menu** (`layout/action-menu`, right corner, `up-left`): the trigger shows and hides the actions. Slots: Create, Edit, Save, Delete.
+- **Navigation menu** (`layout/nav-menu`, left corner, `up-right`): the trigger opens and closes the page list (Optimus `p-menu` popup); its actions are always shown. Slots: Back.
+- Both menus' actions come from `ActionService`: a menu lists a fixed slot per action name, and a slot shows its action button only while some page has registered it, so every action keeps its place whether the others are shown or not. `SpeedMenu` always gives the speed dial 4 positions, filling the rest with hidden items (`visible: false`), because Optimus's quarter-circle maths divides by the item count minus one and cannot place a single item; this also puts the slots of both menus at the same positions.
+- To add an action: add its name to `ActionName`, add an `app-<name>-action` in `shared/actions`, add a slot to the menu it belongs to, and register it from the page.
+
 ## Entity operations go only through the action menu
 
 Create, edit, save, delete and any other operation on an entity are done only through the footer action menu (`app-action-menu`, an Optimus speed dial), whose actions are registered with `ActionService.register` (`shared/actions/action.service.ts`). Do not add in-page buttons that perform these operations: not in empty states, forms, table rows or page toolbars.

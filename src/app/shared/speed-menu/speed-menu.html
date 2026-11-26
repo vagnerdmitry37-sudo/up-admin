@@ -1,0 +1,28 @@
+<p-speeddial
+  appMotion="scale"
+  [model]="slots()"
+  type="quarter-circle"
+  [direction]="direction()"
+  [radius]="80"
+  [style]="position()"
+  [hideOnClickOutside]="false"
+  [visible]="actionsVisible()"
+>
+  <ng-template #button>
+    <button
+      type="button"
+      pButton
+      pRipple
+      [rounded]="true"
+      [icon]="icon()"
+      [attr.aria-label]="label()"
+      [attr.aria-expanded]="expanded()"
+      aria-haspopup="true"
+      (click)="pressed.emit($event)"
+    ></button>
+  </ng-template>
+
+  <ng-template #item let-item>
+    <ng-container *ngTemplateOutlet="itemTemplate(); context: { $implicit: item }" />
+  </ng-template>
+</p-speeddial>

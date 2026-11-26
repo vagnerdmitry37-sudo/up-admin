@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 
-export type ActionName = 'create' | 'edit' | 'save' | 'delete';
+export type ActionName = 'create' | 'edit' | 'save' | 'delete' | 'back';
 
 export interface Action {
   run: () => unknown;
@@ -15,6 +15,7 @@ export class ActionService {
     edit: null,
     save: null,
     delete: null,
+    back: null,
   });
 
   readonly actions = this.registeredActions.asReadonly();

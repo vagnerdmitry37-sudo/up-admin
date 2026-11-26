@@ -1,16 +1,22 @@
-<button
-  type="button"
-  pButton
-  class="trigger"
-  aria-label="Menu"
-  aria-haspopup="menu"
-  [rounded]="true"
-  [attr.aria-expanded]="open()"
-  (click)="toggle(menu, $event)"
+<app-speed-menu
+  [items]="slots"
+  direction="up-right"
+  label="Menu"
+  [icon]="open() ? closeIcon : openIcon"
+  [expanded]="open()"
+  (pressed)="menu.toggle($event)"
 >
-  <i class="pi pi-bars icon" aria-hidden="true" pButtonIcon [class.hidden]="open()"></i>
-  <i class="pi pi-times icon close" aria-hidden="true" pButtonIcon [class.hidden]="!open()"></i>
-</button>
+  <ng-template #item let-slot>
+    @let action = actionOf(slot.name);
+    @if (action) {
+      @switch (slot.name) {
+        @case ('back') {
+          <app-back-action [action]="action" />
+        }
+      }
+    }
+  </ng-template>
+</app-speed-menu>
 
 <p-menu
   #menu

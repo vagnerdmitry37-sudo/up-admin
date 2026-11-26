@@ -34,7 +34,7 @@ Decide the size before doing anything else, and scale every later step to it.
 - **Boolean conversion:** write `Boolean(value)`, never `!!value`.
 - **Event handlers:** name them for what they do (`runAction`, `toggle`, `save`), never for the event that triggers them (`onClick`, `onActionClick`, `handleSubmit`).
 - **Routing:** the public `login` route uses `guestGuard`. Every other page is a child of the `''` route, which uses `authGuard` and renders `Shell`. Add new pages there.
-- **Edit menu:** the footer's right corner holds `ActionMenu` (`app-action-menu`, an Optimus speed dial with Create, Edit, Save, Delete). A page enables an action by calling `inject(ActionService).register({ save: { run: () => ... } })` in its constructor (`shared/actions/action.service.ts`); its actions are cleared when it is destroyed, and an action with no registration is not shown.
+- **Footer menus:** the footer's right corner holds `ActionMenu` (Create, Edit, Save, Delete) and its left corner `NavMenu` (page list, plus Back), both drawn by `SpeedMenu` (`shared/speed-menu`, an Optimus quarter-circle speed dial); see "Footer menus" in `CLAUDE.md`. A page enables an action by calling `inject(ActionService).register({ save: { run: () => ... } })` in its constructor (`shared/actions/action.service.ts`); its actions are cleared when it is destroyed, and an action with no registration is not shown.
 - **Session:** `SessionService` keeps the access token in a signal. `restore()` calls `POST /api/auth/refresh` at startup. The API is proxied to `https://localhost:7215` and is usually not running locally.
 
 Before building something new, look for an existing piece to copy: an existing page for a new page, `Shell` or `NavMenu` for layout parts, `SessionService` for a service.
@@ -43,7 +43,7 @@ Before building something new, look for an existing piece to copy: an existing p
 
 - Read the files you will change, and the closest similar file, **once and in parallel**. Do not re-read a file you just edited.
 - Search narrowly (`Grep` for a symbol, `Glob` for a file name) instead of listing folders.
-- **Check Optimus before building anything** (see "Optimus UI first" in `CLAUDE.md`): open the component's page on https://optimus.openng.org and look for a built-in feature that already does what is asked. Never re-implement or restyle a built-in feature on a guess.
+- **Check existing solutions before building anything** (see "Optimus UI first" in `CLAUDE.md`): first the app's own components and `CLAUDE.md`, then the component's page on https://optimus.openng.org, then its source in `node_modules/@openng/optimus-ui/fesm2022/` (the docs' example code renders only in a browser). Use a built-in feature or template that already does what is asked. Never re-implement or restyle a built-in feature on a guess.
 - For library APIs, read the `.d.ts` in `node_modules/@openng/optimus-ui/types/` (inputs, outputs, templates) before guessing. Read the `.mjs` in `fesm2022/` only when behavior is unclear.
 - Stop investigating once you can name the change and how you will verify it.
 - Ask the user only when the answer changes product behavior, architecture or safety. Otherwise choose the conventional option and mention it.
