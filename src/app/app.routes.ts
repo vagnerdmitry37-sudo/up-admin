@@ -23,19 +23,19 @@ export const routes: Routes = [
       {
         path: 'orders',
         title: 'Orders',
-        data: { icon: OpenngIcons.RECEIPT },
+        data: { icon: OpenngIcons.RECEIPT, menu: true },
         loadChildren: () => import('@features/orders/orders.routes'),
       },
       {
         path: 'customers',
         title: 'Customers',
-        data: { icon: OpenngIcons.USERS },
+        data: { icon: OpenngIcons.USERS, menu: true },
         loadChildren: () => import('@features/customers/customers.routes'),
       },
       {
         path: 'products',
         title: 'Products',
-        data: { icon: OpenngIcons.BOX },
+        data: { icon: OpenngIcons.BOX, menu: true },
         loadChildren: () => import('@features/products/products.routes'),
       },
       {

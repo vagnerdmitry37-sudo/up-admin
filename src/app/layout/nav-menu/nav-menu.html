@@ -2,7 +2,7 @@
   [items]="slots"
   direction="up-right"
   label="Menu"
-  [icon]="open() ? closeIcon : openIcon"
+  [icon]="icon()"
   [expanded]="open()"
   (pressed)="menu.toggle($event)"
 >
