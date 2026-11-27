@@ -13,6 +13,7 @@ import { MenuItem } from '@openng/optimus-ui/api';
 import { ButtonDirective } from '@openng/optimus-ui/button';
 import { Ripple } from '@openng/optimus-ui/ripple';
 import { SpeedDial } from '@openng/optimus-ui/speeddial';
+import { ButtonRing } from '@shared/button-ring/button-ring';
 import { AppMotion } from '@shared/motion/motion';
 
 export type SpeedMenuDirection = 'up-left' | 'up-right';
@@ -21,7 +22,7 @@ const slotCount = 4;
 
 @Component({
   selector: 'app-speed-menu',
-  imports: [SpeedDial, ButtonDirective, Ripple, AppMotion, NgTemplateOutlet],
+  imports: [SpeedDial, ButtonDirective, Ripple, AppMotion, NgTemplateOutlet, ButtonRing],
   templateUrl: './speed-menu.html',
   styleUrl: './speed-menu.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +34,7 @@ export class SpeedMenu {
   readonly icon = input.required<string>();
   readonly expanded = input(false, { transform: booleanAttribute });
   readonly actionsVisible = input(true, { transform: booleanAttribute });
+  readonly loading = input(false);
 
   readonly pressed = output<MouseEvent>();
 

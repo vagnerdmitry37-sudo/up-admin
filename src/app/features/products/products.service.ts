@@ -34,7 +34,8 @@ export class ProductsService {
   update = (requests: UpdateProductRequest[]) =>
     firstValueFrom(this.api.put<Product[]>(this.url, requests));
 
-  delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
+  delete = (ids: string[]) =>
+    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'products.delete' }));
 
   deleteImages = (ids: string[]) =>
     firstValueFrom(this.api.delete<void>(this.imagesUrl, { params: { ids } }));

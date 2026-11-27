@@ -2,5 +2,6 @@
   [label]="label()"
   [icon]="icon()"
   [disabled]="action().disabled?.() ?? false"
+  [loading]="action().loading?.() ?? false"
   (pressed)="handleClick()"
 />

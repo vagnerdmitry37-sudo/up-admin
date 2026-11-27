@@ -5,6 +5,7 @@ import { lazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { joinRouteIds } from '@shared/route-ids/route-ids';
 import { ActionService } from '@shared/actions/action.service';
+import { RequestTracker } from '@core/request-tracker';
 
 @Component({
   selector: 'app-entity-page',
@@ -16,6 +17,7 @@ import { ActionService } from '@shared/actions/action.service';
 export class EntityPage<T extends { id: string }> {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly tracker = inject(RequestTracker);
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
   readonly columns = input.required<TableColumn<T>[]>();
@@ -37,6 +39,7 @@ export class EntityPage<T extends { id: string }> {
       delete: {
         run: () => this.deleteSelected(this.selectedIds()),
         disabled: this.nothingSelected,
+        loading: () => this.tracker.status('products.delete')()?.status === 'loading',
       },
     }));
   }

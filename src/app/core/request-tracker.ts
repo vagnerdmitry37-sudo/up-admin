@@ -1,7 +1,7 @@
 import { Injectable, Signal, computed, signal } from '@angular/core';
 import { Observable, defer, finalize, tap } from 'rxjs';
 
-export type RequestName = 'products.list';
+export type RequestName = 'products.list' | 'products.delete';
 export type RequestStatus = 'loading' | 'completed';
 
 export interface RequestState {

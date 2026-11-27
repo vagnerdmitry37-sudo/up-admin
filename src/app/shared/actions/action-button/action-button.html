@@ -6,8 +6,10 @@
   [rounded]="true"
   size="small"
   [icon]="icon()"
-  [disabled]="disabled()"
+  [disabled]="disabled() || loading()"
   [attr.aria-label]="label()"
+  [attr.aria-busy]="loading()"
   (click)="pressed.emit()"
 ></button>
+<app-button-ring [loading]="loading()" />
 <ng-content />

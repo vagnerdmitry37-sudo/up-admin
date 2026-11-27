@@ -5,6 +5,7 @@ export type ActionName = 'create' | 'edit' | 'save' | 'delete' | 'back';
 export interface Action {
   run: () => unknown;
   disabled?: () => boolean;
+  loading?: () => boolean;
 }
 
 export type Actions = Partial<Record<ActionName, Action | null>>;
