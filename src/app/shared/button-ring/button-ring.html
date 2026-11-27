@@ -1,3 +1,3 @@
-@if (loading()) {
-  <p-progressspinner class="ring" />
+@if (spinning()) {
+  <p-progressspinner class="ring" [animationDuration]="rotationDuration" />
 }
