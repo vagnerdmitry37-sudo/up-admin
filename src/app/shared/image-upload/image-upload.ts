@@ -17,7 +17,6 @@ import {
 } from '@angular/core';
 import { AppMessageService } from '@core/app-message.service';
 import { Image } from '@core/api/models';
-import { HttpActivity } from '@core/http-activity.service';
 import { FileUpload } from '@openng/optimus-ui/fileupload';
 import { AppMotion } from '@shared/motion/motion';
 
@@ -46,7 +45,6 @@ export class ImageUpload {
   readonly writer = input.required<ImageWriter>();
 
   private readonly messageService = inject(AppMessageService);
-  private readonly httpActivity = inject(HttpActivity);
   private readonly fileUpload = viewChild(FileUpload);
   private stagedCount = 0;
 
@@ -108,10 +106,7 @@ export class ImageUpload {
       return;
     }
     try {
-      await this.httpActivity.track(
-        { entity: 'image', operation: 'reorder', source: 'image-upload' },
-        () => this.writer().reorder(entityId, savedIds(reordered)),
-      );
+      await this.writer().reorder(entityId, savedIds(reordered));
     } catch (error) {
       this.images.set(previousOrder);
       throw error;
@@ -135,13 +130,9 @@ export class ImageUpload {
     if (staged.length === 0) {
       return;
     }
-    const created = await this.httpActivity.track(
-      { entity: 'image', operation: 'upload', source: 'image-upload' },
-      () =>
-        this.writer().upload(
-          entityId,
-          staged.flatMap((image) => image.stagedFile ?? []),
-        ),
+    const created = await this.writer().upload(
+      entityId,
+      staged.flatMap((image) => image.stagedFile ?? []),
     );
     const order = gallery.map((image) =>
       image.stagedFile ? created[staged.indexOf(image)].id : image.id,
@@ -151,10 +142,7 @@ export class ImageUpload {
       ...created.map((image) => image.id),
     ];
     if (order.join() !== uploadOrder.join()) {
-      await this.httpActivity.track(
-        { entity: 'image', operation: 'reorder', source: 'image-upload' },
-        () => this.writer().reorder(entityId, order),
-      );
+      await this.writer().reorder(entityId, order);
     }
   };
 

@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiClient } from '@core/api-client';
 import { API_BASE_URL } from '@core/api-base-url';
@@ -9,7 +9,7 @@ const TOKEN_EXPIRY_MARGIN_MS = 1000;
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
-  private readonly api = inject(ApiClient).forEntity('session');
+  private readonly api = inject(ApiClient);
   private readonly authUrl = `${inject(API_BASE_URL)}/auth`;
   private readonly token = signal<string | null>(null);
   private expiresAt: number | null = null;
@@ -46,7 +46,7 @@ export class SessionService {
 
   async logout(): Promise<void> {
     try {
-      await firstValueFrom(this.api.post<void>(`${this.authUrl}/logout`, {}, { untracked: true }));
+      await firstValueFrom(this.api.post<void>(`${this.authUrl}/logout`, {}));
     } finally {
       this.clearToken();
     }
@@ -66,13 +66,7 @@ export class SessionService {
 
   private async requestToken(endpoint: 'login' | 'refresh', body: object): Promise<string> {
     const { accessToken, expiresAt } = await firstValueFrom(
-      this.api.post<AccessToken>(
-        `${this.authUrl}/${endpoint}`,
-        body,
-        endpoint === 'login'
-          ? { handledStatuses: [HttpStatusCode.BadRequest] }
-          : { untracked: true },
-      ),
+      this.api.post<AccessToken>(`${this.authUrl}/${endpoint}`, body),
     );
     this.expiresAt = Date.parse(expiresAt);
     this.token.set(accessToken);

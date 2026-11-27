@@ -22,9 +22,11 @@ describe('AppErrorHandler', () => {
     );
   });
 
-  it('does not add a second toast for a failed request', () => {
+  it('shows a generic toast for a failed request that no caller handled', () => {
     appErrorHandler.handleError(new HttpErrorResponse({ status: 500 }));
 
-    expect(add).not.toHaveBeenCalled();
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'error', summary: 'Something went wrong' }),
+    );
   });
 });

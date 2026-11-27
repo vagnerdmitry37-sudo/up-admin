@@ -14,8 +14,7 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
-  private readonly api = inject(ApiClient).forEntity('product');
-  private readonly imageApi = inject(ApiClient).forEntity('image');
+  private readonly api = inject(ApiClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
   private readonly url = `${this.apiBaseUrl}/products`;
   private readonly imagesUrl = `${this.apiBaseUrl}/images`;
@@ -35,16 +34,16 @@ export class ProductsService {
   delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
 
   deleteImages = (ids: string[]) =>
-    firstValueFrom(this.imageApi.delete<void>(this.imagesUrl, { params: { ids } }));
+    firstValueFrom(this.api.delete<void>(this.imagesUrl, { params: { ids } }));
 
   getImages = (productIds: string[]) =>
-    this.imageApi.get<Image[]>(this.imagesUrl, {
+    this.api.get<Image[]>(this.imagesUrl, {
       params: { entityType: 'Product', entityIds: productIds },
     });
 
   updateImageOrder = (productId: string, imageIds: string[]) =>
     firstValueFrom(
-      this.imageApi.put<Image[]>(`${this.imagesUrl}/order`, {
+      this.api.put<Image[]>(`${this.imagesUrl}/order`, {
         entityType: 'Product',
         entityId: productId,
         imageIds,
@@ -58,6 +57,6 @@ export class ProductsService {
     for (const file of files) {
       form.append('files', file, file.name);
     }
-    return firstValueFrom(this.imageApi.post<Image[]>(this.imagesUrl, form));
+    return firstValueFrom(this.api.post<Image[]>(this.imagesUrl, form));
   }
 }

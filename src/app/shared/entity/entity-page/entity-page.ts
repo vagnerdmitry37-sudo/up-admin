@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActivityEntity } from '@core/http-activity.service';
 import { TableColumn } from '@shared/data-table/data-table';
 import { lazyRows, RowsPageLoader } from '@shared/data-table/lazy-rows';
 import { EntityTable } from '@shared/entity/entity-table/entity-table';
@@ -20,7 +19,7 @@ export class EntityPage<T extends { id: string }> {
 
   readonly loadPage = input.required<RowsPageLoader<T>>();
   readonly columns = input.required<TableColumn<T>[]>();
-  readonly entityName = input.required<ActivityEntity>();
+  readonly entityName = input.required<string>();
   readonly deleteEntities = input.required<(ids: string[]) => Promise<void>>();
 
   readonly selection = model<T[]>([]);

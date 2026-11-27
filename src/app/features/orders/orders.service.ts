@@ -17,9 +17,7 @@ const MAX_CUSTOMER_OPTIONS = 20;
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
-  private readonly api = inject(ApiClient).forEntity('order');
-  private readonly customerApi = inject(ApiClient).forEntity('customer');
-  private readonly productApi = inject(ApiClient).forEntity('product');
+  private readonly api = inject(ApiClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
   private readonly url = `${this.apiBaseUrl}/orders`;
 
@@ -36,14 +34,14 @@ export class OrdersService {
   delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
 
   searchCustomers = (query: string) =>
-    this.customerApi
+    this.api
       .get<CustomersPageResponse>(`${this.apiBaseUrl}/customers`, {
         params: { globalFilter: query, rows: MAX_CUSTOMER_OPTIONS },
       })
       .pipe(map((page) => page.items));
 
   searchProducts = (query: string) =>
-    this.productApi
+    this.api
       .get<ProductsPageResponse>(`${this.apiBaseUrl}/products`, {
         params: {
           globalFilter: query,

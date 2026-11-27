@@ -10,8 +10,6 @@ import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angula
 import { AppTitleStrategy } from '@core/app-title-strategy';
 import { AppErrorHandler } from '@core/app-error-handler';
 import { authInterceptor } from '@core/auth.interceptor';
-import { httpActivityInterceptor } from '@core/http-activity.interceptor';
-import { provideRequestErrorToasts } from '@core/request-error-toasts';
 import { provideBackAction } from '@core/back-action';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
@@ -25,10 +23,9 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: AppErrorHandler },
     provideRouter(routes, withComponentInputBinding()),
     { provide: TitleStrategy, useClass: AppTitleStrategy },
-    provideHttpClient(withInterceptors([httpActivityInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideOptimus({ theme: { preset: NoirPreset } }),
     MessageService,
-    provideRequestErrorToasts(),
     provideBackAction(),
     provideAppInitializer(() => inject(SessionService).restore()),
   ],

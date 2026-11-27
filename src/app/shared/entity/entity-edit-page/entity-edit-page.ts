@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActivityEntity } from '@core/http-activity.service';
 import { ActionService } from '@shared/actions/action.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { Observable } from 'rxjs';
@@ -31,7 +30,7 @@ export class EntityEditPage<T extends { id: string }> implements OnInit {
   readonly ids = input<string>();
   readonly load = input.required<(ids: string[]) => Observable<T[]>>();
   readonly label = input.required<(entity: T) => string>();
-  readonly entityName = input.required<ActivityEntity>();
+  readonly entityName = input.required<string>();
 
   protected readonly entityTemplate =
     contentChild.required<TemplateRef<EntityTabContext<T>>>(TemplateRef);

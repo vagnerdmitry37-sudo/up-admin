@@ -1,13 +1,10 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { API_BASE_URL } from '@core/api-base-url';
 import { Customer } from '@core/api/models';
-import { httpActivityInterceptor } from '@core/http-activity.interceptor';
 import { MessageService } from '@openng/optimus-ui/api';
-import { EntityTable } from '@shared/entity/entity-table/entity-table';
 import { CustomersPage } from './customers-page';
 
 const customer = (id: string): Customer => ({
@@ -24,7 +21,7 @@ describe('CustomersPage', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptors([httpActivityInterceptor])),
+        provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: API_BASE_URL, useValue: '/api' },
@@ -61,20 +58,5 @@ describe('CustomersPage', () => {
     await fixture.whenStable();
 
     expect(spinner()).toBeNull();
-  });
-
-  it('reports a failed first load in a toast and shows an empty table instead of the empty state', async () => {
-    const add = vi.spyOn(TestBed.inject(MessageService), 'add');
-    const fixture = TestBed.createComponent(CustomersPage);
-    fixture.detectChanges();
-
-    expectFirstPage().flush(null, { status: 500, statusText: 'Server Error' });
-    await fixture.whenStable();
-
-    expect(add).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'error', summary: 'The customers could not be loaded' }),
-    );
-    expect(text(fixture)).not.toContain('No customers yet');
-    expect(fixture.debugElement.query(By.directive(EntityTable))).not.toBeNull();
   });
 });

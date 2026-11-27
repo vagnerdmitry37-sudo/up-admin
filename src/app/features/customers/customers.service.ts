@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CustomersService {
-  private readonly api = inject(ApiClient).forEntity('customer');
+  private readonly api = inject(ApiClient);
   private readonly url = `${inject(API_BASE_URL)}/customers`;
 
   list = (first: number, rows: number) =>
