@@ -28,7 +28,6 @@ export interface LazyRows<T> {
   empty: Signal<boolean>;
   load: (range: TableRange) => void;
   reload: () => void;
-  loading: Signal<boolean>;
 }
 
 const FIRST_PAGE: TableRange = { first: 0, rows: 50 };
@@ -40,7 +39,6 @@ export const lazyRows = <T>(loadPage: () => RowsPageLoader<T>): LazyRows<T> => {
   const firstPageFailed = signal(false);
   const pendingRows = new Set<number>();
   const reloads = new Subject<void>();
-  const loading = computed(() => rows() === undefined && !firstPageFailed());
 
   inject(DestroyRef).onDestroy(() => reloads.next());
 
@@ -82,7 +80,6 @@ export const lazyRows = <T>(loadPage: () => RowsPageLoader<T>): LazyRows<T> => {
           if (rows() === undefined) {
             firstPageFailed.set(true);
             rows.set([]);
-            // TODO: Show error message. This is not possible here because this function is called from a signal and we cannot inject services here. The caller of this function should handle the error and show the message.
           }
         },
       });
@@ -105,6 +102,5 @@ export const lazyRows = <T>(loadPage: () => RowsPageLoader<T>): LazyRows<T> => {
     empty: computed(() => rows()?.length === 0 && !firstPageFailed()),
     load,
     reload,
-    loading,
   };
 };

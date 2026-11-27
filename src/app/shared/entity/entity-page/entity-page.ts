@@ -28,6 +28,7 @@ export class EntityPage<T extends { id: string }> {
   protected readonly lazyRows = lazyRows<T>(this.loadPage);
   protected readonly selectedIds = computed(() => this.selection().map(({ id }) => id));
   private readonly nothingSelected = computed(() => this.selectedIds().length === 0);
+  protected readonly loading = computed(() => this.tracker.isLoading(`${this.entityName()}.list`));
 
   constructor() {
     inject(ActionService).register(() => ({
@@ -39,7 +40,7 @@ export class EntityPage<T extends { id: string }> {
       delete: {
         run: () => this.deleteSelected(this.selectedIds()),
         disabled: this.nothingSelected,
-        loading: () => this.tracker.status(`${this.entityName()}.delete`)()?.status === 'loading',
+        loading: () => this.tracker.isLoading(`${this.entityName()}.delete`),
       },
     }));
   }

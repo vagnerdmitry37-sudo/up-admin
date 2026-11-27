@@ -10,7 +10,7 @@
     [rows]="lazyRows.rows() ?? []"
     [columns]="columns()"
     [lazy]="true"
-    [loading]="lazyRows.loading()"
+    [loading]="loading()"
     (lazyLoad)="lazyRows.load($event)"
     [(selection)]="selection"
   />

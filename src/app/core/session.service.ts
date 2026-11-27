@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { AccessToken } from './api/models';
 
 const TOKEN_EXPIRY_MARGIN_MS = 1000;
+const REJECTED_CREDENTIAL_STATUSES = [400, 401];
 
 @Injectable({ providedIn: 'root' })
 export class SessionService {
@@ -79,7 +80,8 @@ export class SessionService {
   }
 
   private isRejectedCredential(error: unknown) {
-    const rejectedCredentialStatuses = [400, 401];
-    return error instanceof HttpErrorResponse && rejectedCredentialStatuses.includes(error.status);
+    return (
+      error instanceof HttpErrorResponse && REJECTED_CREDENTIAL_STATUSES.includes(error.status)
+    );
   }
 }

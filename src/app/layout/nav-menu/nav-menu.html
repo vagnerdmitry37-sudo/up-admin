@@ -4,7 +4,9 @@
   label="Menu"
   [icon]="icon()"
   [expanded]="open()"
-  [loading]="true"
+  [loading]="loading()"
+  [ringContrast]="true"
+  [ringInside]="true"
   (pressed)="menu.toggle($event)"
 >
   <ng-template #item let-slot>

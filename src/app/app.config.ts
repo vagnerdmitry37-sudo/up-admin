@@ -10,6 +10,7 @@ import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angula
 import { AppTitleStrategy } from '@core/app-title-strategy';
 import { AppErrorHandler } from '@core/app-error-handler';
 import { authInterceptor } from '@core/auth.interceptor';
+import { requestTrackerInterceptor } from '@core/request-tracker.interceptor';
 import { provideBackAction } from '@core/back-action';
 import { NoirPreset } from '@core/noir-preset';
 import { SessionService } from '@core/session.service';
@@ -23,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: AppErrorHandler },
     provideRouter(routes, withComponentInputBinding()),
     { provide: TitleStrategy, useClass: AppTitleStrategy },
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([requestTrackerInterceptor, authInterceptor])),
     provideOptimus({ theme: { preset: NoirPreset } }),
     MessageService,
     provideBackAction(),
