@@ -22,7 +22,7 @@ export class OrdersService {
   private readonly url = `${this.apiBaseUrl}/orders`;
 
   list = (first: number, rows: number) =>
-    this.api.get<OrdersPageResponse>(this.url, { params: { first, rows } });
+    this.api.get<OrdersPageResponse>(this.url, { params: { first, rows }, track: 'order.list' });
 
   get = (ids: string[]) => this.api.get<Order[]>(`${this.url}/by-ids`, { params: { ids } });
 
@@ -31,7 +31,8 @@ export class OrdersService {
   update = (requests: UpdateOrderRequest[]) =>
     firstValueFrom(this.api.put<Order[]>(this.url, requests));
 
-  delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
+  delete = (ids: string[]) =>
+    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'order.delete' }));
 
   searchCustomers = (query: string) =>
     this.api

@@ -17,3 +17,17 @@
   width: 119.048%;
   height: 119.048%;
 }
+
+:host(.inside) .ring {
+  top: 5.255%;
+  left: 5.255%;
+  width: 89.49%;
+  height: 89.49%;
+}
+
+:host(.contrast) .ring {
+  --p-progressspinner-color-one: var(--p-primary-contrast-color);
+  --p-progressspinner-color-two: var(--p-primary-contrast-color);
+  --p-progressspinner-color-three: var(--p-primary-contrast-color);
+  --p-progressspinner-color-four: var(--p-primary-contrast-color);
+}

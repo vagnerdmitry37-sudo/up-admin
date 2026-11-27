@@ -35,6 +35,8 @@ export class SpeedMenu {
   readonly expanded = input(false, { transform: booleanAttribute });
   readonly actionsVisible = input(true, { transform: booleanAttribute });
   readonly loading = input(false);
+  readonly ringContrast = input(false, { transform: booleanAttribute });
+  readonly ringInside = input(false, { transform: booleanAttribute });
 
   readonly pressed = output<MouseEvent>();
 

@@ -15,7 +15,10 @@ export class CustomersService {
   private readonly url = `${inject(API_BASE_URL)}/customers`;
 
   list = (first: number, rows: number) =>
-    this.api.get<CustomersPageResponse>(this.url, { params: { first, rows } });
+    this.api.get<CustomersPageResponse>(this.url, {
+      params: { first, rows },
+      track: 'customer.list',
+    });
 
   get = (ids: string[]) => this.api.get<Customer[]>(`${this.url}/by-ids`, { params: { ids } });
 
@@ -25,5 +28,6 @@ export class CustomersService {
   update = (requests: UpdateCustomerRequest[]) =>
     firstValueFrom(this.api.put<Customer[]>(this.url, requests));
 
-  delete = (ids: string[]) => firstValueFrom(this.api.delete<void>(this.url, { params: { ids } }));
+  delete = (ids: string[]) =>
+    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'customer.delete' }));
 }

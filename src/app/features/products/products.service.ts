@@ -22,7 +22,7 @@ export class ProductsService {
   list = (first: number, rows: number) =>
     this.api.get<ProductsPageResponse>(this.url, {
       params: { first, rows },
-      track: 'products.list',
+      track: 'product.list',
     });
 
   get = (ids: string[]) =>
@@ -35,7 +35,7 @@ export class ProductsService {
     firstValueFrom(this.api.put<Product[]>(this.url, requests));
 
   delete = (ids: string[]) =>
-    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'products.delete' }));
+    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'product.delete' }));
 
   deleteImages = (ids: string[]) =>
     firstValueFrom(this.api.delete<void>(this.imagesUrl, { params: { ids } }));
