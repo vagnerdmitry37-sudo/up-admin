@@ -20,7 +20,10 @@ export class ProductsService {
   private readonly imagesUrl = `${this.apiBaseUrl}/images`;
 
   list = (first: number, rows: number) =>
-    this.api.get<ProductsPageResponse>(this.url, { params: { first, rows } });
+    this.api.get<ProductsPageResponse>(this.url, {
+      params: { first, rows },
+      track: 'products.list',
+    });
 
   get = (ids: string[]) =>
     this.api.get<ProductDetails[]>(`${this.url}/by-ids`, { params: { ids } });

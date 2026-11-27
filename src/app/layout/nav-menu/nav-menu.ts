@@ -5,6 +5,7 @@ import { SpeedMenu } from '@shared/speed-menu/speed-menu';
 import { BackAction } from '@shared/actions/back-action/back-action';
 import { ActionName, ActionService } from '@shared/actions/action.service';
 import { Router } from '@angular/router';
+import { RequestTracker } from '@core/request-tracker';
 import { navItems } from './nav-items';
 import { currentItem } from './current-item';
 
@@ -21,6 +22,9 @@ interface ActionSlot extends MenuItem {
 export class NavMenu {
   private readonly actions = inject(ActionService).actions;
   private readonly router = inject(Router);
+  private readonly tracker = inject(RequestTracker);
+
+  protected readonly productsPageStatus = this.tracker.status('products.list');
 
   protected readonly openIcon = OpenngIcons.BARS;
   protected readonly closeIcon = OpenngIcons.TIMES;
