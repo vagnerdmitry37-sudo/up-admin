@@ -22,11 +22,14 @@ export class ProductsService {
   list = (first: number, rows: number) =>
     this.api.get<ProductsPageResponse>(this.url, {
       params: { first, rows },
-      track: 'product.list',
+      track: { entity: 'product', operation: 'list' },
     });
 
   get = (ids: string[]) =>
-    this.api.get<ProductDetails[]>(`${this.url}/by-ids`, { params: { ids } });
+    this.api.get<ProductDetails[]>(`${this.url}/by-ids`, {
+      params: { ids },
+      track: { entity: 'product', operation: 'get' },
+    });
 
   create = (requests: CreateProductRequest[]) =>
     firstValueFrom(this.api.post<Product[]>(this.url, requests));
@@ -35,7 +38,12 @@ export class ProductsService {
     firstValueFrom(this.api.put<Product[]>(this.url, requests));
 
   delete = (ids: string[]) =>
-    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'product.delete' }));
+    firstValueFrom(
+      this.api.delete<void>(this.url, {
+        params: { ids },
+        track: { entity: 'product', operation: 'delete' },
+      }),
+    );
 
   deleteImages = (ids: string[]) =>
     firstValueFrom(this.api.delete<void>(this.imagesUrl, { params: { ids } }));

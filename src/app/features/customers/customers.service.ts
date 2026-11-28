@@ -17,10 +17,14 @@ export class CustomersService {
   list = (first: number, rows: number) =>
     this.api.get<CustomersPageResponse>(this.url, {
       params: { first, rows },
-      track: 'customer.list',
+      track: { entity: 'customer', operation: 'list' },
     });
 
-  get = (ids: string[]) => this.api.get<Customer[]>(`${this.url}/by-ids`, { params: { ids } });
+  get = (ids: string[]) =>
+    this.api.get<Customer[]>(`${this.url}/by-ids`, {
+      params: { ids },
+      track: { entity: 'customer', operation: 'get' },
+    });
 
   create = (request: CreateCustomerRequest) =>
     firstValueFrom(this.api.post<Customer>(this.url, request));
@@ -29,5 +33,10 @@ export class CustomersService {
     firstValueFrom(this.api.put<Customer[]>(this.url, requests));
 
   delete = (ids: string[]) =>
-    firstValueFrom(this.api.delete<void>(this.url, { params: { ids }, track: 'customer.delete' }));
+    firstValueFrom(
+      this.api.delete<void>(this.url, {
+        params: { ids },
+        track: { entity: 'customer', operation: 'delete' },
+      }),
+    );
 }

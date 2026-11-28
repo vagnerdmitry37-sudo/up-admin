@@ -11,11 +11,11 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EntityName } from '@core/request-tracker';
-import { ActionService } from '@shared/actions/action.service';
 import { parseRouteIds } from '@shared/route-ids/route-ids';
 import { Observable } from 'rxjs';
 import { entityTabList } from '../entity-tabs/entity-tab-list';
 import { EntityTabContext, EntityTabs } from '../entity-tabs/entity-tabs';
+import { registerEntityEditPageActions } from './entity-edit-page-actions';
 
 @Component({
   selector: 'app-entity-edit-page',
@@ -41,9 +41,7 @@ export class EntityEditPage<T extends { id: string }> implements OnInit {
   });
 
   constructor() {
-    inject(ActionService).register(() => ({
-      create: { run: () => this.tabList.addNew() },
-    }));
+    registerEntityEditPageActions({ addNewTab: () => this.tabList.addNew() });
   }
 
   ngOnInit() {

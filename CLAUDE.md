@@ -20,7 +20,7 @@ The footer has two menus, both drawn by `SpeedMenu` (`shared/speed-menu`, `app-s
 - A page registers the actions that make sense on it and leaves the others out, so they are hidden. An action that makes sense on the page but not right now stays visible and is disabled: `Action.disabled` is an optional function read reactively (a signal or `computed`), passed to `pButton`'s `[disabled]` through `ActionButton`. `EntityPage` disables Edit and Delete while nothing is selected.
 - Page actions are never inherited. Only leaf pages (the components a route renders) and app-wide initializers in `core/` register actions, never a parent route or layout component for its children. The list page and the editor are sibling routes, so opening the editor destroys the list page and removes its actions; the editor shows only what it registers itself, plus the app-wide Back.
 - Actions that share a name but differ per page are registered by each page: Create on a list page (`EntityPage`) opens the editor, which adds a new tab; Create on the edit page (`EntityEditPage`) only adds a tab.
-- To add an action: add its name to `ActionName`, add an `app-<name>-action` in `shared/actions`, add a slot to the menu it belongs to, and register it from the page (or in `core/` if it is app-wide).
+- To add an action: add its name to `ActionName`, add an `app-<name>-action` in `shared/actions`, add a slot to the menu it belongs to, and register it from the page's `<page>-actions.ts` file next to the page (or in `core/` if it is app-wide).
 
 ## Entity operations go only through the action menu
 
@@ -30,24 +30,24 @@ Create, edit, save, delete and any other operation on an entity are done only th
 
 All loading state comes from `RequestTracker` (`core/request-tracker.ts`); nothing keeps a `loading` flag of its own.
 
-- **Tables** use Optimus's built-in mask (`p-table` `[loading]`). `DataTable` and `EntityTable` take a `loading` input; `EntityPage` passes `isLoading('<entity>.list')`, so the first page, every lazily loaded range and the reload after Delete show it. The table is rendered from the start (`rows ?? []`); the empty state replaces it only once the first page came back empty. While loading, `DataTable` reserves one body row of height for the spinner.
-- **Action buttons** show a ring (`ButtonRing`, `shared/button-ring`) while their `Action.loading` (read reactively) is true: `EntityPage`'s Delete passes `isLoading('<entity>.delete')`.
-- **Navigation trigger** shows the ring while any request is running (`isLoading()` without names).
+- **Tables** use Optimus's built-in mask (`p-table` `[loading]`). `DataTable` and `EntityTable` take a `loading` input; `EntityPage` passes `isLoading({ entity, operation: 'list' })`, so the first page, every lazily loaded range and the reload after Delete show it. The table is rendered from the start (`rows ?? []`); the empty state replaces it only once the first page came back empty. While loading, `DataTable` reserves one body row of height for the spinner.
+- **Action buttons** show a ring (`ButtonRing`, `shared/button-ring`) while their `Action.loading` (read reactively) is true: `EntityPage`'s Delete passes `isLoading({ entity, operation: 'delete' })`.
+- **Navigation trigger** shows the ring only while page data loads (`isLoading({ operation: 'list' }, { operation: 'get' })`, any entity), never during actions such as Delete or Save.
 - `ButtonRing` keeps spinning for at least one full rotation (2 s), so a fast request does not flash.
 
 ## Request errors
 
 - **Form validation errors** are shown in the form, at the invalid field (`app-field-frame`'s reserved error line).
 - **Every other error** is shown only as a toast through `AppMessageService.error(summary, detail)` (`core/app-message.service.ts`), which wraps Optimus's `MessageService` (injected only there). Toast life is set once by `messageLife` on the `p-toast` in `Shell`. Never an inline message, banner or error block; after an error a page falls back to a neutral state (for example an empty table). Uncaught exceptions reach `core/app-error-handler.ts` (`AppErrorHandler`), which shows a generic toast; it skips `HttpErrorResponse`.
-- **Failed requests** are not shown to the user yet. `RequestTracker.error(name)` keeps the latest error of each named request, and how its message (the API returns readable texts for some errors) is shown is still open. Write server `detail` texts so a user can read them.
+- **Failed requests** are not shown to the user yet. `RequestTracker.error(request)` keeps the latest error of each tracked request, and how its message (the API returns readable texts for some errors) is shown is still open. Write server `detail` texts so a user can read them.
 
 ## Request tracking
 
 - All HTTP goes through `core/api-client.ts` (`ApiClient`); nothing else injects `HttpClient` (ESLint, specs excepted). `resource(url)` wraps `httpResource`.
-- `core/request-tracker.interceptor.ts` (registered first in `app.config.ts`, so it sees the outcome after auth refresh and retry) counts every request in `RequestTracker`, including `httpResource`. A request ends when it completes, fails or is unsubscribed.
-- A request that a UI piece needs to watch gets a name: `api.get(url, { track: 'product.list' })`. `RequestName` is `<EntityName>.<RequestOperation>` (`'product' | 'order' | 'customer'` × `'list' | 'delete'`); add an operation to `RequestOperation` together with the code that reads it. The three entity services name the same requests.
-- Each named request is `loading` while running, then `succeeded` or `failed`. A cancelled request (unsubscribed, for example after leaving the page) is not an outcome: it only stops counting and keeps the previous one. A new request with the same name clears its previous error.
-- Read it with `tracker.isLoading(...names)` inside a `computed`, template or `Action.loading` (no names: any request), and `tracker.error(name)` for the `HttpErrorResponse` of the latest failed named request. HTTP codes are not separate statuses: they are read from the error.
+- `core/request-tracker.interceptor.ts` (registered first in `app.config.ts`, so it sees the outcome after auth refresh and retry) passes every request (including `httpResource`) through `RequestTracker`, which counts only the tracked ones. A request ends when it completes, fails or is unsubscribed.
+- A request that a UI piece needs to watch is tracked: `api.get(url, { track: { entity: 'product', operation: 'list' } })`. A `TrackedRequest` is an `EntityName` (`'product' | 'order' | 'customer'`) and a `RequestOperation` (`'list' | 'get' | 'delete'`), kept as two fields, never glued into a string; add an operation to `RequestOperation` together with the code that reads it. The three entity services track the same requests.
+- Each tracked request is `loading` while running, then `succeeded` or `failed`. A cancelled request (unsubscribed, for example after leaving the page) is not an outcome: it only stops counting and keeps the previous one. A new request with the same entity and operation clears its previous error.
+- Read it with `tracker.isLoading(...queries)` inside a `computed`, template or `Action.loading`. It takes `TrackedRequest`s whose `entity` may be left out (any entity matches); `operation` is always required; at least one query is required, and untracked requests are never counted. `tracker.error({ entity, operation })` gives the `HttpErrorResponse` of the latest failed tracked request. HTTP codes are not separate statuses: they are read from the error.
 
 ## Entity features are mirrors: orders, products, customers
 
@@ -83,14 +83,14 @@ Selected IDs travel as the `ids` query param (`/products/editor?ids=1,2`), bound
 
 ### List page logic lives in `EntityPage`
 
-`shared/entity/entity-page` loads the table lazily (`lazyRows` over `loadPage`), shows an empty state that points to the Create action, and registers Create, Edit and Delete with `ActionService`. Create and Edit navigate to `editor` relative to the list route (Edit passes the selected ids as `?ids`); Delete calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table. Customers that still have orders are refused by the API with 409.
+`shared/entity/entity-page` loads the table lazily (`lazyRows` over `loadPage`), shows an empty state that points to the Create action, and registers Create, Edit and Delete with `ActionService` through `registerEntityPageActions` (`entity-page-actions.ts`), which holds the actions and their handlers; the page passes it its state. Create and Edit navigate to `editor` relative to the list route (Edit passes the selected ids as `?ids`); Delete calls `deleteEntities(ids)` (one bulk DELETE), clears the selection and reloads the table. Customers that still have orders are refused by the API with 409.
 
 ### Edit page logic lives in `EntityEditPage`
 
 `shared/entity/entity-edit-page` owns everything the three edit pages share; entity pages only supply `ids`, `load`, `label`, `entityName` and the form template.
 
 - With `ids`: loads the records once and shows one tab per record (`entityTabList` in `shared/entity/entity-tabs`), rendering the template with the record. Without `ids` it shows one new tab.
-- Create is registered with `ActionService` and adds a "New `<entityName>` N" tab, rendered with `undefined`, so the form is empty.
+- Create is registered with `ActionService` through `registerEntityEditPageActions` (`entity-edit-page-actions.ts`) and adds a "New `<entityName>` N" tab, rendered with `undefined`, so the form is empty.
 - Each tab has a close button (×) that is focusable only on the shown tab. Closing the shown tab shows its right neighbour, or the left one if it was last; closing the last tab navigates back to the list (`..`, with `replaceUrl`).
 - Every tab has the same fixed width (12rem), with a longer name cut by an ellipsis and shown in full as the label's `title`. `EntityTabs` runs an `afterRenderEffect` that moves the ink bar, scrolls the shown tab into view and updates the ‹ › scroll buttons, because Optimus's `TabList` does not do that when a tab is shown by code.
 - `EntityForm` (`shared/entity/entity-form`) takes the form group and the record as `value`, and resets the form whenever the value changes.

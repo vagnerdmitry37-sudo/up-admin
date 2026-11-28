@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  booleanAttribute,
   effect,
   input,
   signal,
@@ -16,13 +15,10 @@ const rotationMs = 2000;
   imports: [ProgressSpinner],
   templateUrl: './button-ring.html',
   styleUrl: './button-ring.scss',
-  host: { '[class.contrast]': 'contrast()', '[class.inside]': 'inside()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonRing {
   readonly loading = input(false);
-  readonly contrast = input(false, { transform: booleanAttribute });
-  readonly inside = input(false, { transform: booleanAttribute });
 
   protected readonly rotationDuration = `${rotationMs}ms`;
   protected readonly spinning = signal(false);

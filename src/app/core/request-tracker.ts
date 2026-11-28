@@ -3,77 +3,69 @@ import { Injectable, signal } from '@angular/core';
 import { Observable, defer, finalize, tap } from 'rxjs';
 
 export type EntityName = 'product' | 'order' | 'customer';
-export type RequestOperation = 'list' | 'delete';
-export type RequestName = `${EntityName}.${RequestOperation}`;
+export type RequestOperation = 'list' | 'get' | 'delete';
 
-type CountKey = RequestName | 'any';
+export interface TrackedRequest {
+  readonly entity: EntityName;
+  readonly operation: RequestOperation;
+}
+
+type Query = Partial<TrackedRequest> & Pick<TrackedRequest, 'operation'>;
+
+interface FailedRequest {
+  readonly request: TrackedRequest;
+  readonly error: HttpErrorResponse;
+}
+
+const sameRequest = (a: TrackedRequest, b: TrackedRequest) =>
+  a.entity === b.entity && a.operation === b.operation;
+
+const matches = (request: TrackedRequest, query: Query) =>
+  request.operation === query.operation && (!query.entity || request.entity === query.entity);
 
 @Injectable({ providedIn: 'root' })
 export class RequestTracker {
-  private readonly counts = signal<ReadonlyMap<CountKey, number>>(new Map());
-  private readonly errors = signal<ReadonlyMap<RequestName, HttpErrorResponse>>(new Map());
+  private readonly running = signal<readonly TrackedRequest[]>([]);
+  private readonly failures = signal<readonly FailedRequest[]>([]);
 
-  isLoading(...names: RequestName[]): boolean {
-    const counts = this.counts();
-    return names.length === 0 ? counts.has('any') : names.some((name) => counts.has(name));
+  isLoading(query: Query, ...more: Query[]): boolean {
+    const queries = [query, ...more];
+    return this.running().some((request) => queries.some((each) => matches(request, each)));
   }
 
-  error(name: RequestName): HttpErrorResponse | undefined {
-    return this.errors().get(name);
+  error(request: TrackedRequest): HttpErrorResponse | undefined {
+    return this.failures().find((failure) => sameRequest(failure.request, request))?.error;
   }
 
-  track(name?: RequestName) {
+  track(request?: TrackedRequest) {
     return <T>(source: Observable<T>): Observable<T> =>
-      defer(() => {
-        this.start(name);
-        return source.pipe(
-          tap({ error: (error: unknown) => this.fail(name, error) }),
-          finalize(() => this.changeCount(name, -1)),
-        );
-      });
+      request ? defer(() => this.watch(request, source)) : source;
   }
 
-  private start(name: RequestName | undefined): void {
-    this.changeCount(name, 1);
-    if (name) {
-      this.setError(name, undefined);
+  private watch<T>(request: TrackedRequest, source: Observable<T>): Observable<T> {
+    const entry: TrackedRequest = { ...request };
+    this.running.update((running) => [...running, entry]);
+    this.clearError(request);
+    return source.pipe(
+      tap({ error: (error: unknown) => this.fail(request, error) }),
+      finalize(() => this.running.update((running) => running.filter((each) => each !== entry))),
+    );
+  }
+
+  private fail(request: TrackedRequest, error: unknown): void {
+    if (error instanceof HttpErrorResponse) {
+      this.failures.update((failures) => [
+        ...failures.filter((failure) => !sameRequest(failure.request, request)),
+        { request, error },
+      ]);
     }
   }
 
-  private fail(name: RequestName | undefined, error: unknown): void {
-    if (name && error instanceof HttpErrorResponse) {
-      this.setError(name, error);
+  private clearError(request: TrackedRequest): void {
+    if (this.failures().some((failure) => sameRequest(failure.request, request))) {
+      this.failures.update((failures) =>
+        failures.filter((failure) => !sameRequest(failure.request, request)),
+      );
     }
-  }
-
-  private setError(name: RequestName, error: HttpErrorResponse | undefined): void {
-    this.errors.update((errors) => {
-      if (!error && !errors.has(name)) {
-        return errors;
-      }
-      const next = new Map(errors);
-      if (error) {
-        next.set(name, error);
-      } else {
-        next.delete(name);
-      }
-      return next;
-    });
-  }
-
-  private changeCount(name: RequestName | undefined, delta: number): void {
-    this.counts.update((counts) => {
-      const next = new Map(counts);
-      const keys: CountKey[] = name ? ['any', name] : ['any'];
-      for (const key of keys) {
-        const count = (next.get(key) ?? 0) + delta;
-        if (count > 0) {
-          next.set(key, count);
-        } else {
-          next.delete(key);
-        }
-      }
-      return next;
-    });
   }
 }

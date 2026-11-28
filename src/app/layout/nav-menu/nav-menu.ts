@@ -24,7 +24,9 @@ export class NavMenu {
   private readonly router = inject(Router);
   private readonly tracker = inject(RequestTracker);
 
-  protected readonly loading = computed(() => this.tracker.isLoading());
+  protected readonly loading = computed(() =>
+    this.tracker.isLoading({ operation: 'list' }, { operation: 'get' }),
+  );
 
   protected readonly openIcon = OpenngIcons.BARS;
   protected readonly closeIcon = OpenngIcons.TIMES;

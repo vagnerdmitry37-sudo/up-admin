@@ -1,19 +1,19 @@
 import { HttpClient, HttpContext, HttpParams, httpResource } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { RequestName } from '@core/request-tracker';
-import { REQUEST_NAME } from '@core/request-tracker.interceptor';
+import { TrackedRequest } from '@core/request-tracker';
+import { TRACKED_REQUEST } from '@core/request-tracker.interceptor';
 
 type ParamValue = string | number | boolean;
 
 export interface ApiRequestOptions {
   readonly params?: HttpParams | Record<string, ParamValue | readonly ParamValue[]>;
-  readonly track?: RequestName;
+  readonly track?: TrackedRequest;
 }
 
 const httpOptions = (options?: ApiRequestOptions) => {
   return {
     params: options?.params,
-    context: new HttpContext().set(REQUEST_NAME, options?.track),
+    context: new HttpContext().set(TRACKED_REQUEST, options?.track),
   };
 };
 

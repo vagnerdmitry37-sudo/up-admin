@@ -1,6 +1,6 @@
 :host {
   position: absolute;
-  inset: 0;
+  inset: calc(-15.79% - 2.63px);
   overflow: hidden;
   pointer-events: none;
 }
@@ -12,22 +12,7 @@
   --p-progressspinner-color-four: var(--p-primary-color);
 
   position: absolute;
-  top: -9.524%;
-  left: -9.524%;
-  width: 119.048%;
-  height: 119.048%;
-}
-
-:host(.inside) .ring {
-  top: 5.255%;
-  left: 5.255%;
-  width: 89.49%;
-  height: 89.49%;
-}
-
-:host(.contrast) .ring {
-  --p-progressspinner-color-one: var(--p-primary-contrast-color);
-  --p-progressspinner-color-two: var(--p-primary-contrast-color);
-  --p-progressspinner-color-three: var(--p-primary-contrast-color);
-  --p-progressspinner-color-four: var(--p-primary-contrast-color);
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
